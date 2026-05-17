@@ -48,6 +48,7 @@ export default function App() {
   const [repoUrl, setRepoUrl] = useState('');
   const [company, setCompany] = useState('General');
   const [language, setLanguage] = useState('English');
+  const [selectedModel, setSelectedModel] = useState('llama-3.3-70b-versatile');
   
   // Loading & Flow State
   const [isLoading, setIsLoading] = useState(false);
@@ -92,7 +93,7 @@ export default function App() {
       '🔍 Authenticating connection...',
       '📥 Cloning GitHub repository locally...',
       '📁 Traversing directory tree & parsing modules...',
-      '🧠 Running LLM analysis using Groq Llama-4-Scout...',
+      '🧠 Running LLM analysis using selected AI Model...',
       '📜 Generating custom repository README.md...',
       '🎉 Formatting reports...'
     ];
@@ -110,7 +111,7 @@ export default function App() {
       const response = await fetch('http://localhost:5000/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ repoUrl, company, language })
+        body: JSON.stringify({ repoUrl, company, language, model: selectedModel })
       });
 
       clearInterval(stepInterval);
@@ -150,6 +151,98 @@ export default function App() {
     document.body.removeChild(element);
   };
 
+  // Helper to compile and download complete Code Audit Report in Markdown format
+  const downloadAuditReport = () => {
+    if (!analysisResult) return;
+    
+    let md = `# 🛡️ RepoSage AI Code Review & Audit Report\n\n`;
+    md += `* **Repository**: ${analysisResult.repoName}\n`;
+    md += `* **Date**: ${new Date().toLocaleDateString()}\n`;
+    md += `* **Total Modules Scanned**: ${analysisResult.filesReviewedCount} files\n\n`;
+    
+    md += `## 📊 Overall Code Health Summary\n\n`;
+    let totalBugs = 0;
+    let totalSecurity = 0;
+    let totalPerf = 0;
+    let totalStyle = 0;
+    
+    Object.keys(analysisResult.analysis.fileReviews).forEach(file => {
+      const review = analysisResult.analysis.fileReviews[file];
+      totalBugs += review.bugs?.length || 0;
+      totalSecurity += review.security?.length || 0;
+      totalPerf += review.optimization?.length || 0;
+      totalStyle += review.styling?.length || 0;
+    });
+    
+    md += `| Category | Findings Count | Severity Level |\n`;
+    md += `| :--- | :---: | :--- |\n`;
+    md += `| 🐞 Logical Bugs | ${totalBugs} | High |\n`;
+    md += `| 🛡️ Security Breaches | ${totalSecurity} | Critical |\n`;
+    md += `| ⚡ Performance Issues | ${totalPerf} | Medium |\n`;
+    md += `| 🎨 Styling & Conventions | ${totalStyle} | Low |\n\n`;
+    
+    md += `---\n\n`;
+    md += `## 🔍 File-by-File Audit Details\n\n`;
+    
+    Object.keys(analysisResult.analysis.fileReviews).forEach(file => {
+      const review = analysisResult.analysis.fileReviews[file];
+      const hasIssues = (review.bugs?.length || 0) + (review.security?.length || 0) + (review.optimization?.length || 0) + (review.styling?.length || 0) > 0;
+      
+      if (hasIssues) {
+        md += `### 📄 File: \`${file}\`\n\n`;
+        
+        if (review.security && review.security.length > 0) {
+          md += `#### 🛡️ Security Vulnerabilities\n`;
+          review.security.forEach(item => {
+            md += `* **Line ${item.line}** [${item.type}]: ${item.description}\n`;
+            md += `  * *AI Suggestion*: \`${item.suggestion}\`\n`;
+          });
+          md += `\n`;
+        }
+        
+        if (review.bugs && review.bugs.length > 0) {
+          md += `#### 🐞 Logical Bugs\n`;
+          review.bugs.forEach(item => {
+            md += `* **Line ${item.line}** [${item.type}]: ${item.description}\n`;
+            md += `  * *AI Suggestion*: \`${item.suggestion}\`\n`;
+          });
+          md += `\n`;
+        }
+        
+        if (review.optimization && review.optimization.length > 0) {
+          md += `#### ⚡ Performance Bottlenecks\n`;
+          review.optimization.forEach(item => {
+            md += `* **Line ${item.line}** [${item.type}]: ${item.description}\n`;
+            md += `  * *AI Suggestion*: \`${item.suggestion}\`\n`;
+          });
+          md += `\n`;
+        }
+        
+        if (review.styling && review.styling.length > 0) {
+          md += `#### 🎨 Style & Conventions\n`;
+          review.styling.forEach(item => {
+            md += `* **Line ${item.line}** [${item.type}]: ${item.description}\n`;
+            md += `  * *AI Suggestion*: \`${item.suggestion}\`\n`;
+          });
+          md += `\n`;
+        }
+        
+        md += `---\n\n`;
+      }
+    });
+    
+    md += `## 📄 Generated README.md\n\n`;
+    md += analysisResult.analysis.generatedReadme;
+    
+    const element = document.createElement("a");
+    const fileBlob = new Blob([md], { type: 'text/plain' });
+    element.href = URL.createObjectURL(fileBlob);
+    element.download = `${analysisResult.repoName}_AUDIT_REPORT.md`;
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+  };
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}>
       
@@ -168,6 +261,14 @@ export default function App() {
         </div>
         
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          {analysisResult && (
+            <button 
+              onClick={downloadAuditReport}
+              style={{ background: 'linear-gradient(135deg, #a855f7 0%, #3b82f6 100%)', color: 'white', border: 'none', borderRadius: '6px', padding: '6px 14px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 4px 12px rgba(168,85,247,0.2)' }}
+            >
+              <Download size={14} /> Export Audit Report
+            </button>
+          )}
           <a href="https://github.com" target="_blank" rel="noreferrer" style={{ color: '#9ca3af', display: 'flex', alignItems: 'center', gap: '6px', textDecoration: 'none', fontSize: '13px', fontWeight: 500 }} className="hover:text-white">
             <Github size={18} /> Codebase
           </a>
@@ -202,7 +303,7 @@ export default function App() {
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#9ca3af', marginBottom: '6px', textTransform: 'uppercase' }}>Target Company</label>
                   <select 
@@ -227,6 +328,20 @@ export default function App() {
                     <option value="English">English</option>
                     <option value="Hindi">Hindi</option>
                     <option value="Telugu">Telugu</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#9ca3af', marginBottom: '6px', textTransform: 'uppercase' }}>AI Model</label>
+                  <select 
+                    value={selectedModel}
+                    onChange={(e) => setSelectedModel(e.target.value)}
+                    style={{ width: '100%', padding: '10px 12px', background: 'rgba(15, 23, 42, 0.6)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', color: '#fff', fontSize: '13px', outline: 'none' }}
+                  >
+                    <option value="llama-3.3-70b-versatile">Llama 3.3 (70B)</option>
+                    <option value="deepseek-r1-distill-llama-70b">DeepSeek R1 (70B)</option>
+                    <option value="llama-3.1-8b-instant">Llama 3.1 (8B)</option>
+                    <option value="gemma2-9b-it">Google Gemma 2 (9B)</option>
                   </select>
                 </div>
               </div>

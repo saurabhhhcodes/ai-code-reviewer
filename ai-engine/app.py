@@ -43,6 +43,7 @@ class AnalyzeRequest(BaseModel):
     files: List[FileItem]
     company: Optional[str] = "General"
     language: Optional[str] = "English"
+    model: Optional[str] = "llama-3.3-70b-versatile"
 
 # 🟢 Route: Root Check
 @app.get("/")
@@ -105,9 +106,21 @@ Format your JSON precisely as:
   "generatedReadme": "Write a highly detailed, professional README.md markdown for the entire repository, outlining installation, folder structure, features, tech stack, and usage guidelines."
 }}"""
 
+    # Model mapping for Groq
+    groq_model = "llama-3.3-70b-versatile"
+    req_model = request.model.lower() if request.model else ""
+    if "deepseek" in req_model:
+        groq_model = "deepseek-r1-distill-llama-70b"
+    elif "llama-3.1" in req_model or "8b" in req_model:
+        groq_model = "llama-3.1-8b-instant"
+    elif "gemma" in req_model:
+        groq_model = "gemma2-9b-it"
+
+    print(f"📡 Forwarding analysis request to Groq using model: {groq_model}")
+
     try:
       completion = groq_client.chat.completions.create(
-          model="llama-3.3-70b-versatile",
+          model=groq_model,
           messages=[{"role": "user", "content": review_prompt}],
           temperature=0.3,
           response_format={"type": "json_object"}

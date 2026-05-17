@@ -13,13 +13,15 @@ Welcome to **RepoSage**! Developers spend countless hours reviewing code, writin
 - **README Generator**: Automatically generate comprehensive documentation for any repository.
 - **Multi-language Support**: Supports Python, JavaScript, and TypeScript (more coming soon!).
 - **Dashboard UI**: Modern, clean, and intuitive dashboard built with React and TailwindCSS.
+- **GitHub Action Bot**: Automated Pull Request code reviewer that posts inline line-by-line feedback directly on GitHub.
 
 ## 🏗️ Architecture
 
-The project is split into three main modules:
+The project is split into four main modules:
 1. **Frontend**: React + TailwindCSS (User Interface & Dashboard)
 2. **Backend**: Node.js + Express (API, Repo Cloning, Queue Management)
 3. **AI Engine**: Python + FastAPI (Code Analysis, Prompt Management, LLM Integration)
+4. **GitHub Action**: Bundled runner that integrates directly with GitHub Pull Requests
 
 ## 🚀 Installation & Setup
 
@@ -27,6 +29,32 @@ Please refer to the setup instructions in each module:
 - [Frontend Setup](./frontend/README.md)
 - [Backend Setup](./backend/README.md)
 - [AI Engine Setup](./ai-engine/README.md)
+- [GitHub Action Setup](./github-action/README.md)
+
+### 🤖 Quick Start: GitHub Action Integration
+
+To review Pull Requests automatically in any repo:
+1. Create `.github/workflows/reposage-review.yml`:
+   ```yaml
+   name: RepoSage AI Reviewer
+   on:
+     pull_request:
+       types: [opened, synchronize]
+   jobs:
+     review:
+       runs-on: ubuntu-latest
+       permissions:
+         pull-requests: write
+       steps:
+         - name: Checkout Code
+           uses: actions/checkout@v4
+         - name: Run RepoSage AI PR Audit
+           uses: your-username/ai-code-reviewer/github-action@main
+           with:
+             github-token: ${{ secrets.GITHUB_TOKEN }}
+             groq-api-key: ${{ secrets.GROQ_API_KEY }}
+   ```
+
 
 ## 🤝 Contributing
 

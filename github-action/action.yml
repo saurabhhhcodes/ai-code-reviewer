@@ -1,0 +1,20 @@
+name: 'RepoSage AI Copilot Reviewer'
+description: 'AI-powered Pull Request reviewer that automatically reviews changes, detects bugs, scans security vulnerabilities, and posts inline suggestions.'
+author: 'RepoSage GSSoC'
+branding:
+  icon: 'aperture'
+  color: 'purple'
+inputs:
+  github-token:
+    description: 'The GitHub token (e.g., secrets.GITHUB_TOKEN) used to fetch PR data and post comments.'
+    required: true
+  groq-api-key:
+    description: 'The Groq API key used for code analysis and review.'
+    required: true
+  exclude-paths:
+    description: 'Glob patterns to exclude from analysis (comma-separated).'
+    required: false
+    default: 'package-lock.json,yarn.lock,pnpm-lock.yaml,dist/**,build/**'
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
