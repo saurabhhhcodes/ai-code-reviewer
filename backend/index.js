@@ -347,12 +347,25 @@ app.post('/api/analyze', async (req, res) => {
 });
 
 // 🟢 Route: AI Chat with Repository (session-isolated per issue #59)
+const MAX_HISTORY_MESSAGES = 20;
+
 app.post('/api/chat', async (req, res) => {
   const { message, history = [], model = 'llama-3.3-70b-versatile', temperature = 0.7, maxTokens = 2048, systemPrompt = 'You are a helpful code reviewer.', sessionId } = req.body;
 
   if (!message) {
     return res.status(400).json({ error: 'Message is required.' });
   }
+
+  if (!Array.isArray(history)) {
+    return res.status(400).json({ error: 'History must be an array.' });
+  }
+  const validRoles = new Set(['user', 'assistant', 'system']);
+  for (const entry of history) {
+    if (!entry || typeof entry !== 'object' || !validRoles.has(entry.role) || typeof entry.content !== 'string') {
+      return res.status(400).json({ error: 'Each history entry must have a valid role (user/assistant/system) and string content.' });
+    }
+  }
+  const trimmedHistory = history.slice(-MAX_HISTORY_MESSAGES);
 
   const context = sessionId ? repoContexts.get(sessionId) : null;
   if (!context) {
@@ -371,7 +384,7 @@ app.post('/api/chat', async (req, res) => {
       body: JSON.stringify({
         files: context.files,
         message,
-        history,
+        history: trimmedHistory,
         model,
         temperature,
         maxTokens,
