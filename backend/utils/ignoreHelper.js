@@ -44,11 +44,24 @@ export function isIgnored(filePath, patterns, baseDir) {
 }
 
 // 🟢 Helper to recursively read files
-export function readFilesRecursively(dir, fileList = [], baseDir = dir, ignorePatterns = []) {
+const MAX_DEPTH = 10;
+const MAX_FILES = 500;
+
+export function readFilesRecursively(dir, fileList = [], baseDir = dir, ignorePatterns = [], depth = 0) {
+  if (depth > MAX_DEPTH) return fileList;
+  if (fileList.length >= MAX_FILES) return fileList;
   const files = fs.readdirSync(dir);
   for (const file of files) {
     const filePath = path.join(dir, file);
-    const stat = fs.statSync(filePath);
+    let stat;
+    try {
+      stat = fs.statSync(filePath);
+    } catch {
+      continue;
+    }
+
+    // Skip symlinks to avoid circular reference DoS
+    if (stat.isSymbolicLink()) continue;
 
     // Skip node_modules, git directories, and build artifacts
     if (file === 'node_modules' || file === '.git' || file === 'dist' || file === 'build') {
@@ -61,7 +74,7 @@ export function readFilesRecursively(dir, fileList = [], baseDir = dir, ignorePa
     }
 
     if (stat.isDirectory()) {
-      readFilesRecursively(filePath, fileList, baseDir, ignorePatterns);
+      readFilesRecursively(filePath, fileList, baseDir, ignorePatterns, depth + 1);
     } else {
       // Analyze only source code files (Python, JS, TS, HTML, CSS, Go, Rust, Java, C++, PHP, Ruby, SQL)
       const ext = path.extname(file).toLowerCase();
