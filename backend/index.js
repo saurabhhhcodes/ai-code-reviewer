@@ -8,6 +8,7 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { Octokit } from '@octokit/rest';
 import PDFDocument from 'pdfkit';
+import rateLimit from 'express-rate-limit';
 import { scanSecrets, scanSecretsInChanges } from './utils/secretsScanner.js';
 import { loadIgnorePatterns, isIgnored, readFilesRecursively } from './utils/ignoreHelper.js';
 
@@ -21,6 +22,22 @@ const PORT = process.env.PORT || 5000;
 
 // Enable CORS
 app.use(cors());
+
+// Per-IP rate limiting for expensive endpoints
+const analyzeLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many analyze requests. Please slow down and retry after 5 minutes.' }
+});
+const chatLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many chat requests. Please slow down and retry after 1 minute.' }
+});
 
 // Capture raw body for webhook signature verification before JSON parsing
 app.use(express.json({
@@ -229,7 +246,7 @@ function deleteFolderRecursive(directoryPath) {
 }
 
 // 🟢 Route: GitHub Import & AI Review
-app.post('/api/analyze', async (req, res) => {
+app.post('/api/analyze', analyzeLimiter, async (req, res) => {
   const { repoUrl, company = 'General', language = 'English', model = 'llama-3.3-70b-versatile',temperature = 0.7,
      maxTokens = 2048,systemPrompt = ''
    } = req.body;
@@ -347,7 +364,7 @@ app.post('/api/analyze', async (req, res) => {
 });
 
 // 🟢 Route: AI Chat with Repository (session-isolated per issue #59)
-app.post('/api/chat', async (req, res) => {
+app.post('/api/chat', chatLimiter, async (req, res) => {
   const { message, history = [], model = 'llama-3.3-70b-versatile', temperature = 0.7, maxTokens = 2048, systemPrompt = 'You are a helpful code reviewer.', sessionId } = req.body;
 
   if (!message) {
