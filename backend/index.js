@@ -6,7 +6,6 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { Octokit } from '@octokit/rest';
-import PDFDocument from 'pdfkit';
 import { requireApiKey } from './utils/authMiddleware.js';
 import rateLimit from 'express-rate-limit';
 import { scanSecrets, scanSecretsInChanges } from './utils/secretsScanner.js';

@@ -617,7 +617,7 @@ export default function App() {
     try {
       const response = await fetch(`${API_BASE_URL}/api/issues/create`, {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
           "x-api-key": import.meta.env.VITE_REPOSAGE_API_KEY
         },
@@ -671,7 +671,7 @@ export default function App() {
     try {
       const response = await fetch(`${API_BASE_URL}/api/chat`, {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
           "x-api-key": import.meta.env.VITE_REPOSAGE_API_KEY
         },
@@ -883,7 +883,7 @@ export default function App() {
     try {
       const response = await fetch(`${API_BASE_URL}/api/analyze`, {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
           "x-api-key": import.meta.env.VITE_REPOSAGE_API_KEY
         },
@@ -1169,7 +1169,7 @@ export default function App() {
     try {
       const response = await fetch(`${API_BASE_URL}/api/reports/html`, {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
           "x-api-key": import.meta.env.VITE_REPOSAGE_API_KEY
         },
@@ -1200,7 +1200,7 @@ export default function App() {
     try {
       const response = await fetch(`${API_BASE_URL}/api/reports/pdf`, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'x-api-key': import.meta.env.VITE_REPOSAGE_API_KEY
         },
