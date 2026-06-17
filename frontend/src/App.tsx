@@ -1563,6 +1563,24 @@ export default function App() {
           >
             <Github size={18} /> Codebase
           </a>
+          {isOffline && (
+            <span
+              style={{
+                fontSize: "11px",
+                background: "#ef4444",
+                color: "#fff",
+                fontWeight: 700,
+                padding: "3px 10px",
+                borderRadius: "20px",
+                display: "flex",
+                alignItems: "center",
+                gap: "4px",
+              }}
+            >
+              <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#fff", display: "inline-block" }} />
+              Offline
+            </span>
+          )}
           <span
             style={{
               fontSize: "12px",
