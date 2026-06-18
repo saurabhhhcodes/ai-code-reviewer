@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import DOMPurify from 'dompurify';
 import SettingsModal from "./components/SettingsModal";
 import RepositoryOverview from './RepositoryOverview';
+import AnalyticsTrendsChart from './AnalyticsTrendsChart';
 import RepositorySummaryCard from './RepositorySummaryCard';
 import {
   Github,
@@ -399,7 +400,7 @@ export default function App() {
       const saved = localStorage.getItem('reposage_batch_results') || localStorage.getItem('eposage_batch_results');
       if (saved) {
         const parsed = JSON.parse(saved);
-        return parsed.map((r: any) => 
+        return parsed.map((r: any) =>
           r.status === 'analyzing' ? { ...r, status: 'failed', error: 'Analysis interrupted by reload' } : r
         );
       }
@@ -976,7 +977,7 @@ export default function App() {
         setSessionId(data.sessionId);
       }
       persistAuditHistory(data);
-      
+
       // Select the first file reviewed automatically
       const filesList = Object.keys(data.analysis.fileReviews);
       if (filesList.length > 0) {
@@ -1024,7 +1025,7 @@ export default function App() {
       try {
         const response = await fetch(`${API_BASE_URL}/api/analyze`, {
           method: "POST",
-          headers: { 
+          headers: {
             "Content-Type": "application/json",
             "x-api-key": import.meta.env.VITE_REPOSAGE_API_KEY
           },
@@ -1164,9 +1165,9 @@ export default function App() {
       const review = result.analysis.fileReviews[file];
       const hasIssues =
         (review.bugs?.length || 0) +
-          (review.security?.length || 0) +
-          (review.optimization?.length || 0) +
-          (review.styling?.length || 0) >
+        (review.security?.length || 0) +
+        (review.optimization?.length || 0) +
+        (review.styling?.length || 0) >
         0;
 
       if (hasIssues) {
@@ -1492,7 +1493,7 @@ export default function App() {
               >
                 <FileCode size={14} /> Export HTML
               </button>
-              <button 
+              <button
                 onClick={downloadPDFReport}
                 style={{ background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)', color: '#f59e0b', borderRadius: '6px', padding: '6px 14px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.15s' }}
               >
@@ -2058,7 +2059,7 @@ export default function App() {
                   style={{
                     background:
                       assignedContributors["secret-scanning-rules"] ===
-                      "Unassigned"
+                        "Unassigned"
                         ? "#a855f7"
                         : "#3b82f6",
                     color: "white",
@@ -2151,7 +2152,7 @@ export default function App() {
                   style={{
                     background:
                       assignedContributors["persist-assignments"] ===
-                      "Unassigned"
+                        "Unassigned"
                         ? "#a855f7"
                         : "#3b82f6",
                     color: "white",
@@ -2244,7 +2245,7 @@ export default function App() {
                   style={{
                     background:
                       assignedContributors["file-filter-search"] ===
-                      "Unassigned"
+                        "Unassigned"
                         ? "#a855f7"
                         : "#3b82f6",
                     color: "white",
@@ -2293,7 +2294,7 @@ export default function App() {
                   style={{
                     background:
                       assignedContributors["html-report-exporter"] ===
-                      "Unassigned"
+                        "Unassigned"
                         ? "#a855f7"
                         : "#3b82f6",
                     color: "white",
@@ -2340,7 +2341,7 @@ export default function App() {
                   style={{
                     background:
                       assignedContributors["complexity-metrics"] ===
-                      "Unassigned"
+                        "Unassigned"
                         ? "#a855f7"
                         : "#3b82f6",
                     color: "white",
@@ -2766,14 +2767,15 @@ export default function App() {
                   const ext = filePath.split('.').pop()?.toLowerCase() || 'other';
                   const m: any = analysisResult.analysis.metrics?.[filePath] || {};
                   return {
-                    extension:    ext,
-                    totalLines:   m.totalLines   || 0,
-                    codeLines:    m.codeLines    || 0,
+                    extension: ext,
+                    totalLines: m.totalLines || 0,
+                    codeLines: m.codeLines || 0,
                     commentLines: m.commentLines || 0,
-                    emptyLines:   m.emptyLines   || 0,
+                    emptyLines: m.emptyLines || 0,
                   };
                 })}
-            />
+              />
+              <AnalyticsTrendsChart />
               {/* Mock warning banner */}
               {analysisResult._mock && (
                 <div
@@ -2937,17 +2939,18 @@ export default function App() {
 
                     {fileFilterQuery && (
                       <button
-                        onClick={() =>{ setFileFilterQuery('')
-                        setIsClearHovered(false)
+                        onClick={() => {
+                          setFileFilterQuery('')
+                          setIsClearHovered(false)
                         }}
-                        onMouseEnter={()=> setIsClearHovered(true)}
-                        onMouseLeave={()=> setIsClearHovered(false)}
+                        onMouseEnter={() => setIsClearHovered(true)}
+                        onMouseLeave={() => setIsClearHovered(false)}
                         style={{
                           position: 'absolute',
                           right: '8px',
                           top: '50%',
                           transform: 'translateY(-50%)',
-                          background: isClearHovered? 'rgba(255,255,255,0.1)': 'transparent',
+                          background: isClearHovered ? 'rgba(255,255,255,0.1)' : 'transparent',
                           border: 'none',
                           padding: 0,
                           cursor: 'pointer',
@@ -3504,27 +3507,27 @@ export default function App() {
                             const commentDensity =
                               fileMetrics.totalLines > 0
                                 ? Math.round(
-                                    (fileMetrics.commentLines /
-                                      fileMetrics.totalLines) *
-                                      100,
-                                  )
+                                  (fileMetrics.commentLines /
+                                    fileMetrics.totalLines) *
+                                  100,
+                                )
                                 : 0;
 
                             const codePct =
                               fileMetrics.totalLines > 0
                                 ? Math.round(
-                                    (fileMetrics.codeLines /
-                                      fileMetrics.totalLines) *
-                                      100,
-                                  )
+                                  (fileMetrics.codeLines /
+                                    fileMetrics.totalLines) *
+                                  100,
+                                )
                                 : 0;
                             const commentPct =
                               fileMetrics.totalLines > 0
                                 ? Math.round(
-                                    (fileMetrics.commentLines /
-                                      fileMetrics.totalLines) *
-                                      100,
-                                  )
+                                  (fileMetrics.commentLines /
+                                    fileMetrics.totalLines) *
+                                  100,
+                                )
                                 : 0;
                             const emptyPct =
                               fileMetrics.totalLines > 0
@@ -3561,7 +3564,7 @@ export default function App() {
 
                             const currentGrade =
                               gradeColors[
-                                fileMetrics.grade as keyof typeof gradeColors
+                              fileMetrics.grade as keyof typeof gradeColors
                               ] || gradeColors["A"];
 
                             return (
@@ -4034,7 +4037,7 @@ export default function App() {
                           ]?.length > 0 ? (
                           (
                             analysisResult.analysis.fileReviews[selectedFile][
-                              activeTab
+                            activeTab
                             ] as any[]
                           ).map((item: any, index: number) => {
                             const itemKey = `${selectedFile}-${activeTab}-${index}`;
@@ -4872,6 +4875,6 @@ export default function App() {
           <span>Status: Production MVP Ready</span>
         </div>
       </footer>
-          </div>
+    </div>
   );
 }

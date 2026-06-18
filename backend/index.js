@@ -19,6 +19,7 @@ import { analyzeComplexity } from './utils/complexityAnalyzer.js';
 import { deleteFolderRecursive, getFolderSize } from './utils/fileHelper.js';
 import { verifyWebhookSignature } from './utils/signatureVerifier.js';
 import { mockAIReview } from './utils/mockAIReview.js';
+import { recordAnalysis, getTrends } from './utils/analyticsStore.js';
 
 dotenv.config();
 
@@ -115,9 +116,9 @@ process.on('SIGINT', () => {
 
 // 🟢 Route: GitHub Import & AI Review
 app.post('/api/analyze', requireApiKey, analyzeLimiter, async (req, res) => {
-  const { repoUrl, company = 'General', language = 'English', model = 'llama-3.3-70b-versatile',temperature = 0.7,
-     maxTokens = 2048, systemPrompt = '', batchSize = 5
-   } = req.body;
+  const { repoUrl, company = 'General', language = 'English', model = 'llama-3.3-70b-versatile', temperature = 0.7,
+    maxTokens = 2048, systemPrompt = '', batchSize = 5
+  } = req.body;
 
   if (!repoUrl) {
     return res.status(400).json({ error: 'GitHub Repository URL is required.' });
@@ -161,7 +162,7 @@ app.post('/api/analyze', requireApiKey, analyzeLimiter, async (req, res) => {
     const maxRepoSizeMB = parseInt(process.env.MAX_REPO_SIZE_MB) || 100;
     const maxSizeBytes = maxRepoSizeMB * 1024 * 1024;
     const repoSize = getFolderSize(clonePath);
-    
+
     if (repoSize > maxSizeBytes) {
       deleteFolderRecursive(clonePath);
       return res.status(413).json({ error: `Repository exceeds the maximum allowed size of ${maxRepoSizeMB}MB.` });
@@ -172,97 +173,125 @@ app.post('/api/analyze', requireApiKey, analyzeLimiter, async (req, res) => {
     return res.status(500).json({ error: 'Failed to clone repository. Make sure the URL is public and within size limits.' });
   }
 
-    try {
-      // 1. Load ignore patterns and read files
-      const ignorePatterns = loadIgnorePatterns(clonePath);
-      const files = readFilesRecursively(clonePath, [], clonePath, ignorePatterns);
-      
-      if (files.length === 0) {
-        deleteFolderRecursive(clonePath);
-        return res.status(400).json({ error: 'No supportable source code files found in the repository.' });
-      }
+  try {
+    // 1. Load ignore patterns and read files
+    const ignorePatterns = loadIgnorePatterns(clonePath);
+    const files = readFilesRecursively(clonePath, [], clonePath, ignorePatterns);
 
-      console.log(`📁 Found ${files.length} valid source files. Sending to AI engine...`);
-
-      // 2. Mocking AI Response for initial setup (or forward to FastAPI AI Engine)
-      // This is a perfect placeholder where contributors can connect the FastAPI server!
-      const aiEngineUrl = process.env.AI_ENGINE_URL || 'http://localhost:8000';
-      
-      let reviewResult;
-      try {
-        const aiResponse = await fetch(`${aiEngineUrl}/analyze`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ files, company, language, model, temperature, maxTokens, systemPrompt: validatedPrompt, batchSize })
-        });
-        
-        if (aiResponse.ok) {
-          reviewResult = await aiResponse.json();
-          reviewResult._mock = false;
-        } else {
-          throw new Error('AI engine responded with error');
-        }
-      } catch (err) {
-        console.warn('⚠️ FastAPI engine not running, falling back to local Express review handler');
-        // Let's generate a smart mockup review based on files so it works as an autonomous MVP
-        reviewResult = mockAIReview(files, model);
-      }
-
-      // 3. Inject Regex-based Secret Detections & Complexity Metrics into the analysis result
-      if (reviewResult && reviewResult.fileReviews) {
-        reviewResult.metrics = {};
-        
-        files.forEach(file => {
-          // Calculate complexity metrics
-          reviewResult.metrics[file.name] = analyzeComplexity(file.content, file.name);
-
-          const secretFindings = scanSecrets(file.content);
-          if (secretFindings.length > 0) {
-            // Make sure the file exists in reviews
-            if (!reviewResult.fileReviews[file.name]) {
-              reviewResult.fileReviews[file.name] = { bugs: [], security: [], optimization: [], styling: [] };
-            }
-            // Append found secrets to security category
-            if (!reviewResult.fileReviews[file.name].security) {
-              reviewResult.fileReviews[file.name].security = [];
-            }
-            // Avoid duplicate additions
-            secretFindings.forEach(finding => {
-              const duplicate = reviewResult.fileReviews[file.name].security.some(s => s.line === finding.line && s.type === finding.type);
-              if (!duplicate) {
-                reviewResult.fileReviews[file.name].security.unshift(finding); // Place at top of security findings
-              }
-            });
-          }
-        });
-      }
-
-      // 3. Cache the repository context for chat with session isolation
-      const sessionId = crypto.randomUUID();
-      repoContexts.set(sessionId, {
-        repoUrl,
-        repoName,
-        files,
-        timestamp: Date.now()
-      });
-
-      // 4. Clean up folder
+    if (files.length === 0) {
       deleteFolderRecursive(clonePath);
-      
-      // 5. Return result
-      return res.json({
-        success: true,
-        repoName,
-        filesReviewedCount: files.length,
-        analysis: reviewResult,
-        sessionId
-      });
-
-    } catch (err) {
-      console.error(err);
-      deleteFolderRecursive(clonePath);
-      return res.status(500).json({ error: 'An error occurred during repository analysis.' });
+      return res.status(400).json({ error: 'No supportable source code files found in the repository.' });
     }
+
+    console.log(`📁 Found ${files.length} valid source files. Sending to AI engine...`);
+
+    // 2. Mocking AI Response for initial setup (or forward to FastAPI AI Engine)
+    // This is a perfect placeholder where contributors can connect the FastAPI server!
+    const aiEngineUrl = process.env.AI_ENGINE_URL || 'http://localhost:8000';
+
+    let reviewResult;
+    try {
+      const aiResponse = await fetch(`${aiEngineUrl}/analyze`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ files, company, language, model, temperature, maxTokens, systemPrompt: validatedPrompt, batchSize })
+      });
+
+      if (aiResponse.ok) {
+        reviewResult = await aiResponse.json();
+        reviewResult._mock = false;
+      } else {
+        throw new Error('AI engine responded with error');
+      }
+    } catch (err) {
+      console.warn('⚠️ FastAPI engine not running, falling back to local Express review handler');
+      // Let's generate a smart mockup review based on files so it works as an autonomous MVP
+      reviewResult = mockAIReview(files, model);
+    }
+
+    // 3. Inject Regex-based Secret Detections & Complexity Metrics into the analysis result
+    if (reviewResult && reviewResult.fileReviews) {
+      reviewResult.metrics = {};
+
+      files.forEach(file => {
+        // Calculate complexity metrics
+        reviewResult.metrics[file.name] = analyzeComplexity(file.content, file.name);
+
+        const secretFindings = scanSecrets(file.content);
+        if (secretFindings.length > 0) {
+          // Make sure the file exists in reviews
+          if (!reviewResult.fileReviews[file.name]) {
+            reviewResult.fileReviews[file.name] = { bugs: [], security: [], optimization: [], styling: [] };
+          }
+          // Append found secrets to security category
+          if (!reviewResult.fileReviews[file.name].security) {
+            reviewResult.fileReviews[file.name].security = [];
+          }
+          // Avoid duplicate additions
+          secretFindings.forEach(finding => {
+            const duplicate = reviewResult.fileReviews[file.name].security.some(s => s.line === finding.line && s.type === finding.type);
+            if (!duplicate) {
+              reviewResult.fileReviews[file.name].security.unshift(finding); // Place at top of security findings
+            }
+          });
+        }
+      });
+    }
+
+    // 3. Cache the repository context for chat with session isolation
+    const sessionId = crypto.randomUUID();
+    repoContexts.set(sessionId, {
+      repoUrl,
+      repoName,
+      files,
+      timestamp: Date.now()
+    });
+    // 3b. Record this analysis for the trends dashboard
+    try {
+      let totalBugs = 0, totalSecurity = 0, totalOptimization = 0, totalStyling = 0;
+      if (reviewResult && reviewResult.fileReviews) {
+        Object.values(reviewResult.fileReviews).forEach((review) => {
+          totalBugs += review.bugs?.length || 0;
+          totalSecurity += review.security?.length || 0;
+          totalOptimization += review.optimization?.length || 0;
+          totalStyling += review.styling?.length || 0;
+        });
+      }
+      let totalLines = 0;
+      if (reviewResult && reviewResult.metrics) {
+        Object.values(reviewResult.metrics).forEach((m) => {
+          totalLines += m.totalLines || 0;
+        });
+      }
+      recordAnalysis({
+        repoName,
+        totalLines,
+        bugs: totalBugs,
+        security: totalSecurity,
+        optimization: totalOptimization,
+        styling: totalStyling,
+        filesCount: files.length
+      });
+    } catch (err) {
+      console.warn('⚠️ Failed to record analytics trend:', err.message);
+    }
+    // 4. Clean up folder
+    deleteFolderRecursive(clonePath);
+
+    // 5. Return result
+    return res.json({
+      success: true,
+      repoName,
+      filesReviewedCount: files.length,
+      analysis: reviewResult,
+      sessionId
+    });
+
+  } catch (err) {
+    console.error(err);
+    deleteFolderRecursive(clonePath);
+    return res.status(500).json({ error: 'An error occurred during repository analysis.' });
+  }
 });
 
 // 🟢 Route: AI Chat with Repository (session-isolated per issue #59)
@@ -308,7 +337,7 @@ app.post('/api/chat', requireApiKey, chatLimiter, async (req, res) => {
     }
   } catch (err) {
     console.error('❌ Chat API Error:', err.message);
-    
+
     // Simple local fallback if Python FastAPI server is offline
     const responseMessage = `[Fallback Response] I see you are asking about: "${message}". Currently, the FastAPI AI Engine is offline, so I cannot analyze the full codebase for your query. Please make sure the AI Engine service is running on port 8000.`;
     return res.json({ response: responseMessage, sessionId, _mock: true, _mockWarning: 'AI Engine unavailable. Fallback response generated.' });
@@ -355,17 +384,17 @@ app.post('/api/webhook', async (req, res) => {
       const owner = payload.repository.owner.login;
       const repo = payload.repository.name;
       const reviewKey = `${owner}/${repo}/#${pullNumber}`;
-      
+
       console.log(`📡 GitHub Webhook received: PR #${pullNumber} ${action} in ${owner}/${repo}`);
-      
+
       // Skip if a review is already in progress for this PR
       if (activeReviews.has(reviewKey)) {
         console.log(`⏭️ Review already in progress for ${reviewKey}, skipping.`);
         return res.json({ success: true, message: 'Webhook received (review in progress).' });
       }
-      
+
       activeReviews.add(reviewKey);
-      
+
       // Execute code review asynchronously to prevent GitHub webhook timeout (10s)
       runWebhookReview(owner, repo, pullNumber).catch(err => {
         console.error(`❌ Async PR Review Error:`, err);
@@ -422,9 +451,9 @@ app.post('/api/issues/create', requireApiKey, async (req, res) => {
     const [owner, repo] = pathParts;
 
     const octokit = new Octokit({ auth: token });
-    
+
     console.log(`🤖 Creating GitHub Issue in ${owner}/${repo}: "${title}"`);
-    
+
     const response = await octokit.rest.issues.create({
       owner,
       repo,
@@ -506,7 +535,7 @@ async function runWebhookReview(owner, repo, pullNumber) {
   if (filesToReview.length > 0) {
     console.log(`🧠 Querying AI engine for ${filesToReview.length} files...`);
     const aiEngineUrl = process.env.AI_ENGINE_URL || 'http://localhost:8000';
-    
+
     try {
       const aiResponse = await fetch(`${aiEngineUrl}/review-diff`, {
         method: 'POST',
@@ -582,7 +611,7 @@ app.post('/api/reports/html', requireApiKey, (req, res) => {
   }
 
   let fileRows = '';
-  
+
   if (analysis && analysis.fileReviews) {
     Object.keys(analysis.fileReviews).forEach(file => {
       const review = analysis.fileReviews[file];
@@ -592,7 +621,7 @@ app.post('/api/reports/html', requireApiKey, (req, res) => {
         ...(review.optimization || []).map(f => ({ ...f, category: 'Optimization' })),
         ...(review.styling || []).map(f => ({ ...f, category: 'Styling' }))
       ];
-      
+
       allFindings.forEach(f => {
         fileRows += `
           <tr>
@@ -719,7 +748,7 @@ app.post('/api/reports/html', requireApiKey, (req, res) => {
     </body>
     </html>
   `;
-  
+
   res.setHeader('Content-Type', 'text/html');
   res.setHeader('Content-Disposition', `attachment; filename="${repoName}_AUDIT_REPORT.html"`);
   return res.send(html);
@@ -853,7 +882,16 @@ app.post('/api/reports/pdf', requireApiKey, (req, res) => {
 
   doc.end();
 });
-
+// 🟢 Route: Analytics Trends (line chart data source)
+app.get('/api/analytics/trends', (req, res) => {
+  try {
+    const trends = getTrends();
+    return res.json({ success: true, trends });
+  } catch (err) {
+    console.error('❌ Analytics Trends Error:', err.message);
+    return res.status(500).json({ error: 'Failed to load analytics trends.' });
+  }
+});
 app.listen(PORT, () => {
   console.log(`🟢 RepoSage Backend running on http://localhost:${PORT}`);
 });
