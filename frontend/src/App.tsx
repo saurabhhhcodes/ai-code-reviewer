@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import DOMPurify from 'dompurify';
 import SettingsModal from "./components/SettingsModal";
-import HealthScoreGauge from './components/HealthScoreGauge';
-import TotalIssuesKpiCard from './components/TotalIssuesKpiCard';
+import { MetricsChart } from './components/MetricsChart';
 import RepositoryOverview from './RepositoryOverview';
 import RepositorySummaryCard from './RepositorySummaryCard';
+import HealthScoreGauge from './components/HealthScoreGauge';
+import TotalIssuesKpiCard from './components/TotalIssuesKpiCard';
 import {
   Github,
   Terminal,
   ShieldAlert,
+  Lightbulb,
   Zap,
   Sparkles,
   Bug,
@@ -29,11 +31,10 @@ import {
   Sun,
   Moon,
   Settings,
-  Search,
-  X,
   Clock,
   Trash2,
-  Lightbulb,
+  Search,
+  X,
 } from "lucide-react";
 import mermaid from "mermaid";
 import { sanitizeForStorage } from "./utils/sanitize";
@@ -4119,6 +4120,7 @@ export default function App() {
                                     </div>
                                   </div>
                                 </div>
+                                <MetricsChart />
                               </div>
                             );
                           })()
@@ -4970,7 +4972,7 @@ export default function App() {
         </section>
       </main>
       {showSettings && (
-        <SettingsModal theme={theme} onClose={() => setShowSettings(false)} />
+        <SettingsModal onClose={() => setShowSettings(false)} />
       )}
       {/* 🚀 Sleek Footer */}
       <footer
