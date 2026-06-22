@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
+import { reviewFileContent, BackendResponse } from "./api";
+import { RepoSageDiagnostics } from "./diagnostics";
 import { RepoSageWebviewProvider } from "./webviewProvider";
-import { reviewFileContent } from "./api";
 
 function getConfig() {
   return vscode.workspace.getConfiguration("reposage");
@@ -23,6 +24,9 @@ function updateApiKeyStatusBar(statusBarItem: vscode.StatusBarItem) {
 
 export function activate(context: vscode.ExtensionContext) {
   console.log("RepoSage extension is now active!");
+
+  const diagnostics = new RepoSageDiagnostics();
+  context.subscriptions.push(diagnostics);
 
   const provider = new RepoSageWebviewProvider(context.extensionUri);
   context.subscriptions.push(
