@@ -3,11 +3,12 @@ import json
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Set
 from groq import Groq
 from dotenv import load_dotenv
 import bleach
 from bleach.css_sanitizer import CSSSanitizer
+import vectorstore
 
 # Load environment variables: prefer local .env, fall back to backend/.env
 env_paths = [
@@ -428,6 +429,24 @@ class FileChanges(BaseModel):
 class ReviewDiffRequest(BaseModel):
     files: List[FileChanges]
     model: Optional[str] = "llama-3.3-70b-versatile"
+
+class CleanupRequest(BaseModel):
+    current_files: List[str]
+
+class VectorDeleteRequest(BaseModel):
+    file_path: str
+
+# 🟢 Route: Cleanup stale vectors (remove embeddings for deleted/modified files)
+@app.post("/api/rag/cleanup")
+async def cleanup_vectors(request: CleanupRequest):
+    result = vectorstore.cleanup_stale_vectors(set(request.current_files))
+    return result
+
+# 🟢 Route: Delete vectors for a specific file
+@app.post("/api/rag/delete-vectors")
+async def delete_vectors(request: VectorDeleteRequest):
+    removed = vectorstore.delete_vectors_for_file(request.file_path)
+    return {"removed_count": removed, "file_path": request.file_path}
 
 # 🟢 Route: AI Pull Request Review (Reviews specific file code additions/diffs)
 @app.post("/review-diff")
