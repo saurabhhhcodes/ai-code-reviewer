@@ -21,6 +21,7 @@ import { verifyWebhookSignature } from './utils/signatureVerifier.js';
 import { verifyPort } from './utils/envVerifier.js';
 import { mockAIReview } from './utils/mockAIReview.js';
 import Analytics from './models/Analytics.js';
+import Session from './models/Session.js';
 import { connectDatabase } from './config/db.js';
 
 dotenv.config();
@@ -81,19 +82,9 @@ process.on('SIGINT', () => { cleanupTempRepos(); process.exit(0); });
 process.on('SIGTERM', () => { cleanupTempRepos(); process.exit(0); });
 process.on('exit', cleanupTempRepos);
 
-// Session-isolated repository contexts for chat functionality (issue #59)
-const repoContexts = new Map();
-const CONTEXT_TTL = 30 * 60 * 1000; // 30 minutes
-
-// Periodic cleanup of stale contexts
-setInterval(() => {
-  const now = Date.now();
-  for (const [sessionId, entry] of repoContexts) {
-    if (now - entry.timestamp > CONTEXT_TTL) {
-      repoContexts.delete(sessionId);
-    }
-  }
-}, 60 * 1000);
+// Repository contexts for chat are now persisted in MongoDB via the Session model.
+// The Session collection uses a TTL index (expireAfterSeconds: 1800) so MongoDB
+// handles expiry automatically — no in-process Map or setInterval needed.
 
 // Webhook deduplication state (module scope to persist across requests)
 const activeReviews = new Set();
@@ -242,14 +233,19 @@ app.post('/api/analyze', requireApiKey, analyzeLimiter, async (req, res) => {
         });
       }
 
-      // 3. Cache the repository context for chat with session isolation
+      // 3. Persist the repository context for chat in MongoDB so it survives
+      //    server restarts and works across multiple backend instances.
       const sessionId = crypto.randomUUID();
-      repoContexts.set(sessionId, {
-        repoUrl,
-        repoName,
-        files,
-        timestamp: Date.now()
-      });
+      try {
+        await Session.create({
+          sessionId,
+          repoUrl,
+          repoName,
+          files,
+        });
+      } catch (sessionErr) {
+        console.warn('⚠️ Failed to persist session context:', sessionErr.message);
+      }
 
       // 4. Compute and persist analytics
       let totalBugs = 0, totalSecurityIssues = 0, totalOptimizations = 0, totalStylingIssues = 0;
@@ -311,14 +307,23 @@ app.post('/api/chat', requireApiKey, chatLimiter, async (req, res) => {
     return res.status(400).json({ error: 'Message is required.' });
   }
 
-  const context = sessionId ? repoContexts.get(sessionId) : null;
-  if (!context) {
-    const hint = !sessionId ? 'sessionId is missing from the request' : 'session expired';
-    return res.status(400).json({ error: `No repository is currently active or ${hint}. Please analyze a repository first.` });
+  let context = null;
+  if (sessionId) {
+    try {
+      context = await Session.findOne({ sessionId });
+      if (context) {
+        // Refresh TTL by resetting createdAt so the 30-minute window restarts
+        await Session.updateOne({ sessionId }, { $set: { createdAt: new Date() } });
+      }
+    } catch (sessionErr) {
+      console.warn('⚠️ Failed to retrieve session from MongoDB:', sessionErr.message);
+    }
   }
 
-  // Refresh TTL on access
-  context.timestamp = Date.now();
+  if (!context) {
+    const hint = !sessionId ? 'sessionId is missing from the request' : 'session expired or not found';
+    return res.status(400).json({ error: `No repository is currently active or ${hint}. Please analyze a repository first.` });
+  }
 
   const aiEngineUrl = process.env.AI_ENGINE_URL || 'http://localhost:8000';
 
