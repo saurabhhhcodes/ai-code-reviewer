@@ -72,4 +72,11 @@ jobs:
       - name: Run AI Engine Tests
         run: |
           cd ai-engine
-          pytest tests/ -v
+          pytest --cov=./ --cov-report=xml tests/ -v
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./backend/coverage/lcov.info,./ai-engine/coverage.xml
+          fail_ci_if_error: false
