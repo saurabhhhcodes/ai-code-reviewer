@@ -698,6 +698,9 @@ export default function Dashboard() {
     setIsChatLoading(true);
 
     try {
+      const aiSettings = JSON.parse(
+        localStorage.getItem("reposage_ai_settings") || "{}"
+      );
       const response = await apiFetch("/api/chat", {
         method: "POST",
         body: JSON.stringify({
@@ -706,6 +709,9 @@ export default function Dashboard() {
           model: selectedModel,
           sessionId,
           useRag,
+          temperature: aiSettings.temperature ?? 0.4,
+          maxTokens: aiSettings.maxTokens ?? 2048,
+          systemPrompt: aiSettings.systemPrompt ?? "",
         }),
       });
 
