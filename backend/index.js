@@ -295,8 +295,9 @@ app.post('/api/analyze', requireApiKey, analyzeLimiter, async (req, res) => {
       const aiEngineUrl = process.env.AI_ENGINE_URL || 'http://localhost:8000';
       
       let reviewResult;
+      const baseUrl = aiEngineUrl.replace(/\/$/, '');
       try {
-        const aiResponse = await fetch(`${aiEngineUrl}/analyze`, {
+        const aiResponse = await fetch(`${baseUrl}/analyze`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ files, company, language, model, temperature, maxTokens, systemPrompt: validatedPrompt, batchSize })
@@ -424,7 +425,8 @@ app.post('/api/chat', requireApiKey, chatLimiter, async (req, res) => {
   const aiEngineUrl = process.env.AI_ENGINE_URL || 'http://localhost:8000';
 
   try {
-    const aiResponse = await fetch(`${aiEngineUrl}/chat`, {
+    const baseUrl = aiEngineUrl.replace(/\/$/, '');
+    const aiResponse = await fetch(`${baseUrl}/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -465,7 +467,8 @@ app.post('/api/rag/query', requireApiKey, async (req, res) => {
   const aiEngineUrl = process.env.AI_ENGINE_URL || 'http://localhost:8000';
 
   try {
-    const aiResponse = await fetch(`${aiEngineUrl}/api/rag/query`, {
+    const baseUrl = aiEngineUrl.replace(/\/$/, '');
+    const aiResponse = await fetch(`${baseUrl}/api/rag/query`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ question })
@@ -707,7 +710,8 @@ async function runWebhookReview(owner, repo, pullNumber, headSha) {
     const aiEngineUrl = process.env.AI_ENGINE_URL || 'http://localhost:8000';
     
     try {
-      const aiResponse = await fetch(`${aiEngineUrl}/review-diff`, {
+      const baseUrl = aiEngineUrl.replace(/\/$/, '');
+      const aiResponse = await fetch(`${baseUrl}/review-diff`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ files: filesToReview })
