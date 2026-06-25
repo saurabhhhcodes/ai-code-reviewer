@@ -211,6 +211,7 @@ class ChatRequest(BaseModel):
     history: Optional[List[dict]] = Field(default_factory=list)
     model: Optional[str] = "llama-3.3-70b-versatile"
     useRag: Optional[bool] = False
+    repo_url: Optional[str] = None
 
 # 🟢 Route: Root Check
 @app.get("/")
@@ -453,7 +454,7 @@ async def chat_with_repository(request: ChatRequest):
     if request.useRag:
         try:
             from rag import query_chunks
-            rag_chunks = query_chunks(message, n_results=5)
+            rag_chunks = query_chunks(message, n_results=5, repo_url=request.repo_url)
             if rag_chunks:
                 chunk_parts = []
                 for i, c in enumerate(rag_chunks, 1):

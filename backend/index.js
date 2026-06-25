@@ -476,7 +476,8 @@ app.post('/api/chat', requireApiKey, chatLimiter, async (req, res) => {
         temperature,
         maxTokens,
         systemPrompt,
-        useRag
+        useRag,
+        repo_url: context.repoUrl
       })
     });
 
