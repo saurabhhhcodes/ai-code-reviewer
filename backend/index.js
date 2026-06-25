@@ -36,6 +36,15 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = verifyPort(process.env.PORT || 5000);
+const AI_ENGINE_API_KEY = process.env.AI_ENGINE_API_KEY || '';
+
+function getAiEngineHeaders() {
+  const headers = { 'Content-Type': 'application/json' };
+  if (AI_ENGINE_API_KEY) {
+    headers['x-ai-engine-key'] = AI_ENGINE_API_KEY;
+  }
+  return headers;
+}
 
 // Trust the first hop of reverse proxy headers (Render, Railway, Heroku, Nginx, AWS ALB, etc.)
 // so that req.ip and express-rate-limit resolve the real client IP from X-Forwarded-For
@@ -302,7 +311,7 @@ app.post('/api/analyze', requireApiKey, analyzeLimiter, async (req, res) => {
       try {
         const aiResponse = await fetch(`${baseUrl}/analyze`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAiEngineHeaders(),
           body: JSON.stringify({ files, company, language, model, temperature, maxTokens, systemPrompt: validatedPrompt, batchSize })
         });
         
@@ -467,7 +476,7 @@ app.post('/api/chat', requireApiKey, chatLimiter, async (req, res) => {
     const baseUrl = aiEngineUrl.replace(/\/+$/, '');
     const aiResponse = await fetch(`${baseUrl}/chat`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAiEngineHeaders(),
       body: JSON.stringify({
         files: context.files,
         message,
@@ -510,7 +519,7 @@ app.post('/api/rag/query', requireApiKey, async (req, res) => {
     const baseUrl = aiEngineUrl.replace(/\/+$/, '');
     const aiResponse = await fetch(`${baseUrl}/api/rag/query`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAiEngineHeaders(),
       body: JSON.stringify({ question, repo_url: repoUrl })
     });
 
@@ -731,7 +740,7 @@ async function runWebhookReview(owner, repo, pullNumber, headSha) {
       const baseUrl = aiEngineUrl.replace(/\/+$/, '');
       const aiResponse = await fetch(`${baseUrl}/review-diff`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAiEngineHeaders(),
         body: JSON.stringify({ files: filesToReview })
       });
 

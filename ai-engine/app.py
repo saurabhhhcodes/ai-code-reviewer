@@ -2,8 +2,10 @@ import os
 import json
 import re
 import unicodedata
-from fastapi import FastAPI, HTTPException
+import hmac
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from typing import List, Optional, Set
 from groq import Groq
@@ -159,6 +161,31 @@ def validate_system_prompt(prompt: str, max_len: int = 2000) -> str:
             lower = truncated.lower()
     return truncated
 app = FastAPI(title="RepoSage AI Engine", description="FastAPI microservice for repository analysis and documentation generation")
+internal_api_key = os.getenv("AI_ENGINE_API_KEY", "")
+
+if not internal_api_key:
+    print("⚠️ AI_ENGINE_API_KEY is not configured; protected routes will reject requests.")
+
+
+@app.middleware("http")
+async def require_internal_api_key(request: Request, call_next):
+    public_paths = {"/", "/docs", "/redoc", "/openapi.json"}
+    if request.url.path in public_paths:
+        return await call_next(request)
+
+    if not internal_api_key:
+        return JSONResponse(
+            status_code=503,
+            content={"detail": "AI engine service authentication is not configured."},
+        )
+
+    provided_key = request.headers.get("x-ai-engine-key", "")
+    if not hmac.compare_digest(provided_key, internal_api_key):
+        return JSONResponse(
+            status_code=401,
+            content={"detail": "Invalid or missing AI engine service key."},
+        )
+    return await call_next(request)
 
 # Restrict CORS to configured origins so the AI engine is not accessible from
 # arbitrary third-party websites. Defaults to the local backend service address.
@@ -172,7 +199,7 @@ app.add_middleware(
     allow_origins=allowed_origins,
     allow_credentials=False,
     allow_methods=["GET", "POST"],
-    allow_headers=["Content-Type"],
+    allow_headers=["Content-Type", "X-AI-Engine-Key"],
 )
 
 # Initialize Groq client (supports GROQ_API_KEY and legacy VITE_GROQ_API_KEY)
