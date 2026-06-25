@@ -2,7 +2,7 @@ import pytest
 from app import app
 from fastapi.testclient import TestClient
 
-client = TestClient(app)
+client = TestClient(app, headers={"x-ai-engine-key": "test-ai-engine-key"})
 
 def test_batching_logic():
     # Since we can't easily mock Groq without complex mocking setups in a simple test,
