@@ -3032,7 +3032,7 @@ export default function Dashboard() {
                                     </div>
                                   </div>
                                 </div>
-                                <MetricsChart />
+                                <MetricsChart sessionId={sessionId} />
                               </div>
                             );
                           })()
