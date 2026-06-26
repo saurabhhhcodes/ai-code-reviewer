@@ -1106,11 +1106,17 @@ app.get('/api/analytics/trends', requireApiKey, async (req, res) => {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
+    const matchFilter = {
+      analyzedAt: { $gte: thirtyDaysAgo },
+    } as any;
+
+    if (req.query.sessionId) {
+      matchFilter.sessionId = req.query.sessionId;
+    }
+
     const trends = await Analytics.aggregate([
       {
-        $match: {
-          analyzedAt: { $gte: thirtyDaysAgo },
-        },
+        $match: matchFilter,
       },
       {
         $group: {
