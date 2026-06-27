@@ -4,7 +4,6 @@ import re
 import time
 import asyncio
 import unicodedata
-import asyncio
 from collections import OrderedDict
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -256,7 +255,7 @@ async def start_rate_limit_cleanup():
                          if not any(now - t < RATE_LIMIT_WINDOW_SECONDS for t in times)]
             for ip in stale_ips:
                 del _rate_limit_store[ip]
-    asyncio.create_task(cleanup())
+    app.state.rate_limit_cleanup_task = asyncio.create_task(cleanup())
 
 async def require_api_key(request: Request, call_next):
     if request.url.path == "/" or request.url.path == "/docs" or request.url.path.startswith("/openapi"):
