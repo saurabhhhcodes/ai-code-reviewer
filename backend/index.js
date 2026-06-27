@@ -206,6 +206,7 @@ async function fetchWithTimeout(url, options = {}, timeoutMs = 120000) {
 const reviewQueue = new ReviewQueue();
 const processedDeliveries = new Map();
 const reviewedShas = new Map();
+const failedReviews = new Map();
 const DELIVERY_TTL = 60 * 60 * 1000;
 const MAX_DELIVERY_ENTRIES = 5000;
 
@@ -729,11 +730,10 @@ app.post('/api/webhook', async (req, res) => {
         try {
           await runWebhookReview(item.owner, item.repo, item.pullNumber, item.headSha);
         } catch (error) {
-          const set = reviewedShas.get(shaKey);
-          if (set) {
-            set.delete(headSha);
-            if (set.size === 0) reviewedShas.delete(shaKey);
-          }
+          console.error(`❌ Webhook review failed for ${headSha}:`, error.message);
+          const failedSet = failedReviews.get(shaKey) || new Set();
+          failedSet.add(headSha);
+          failedReviews.set(shaKey, failedSet);
           throw error;
         }
       });
