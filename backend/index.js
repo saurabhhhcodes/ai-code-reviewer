@@ -118,7 +118,7 @@ function csrfProtection(req, res, next) {
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
     const headerToken = req.headers['x-csrf-token'];
     const cookieToken = req.cookies?.[CSRF_COOKIE_NAME];
-    if (!headerToken || !cookieToken || headerToken !== cookieToken) {
+    if (!headerToken || !cookieToken) {
       // Allow session creation and CSRF token endpoints to function
       if (req.path === '/api/session' || req.path === '/api/csrf-token') {
         return next();
@@ -127,6 +127,12 @@ function csrfProtection(req, res, next) {
       if (req.path === '/api/webhook') {
         return next();
       }
+      return res.status(403).json({ error: 'CSRF validation failed.' });
+    }
+    // Constant-time comparison to prevent timing attacks
+    const headerBuf = Buffer.from(String(headerToken));
+    const cookieBuf = Buffer.from(String(cookieToken));
+    if (headerBuf.length !== cookieBuf.length || !crypto.timingSafeEqual(headerBuf, cookieBuf)) {
       return res.status(403).json({ error: 'CSRF validation failed.' });
     }
   }
@@ -455,6 +461,7 @@ app.post('/api/analyze', requireApiKey, requireJsonContentType, analyzeLimiter, 
             repoUrl,
             repoName,
             files: storedFiles,
+            lastAccessedAt: new Date(),
             ownerToken: req.clientId,
           });
           sessionPersisted = true;
@@ -534,9 +541,17 @@ app.post('/api/chat', requireApiKey, requireJsonContentType, chatLimiter, async 
   if (sessionId) {
     try {
       const session = await Session.findOne({ sessionId });
-      if (session && session.ownerToken && session.ownerToken !== req.clientId) {
-        console.warn(`⚠️ IDOR attempt: client ${req.clientId} tried to access session ${sessionId} owned by ${session.ownerToken}`);
-        return res.status(403).json({ error: 'Access denied: this session does not belong to you.' });
+      if (session) {
+        // Verify session ownership to prevent IDOR (issue #742):
+        // only the client that created the session may access it.
+        if (session.ownerToken && session.ownerToken !== req.clientId) {
+          console.warn(`⚠️ IDOR attempt: client ${req.clientId} tried to access session ${sessionId} owned by ${session.ownerToken}`);
+          return res.status(403).json({ error: 'Access denied: this session does not belong to you.' });
+        }
+        // Update lastAccessedAt for the sliding-window TTL (see issue #743).
+        // Each interaction resets the 24-hour expiry countdown. The hard
+        // ceiling on absoluteExpiry (7 days) still limits total lifetime.
+        await Session.updateOne({ sessionId }, { $set: { lastAccessedAt: new Date() } });
       }
     } catch (sessionErr) {
       console.warn('⚠️ Failed to retrieve session from MongoDB:', sessionErr.message);
@@ -598,7 +613,7 @@ app.post('/api/chat', requireApiKey, requireJsonContentType, chatLimiter, async 
         }
       } catch (err) {
         console.error('❌ Chat API Error:', err.message);
-        
+
         // Simple local fallback if Python FastAPI server is offline
         const responseMessage = `[Fallback Response] I see you are asking about: "${message}". Currently, the FastAPI AI Engine is offline, so I cannot analyze the full codebase for your query. Please make sure the AI Engine service is running on port 8000.`;
         res.json({ response: responseMessage, sessionId, _mock: true, _mockWarning: 'AI Engine unavailable. Fallback response generated.' });

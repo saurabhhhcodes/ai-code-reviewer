@@ -19,8 +19,6 @@ import {
   Code2,
   MessageSquare,
   Send,
-  Copy,
-  Check,
   Settings,
   Clock,
   Trash2,
@@ -411,8 +409,8 @@ export default function Dashboard() {
                   {codeContent}
                 </code>
               </pre>
-              <CopyButton
-                text={codeContent}
+              <CopyToClipboardButton
+                textToCopy={codeContent}
                 style={{
                   position: "absolute",
                   top: "8px",
@@ -886,7 +884,7 @@ export default function Dashboard() {
         setLoadingStep(steps[currentStep]);
       }
     }, 1200);
-    let aiSettings = {};
+    let aiSettings: { temperature?: number; maxTokens?: number; systemPrompt?: string } = {};
     try {
       aiSettings = JSON.parse(
         localStorage.getItem("reposage_ai_settings") || "{}"
