@@ -2,7 +2,7 @@ import os
 import json
 import re
 import unicodedata
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Header, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import List, Optional, Set
@@ -163,6 +163,11 @@ def validate_system_prompt(prompt: str, max_len: int = 2000) -> str:
             )
     return truncated
 app = FastAPI(title="RepoSage AI Engine", description="FastAPI microservice for repository analysis and documentation generation")
+
+def verify_api_key(x_api_key: str = Header(None)):
+    expected_key = os.getenv("API_KEY")
+    if expected_key and x_api_key != expected_key:
+        raise HTTPException(status_code=401, detail="Invalid API Key")
 
 # Restrict CORS to configured origins so the AI engine is not accessible from
 # arbitrary third-party websites. Defaults to the local backend service address.
@@ -551,14 +556,14 @@ class VectorDeleteRequest(BaseModel):
     repo_url: Optional[str] = None
 
 # 🟢 Route: Cleanup stale vectors (remove embeddings for deleted/modified files)
-@app.post("/api/rag/cleanup")
+@app.post("/api/rag/cleanup", dependencies=[Depends(verify_api_key)])
 async def cleanup_vectors(request: CleanupRequest):
     from rag import cleanup_stale_chunks
     result = cleanup_stale_chunks(set(request.current_files), repo_url=request.repo_url)
     return result
 
 # 🟢 Route: Delete vectors for a specific file
-@app.post("/api/rag/delete-vectors")
+@app.post("/api/rag/delete-vectors", dependencies=[Depends(verify_api_key)])
 async def delete_vectors(request: VectorDeleteRequest):
     from rag import delete_chunks_for_file
     removed = delete_chunks_for_file(request.file_path, repo_url=request.repo_url)
