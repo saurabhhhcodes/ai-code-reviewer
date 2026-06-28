@@ -143,7 +143,7 @@ def sanitize_ai_output(text: str) -> str:
 
     placeholders = {}
     def _extract_code(match):
-        placeholder = f"\x00CODE_{len(placeholders)}\x00"
+        placeholder = f"\x7fCODE_{len(placeholders)}\x7f"
         placeholders[placeholder] = match.group(0)
         return placeholder
 
