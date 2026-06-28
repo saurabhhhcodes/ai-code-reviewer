@@ -112,10 +112,21 @@ def sanitize_mermaid_code(mermaid_text: str) -> str:
         return "graph TD\n    A[\"Diagram omitted: invalid format\"]"
     return mermaid_text
 
+_CODE_FENCE_RE = re.compile(r'(```[\s\S]*?```|`[^`]+`)')
+
 def sanitize_ai_output(text: str) -> str:
     if not text:
         return text
-    return bleach.clean(
+
+    placeholders = {}
+    def _extract_code(match):
+        placeholder = f"\x00CODE_{len(placeholders)}\x00"
+        placeholders[placeholder] = match.group(0)
+        return placeholder
+
+    text = _CODE_FENCE_RE.sub(_extract_code, text)
+
+    text = bleach.clean(
         text,
         tags=ALLOWED_TAGS,
         attributes=ALLOWED_ATTRS,
@@ -123,6 +134,11 @@ def sanitize_ai_output(text: str) -> str:
         strip=True,
         strip_comments=True,
     )
+
+    for placeholder, original in placeholders.items():
+        text = text.replace(placeholder, original)
+
+    return text
 
 HOMOGLYPH_MAP = {
     '\u0430': 'a', '\u0435': 'e', '\u043E': 'o', '\u0441': 'c', '\u0440': 'p',
