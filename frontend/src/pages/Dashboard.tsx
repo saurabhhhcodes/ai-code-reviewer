@@ -627,6 +627,7 @@ export default function Dashboard() {
           maxTokens: chatAiSettings.maxTokens ?? 2048,
           sessionId,
           useRag,
+          systemPrompt: chatAiSettings.systemPrompt ?? "",
         }),
       });
 
