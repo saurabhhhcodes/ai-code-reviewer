@@ -41,7 +41,7 @@ const app = express();
 const PORT = verifyPort(process.env.PORT || 5000);
 
 // Initialize analysis cache with configurable TTL (default: 1 hour)
-const ANALYSIS_CACHE_TTL_MS = parseInt(process.env.ANALYSIS_CACHE_TTL_MINUTES || '60') * 60 * 1000;
+const ANALYSIS_CACHE_TTL_MS = ((n) => Number.isFinite(n) && n > 0 ? n : 60)(parseInt(process.env.ANALYSIS_CACHE_TTL_MINUTES || '60', 10)) * 60 * 1000;
 const analysisCache = new AnalysisCache(ANALYSIS_CACHE_TTL_MS);
 
 // Trust the first hop of reverse proxy headers (Render, Railway, Heroku, Nginx, AWS ALB, etc.)
