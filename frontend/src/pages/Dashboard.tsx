@@ -83,6 +83,7 @@ interface AnalysisData {
   generatedReadme: string;
   mermaidDiagram?: string;
   metrics?: Record<string, any>;
+  _mock?: boolean;
 }
 
 export interface BackendResponse {
