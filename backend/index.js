@@ -59,7 +59,7 @@ if (trustProxy) {
 // leftmost (client-controlled) value, allowing IP spoofing to bypass rate limits.
 
 // Enable CORS with explicit origin
-const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000,http://localhost:5173').split(',');
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'http://localhost:3000,http://localhost:5173').split(',').map(s => s.trim());
 app.use(cors({
   origin: ALLOWED_ORIGINS,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
