@@ -501,13 +501,8 @@ app.post('/api/analyze', requireApiKey, requireJsonContentType, analyzeLimiter, 
 
       // 1.5. Check analysis cache to avoid redundant LLM calls for identical analyses
       const cacheKey = analysisCache.generateKey(repoUrl, files, { model, language, company, systemPrompt: validatedPrompt, temperature, maxTokens, batchSize });
-      let reviewResult = analysisCache.get(cacheKey);
-      let cacheHit = false;
 
-      if (reviewResult) {
-        cacheHit = true;
-        console.log(`🎯 Using cached analysis result for this repository and configuration`);
-      } else {
+      const reviewResult = await analysisCache.getOrSet(cacheKey, async () => {
         // 2. Mocking AI Response for initial setup (or forward to FastAPI AI Engine)
         // This is a perfect placeholder where contributors can connect the FastAPI server!
         const aiEngineUrl = process.env.AI_ENGINE_URL || 'http://localhost:8000';
@@ -521,21 +516,20 @@ app.post('/api/analyze', requireApiKey, requireJsonContentType, analyzeLimiter, 
           }, 120000);
 
           if (aiResponse.ok) {
-            reviewResult = await aiResponse.json();
-            reviewResult._mock = false;
+            const result = await aiResponse.json();
+            result._mock = false;
+            return result;
           } else {
             throw new Error('AI engine responded with error');
           }
         } catch (err) {
           console.warn('⚠️ FastAPI engine not running, falling back to local Express review handler');
           // Explicitly run local mock engine
-          reviewResult = mockAIReview(files, model);
-          reviewResult._mock = true;
+          const result = mockAIReview(files, model);
+          result._mock = true;
+          return result;
         }
-
-        // Cache the result for future identical analyses
-        analysisCache.set(cacheKey, reviewResult);
-      }
+      });
 
       // 3. Inject Regex-based Secret Detections & Complexity Metrics into the analysis result
       if (reviewResult && reviewResult.fileReviews) {

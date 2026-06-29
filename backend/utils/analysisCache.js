@@ -14,6 +14,7 @@ class AnalysisCache {
     this.ttlMs = ttlMs;
     this.maxEntries = 1000;
     this.cache = new Map();
+    this.pending = new Map();
     this.stats = { hits: 0, misses: 0, evictions: 0 };
     this._startSweeper();
   }
@@ -92,12 +93,39 @@ class AnalysisCache {
   }
 
   /**
+   * Retrieve a cached result or fetch it with deduplication of in-flight requests.
+   * If another concurrent request is already fetching the same key, this waits
+   * for that in-flight promise instead of starting a duplicate fetch.
+   */
+  async getOrSet(key, fetcher) {
+    const cached = this.get(key);
+    if (cached) return cached;
+
+    const existing = this.pending.get(key);
+    if (existing) return existing;
+
+    const promise = (async () => {
+      try {
+        const result = await fetcher();
+        this.set(key, result);
+        return result;
+      } finally {
+        this.pending.delete(key);
+      }
+    })();
+
+    this.pending.set(key, promise);
+    return promise;
+  }
+
+  /**
    * Clear all entries from the cache.
    */
   clear() {
     this._stopSweeper();
     const size = this.cache.size;
     this.cache.clear();
+    this.pending.clear();
     console.log(`🗑️  Cleared analysis cache (${size} entries removed)`);
   }
 
