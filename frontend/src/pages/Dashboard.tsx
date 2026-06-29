@@ -5,6 +5,7 @@ import SettingsModal from "../components/SettingsModal";
 import { MetricsChart } from '../components/MetricsChart';
 import { VulnerabilitiesBarChart } from '../components/VulnerabilitiesBarChart';
 import CopyToClipboardButton from "../components/CopyToClipboardButton";
+import HealthScoreGauge from "../components/HealthScoreGauge";
 import {
   Terminal,
   ShieldAlert,
@@ -21,7 +22,6 @@ import {
   Code2,
   MessageSquare,
   Send,
-  Settings,
   Clock,
   Trash2,
   Search,
@@ -30,7 +30,7 @@ import {
 import { handleMarkdownExport, handleHtmlExport } from "../utils/exportUtils";
 import mermaid from "mermaid";
 import { sanitizeMermaidOutput } from "../utils/sanitize";
-import { apiFetch } from "../utils/api";
+import { apiFetch, getReviewHistory } from "../utils/api";
 
 // Initialize Mermaid outside the component to avoid multiple initializations
 try {
@@ -71,6 +71,20 @@ export interface ReviewItem {
   suggestion: string;
 }
 
+{item.beforeCode && (
+  <>
+    <h5>Before</h5>
+    <pre>{item.beforeCode}</pre>
+  </>
+)}
+
+{item.afterCode && (
+  <>
+    <h5>After</h5>
+    <pre>{item.afterCode}</pre>
+  </>
+)}
+
 export interface FileReview {
   bugs: ReviewItem[];
   security: ReviewItem[];
@@ -83,9 +97,29 @@ interface AnalysisData {
   generatedReadme: string;
   mermaidDiagram?: string;
   metrics?: Record<string, any>;
+  _mock?: boolean;
 }
 
 export interface BackendResponse {
+  dependencyReport?: {
+  dependencies: {
+    name: string;
+    currentVersion: string;
+    latestVersion: string;
+    risk: string;
+    deprecated: boolean;
+    vulnerable: boolean;
+    recommendation: string;
+  }[];
+};
+  prSummary?: {
+  overallPurpose: string;
+  filesChanged: number;
+  majorLogicUpdates: string[];
+  potentialRisks: string[];
+  breakingChanges: string[];
+  testingRecommendations: string[];
+};
   success: boolean;
   repoName: string;
   filesReviewedCount: number;
@@ -95,6 +129,8 @@ export interface BackendResponse {
   _mock?: boolean;
   warnings?: Array<{ file: string; warning: string }>;
 }
+
+
 
 interface AuditHistoryEntry {
   id: string;
@@ -529,23 +565,6 @@ export default function Dashboard() {
       `---\n` +
       `*Generated automatically by **RepoSage AI Copilot**.*`;
 
-    <button
-      onClick={() => setShowSettings(true)}
-      style={{
-        background: "rgba(255,255,255,0.05)",
-        border: "1px solid var(--border-color)",
-        borderRadius: "6px",
-        padding: "6px 10px",
-        cursor: "pointer",
-        color: "var(--text-color)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <Settings size={15} />
-    </button>;
-
     const gssoLabel = localStorage.getItem("reposage_gssoc_label") || "gssoc26";
     const labels = isGssocLabelingEnabled
       ? [gssoLabel, "good-first-issue", category]
@@ -603,6 +622,22 @@ export default function Dashboard() {
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatHistory, isChatLoading]);
+
+  useEffect(() => {
+  const loadHistory = async () => {
+    try {
+      const history = await getReviewHistory();
+
+      if (history) {
+        setAuditHistory(history);
+      }
+    } catch (err) {
+      console.error("Failed to load review history", err);
+    }
+  };
+
+  loadHistory();
+}, []);
 
   const handleSendChatMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1772,7 +1807,7 @@ export default function Dashboard() {
                 boxSizing: "border-box",
               }}
             >
-              {analysisResult._mock && (
+              {(analysisResult._mock || analysisResult.analysis?._mock) && (
                 <div
                   style={{
                     background: "rgba(251,191,36,0.12)",
@@ -1823,6 +1858,190 @@ export default function Dashboard() {
                   </ul>
                 </div>
               )}
+              <div
+  className="glass-panel"
+  style={{
+    padding: "20px",
+    marginBottom: "16px",
+  }}
+>
+  <h2
+    style={{
+      margin: 0,
+      marginBottom: "12px",
+      color: "#f3f4f6",
+      fontSize: "18px",
+      fontWeight: "700",
+    }}
+  >
+    🏥 Repository Health Score
+  </h2>
+
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      flexWrap: "wrap",
+      gap: "20px",
+    }}
+  >
+    <div>
+      <h1
+        style={{
+          fontSize: "42px",
+          color: "#22c55e",
+          margin: 0,
+        }}
+      >
+        {analysisResult.repositoryHealth?.score ?? 100}/100
+      </h1>
+
+      <p
+        style={{
+          color: "#9ca3af",
+          marginTop: "6px",
+        }}
+      >
+        Grade:{" "}
+        <strong>
+          {analysisResult.repositoryHealth?.grade ?? "A"}
+        </strong>
+      </p>
+    </div>
+
+    <div>
+      <h4 style={{ color: "#f3f4f6" }}>
+        Recommendations
+      </h4>
+
+      <ul
+        style={{
+          margin: 0,
+          paddingLeft: "18px",
+          color: "#d1d5db",
+        }}
+      >
+        {(analysisResult.repositoryHealth?.recommendations || []).map(
+          (item: string, index: number) => (
+            <li key={index}>{item}</li>
+          )
+        )}
+      </ul>
+    </div>
+  </div>
+</div>
+<HealthScoreGauge
+  fileReviews={analysisResult.analysis.fileReviews}
+  isLoading={isLoading}
+/>
+<div className="glass-panel" style={{ padding: "20px", marginBottom: "16px" }}>
+  <h2>🤖 AI Pull Request Summary</h2>
+
+  <p>
+    <strong>Purpose:</strong><br />
+    {analysisResult.prSummary?.overallPurpose}
+  </p>
+
+  <p>
+    <strong>Files Changed:</strong><br />
+    {analysisResult.prSummary?.filesChanged}
+  </p>
+
+  <p>
+    <strong>Major Logic Updates:</strong>
+  </p>
+
+  <ul>
+    {(analysisResult.prSummary?.majorLogicUpdates || []).map((item, i) => (
+      <li key={i}>{item}</li>
+    ))}
+  </ul>
+
+  <p>
+    <strong>Potential Risks:</strong>
+  </p>
+
+  <ul>
+    {(analysisResult.prSummary?.potentialRisks || []).map((item, i) => (
+      <li key={i}>{item}</li>
+    ))}
+  </ul>
+
+  <p>
+    <strong>Breaking Changes:</strong>
+  </p>
+
+  <ul>
+    {(analysisResult.prSummary?.breakingChanges || []).map((item, i) => (
+      <li key={i}>{item}</li>
+    ))}
+  </ul>
+
+  <p>
+    <strong>Testing Recommendations:</strong>
+  </p>
+
+  <ul>
+    {(analysisResult.prSummary?.testingRecommendations || []).map((item, i) => (
+      <li key={i}>{item}</li>
+    ))}
+  </ul>
+</div>
+<div
+  className="glass-panel"
+  style={{ padding: "20px", marginBottom: "16px" }}
+>
+  <h2>📦 Dependency Risk Analyzer</h2>
+
+  {(analysisResult.dependencyReport?.dependencies || []).length === 0 ? (
+    <p style={{ color: "#9ca3af" }}>
+      No dependency information available.
+    </p>
+  ) : (
+    <table
+      style={{
+        width: "100%",
+        borderCollapse: "collapse",
+        marginTop: "15px",
+      }}
+    >
+      <thead>
+        <tr>
+          <th>Package</th>
+          <th>Current</th>
+          <th>Latest</th>
+          <th>Risk</th>
+          <th>Status</th>
+          <th>Recommendation</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {analysisResult.dependencyReport.dependencies.map(
+          (dep, index) => (
+            <tr key={index}>
+              <td>{dep.name}</td>
+              <td>{dep.currentVersion}</td>
+              <td>{dep.latestVersion}</td>
+              <td>{dep.risk}</td>
+
+              <td>
+                {dep.vulnerable
+                  ? "⚠️ Vulnerable"
+                  : dep.deprecated
+                  ? "Deprecated"
+                  : "Safe"}
+              </td>
+
+              <td>{dep.recommendation}</td>
+            </tr>
+          )
+        )}
+      </tbody>
+    </table>
+  )}
+</div>
               {/* Dashboard View Selection Tabs & Export Controls */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "10px", flexWrap: "wrap", width: "100%" }}>
                 <div style={{ display: "flex", gap: "10px" }}>
@@ -3101,40 +3320,68 @@ export default function Dashboard() {
                                   }}
                                 >
                                   <div
-                                    style={{
-                                      display: "flex",
-                                      justifyContent: "space-between",
-                                      alignItems: "center",
-                                      marginBottom: "4px",
-                                    }}
-                                  >
-                                    <span
-                                      style={{
-                                        display: "block",
-                                        fontSize: "9px",
-                                        fontWeight: 700,
-                                        color: "#9ca3af",
-                                        textTransform: "uppercase",
-                                      }}
-                                    >
-                                      💡 AI Recommendation
-                                    </span>
-                                    <CopyToClipboardButton
-                                      textToCopy={item.suggestion}
-                                      style={{ padding: "2px" }}
-                                    />
-                                  </div>
-                                  <code
-                                    style={{
-                                      fontSize: "11px",
-                                      color: "#d8b4fe",
-                                      wordBreak: "break-all",
-                                    }}
-                                  >
-                                    {item.suggestion}
-                                  </code>
+  style={{
+    marginTop: "12px",
+    padding: "12px",
+    borderRadius: "8px",
+    background: "rgba(255,255,255,0.04)",
+    border: "1px solid rgba(255,255,255,0.08)",
+  }}
+>
+  <h4
+    style={{
+      color: "#60a5fa",
+      marginBottom: "8px",
+      fontSize: "13px",
+    }}
+  >
+    AI Fix Suggestion
+  </h4>
+
+  <p
+    style={{
+      color: "#e5e7eb",
+      fontSize: "12px",
+      marginBottom: "10px",
+    }}
+  >
+    <strong>Explanation:</strong>
+    <br />
+    {item.description}
+  </p>
+
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: "6px",
+    }}
+  >
+    <strong style={{ color: "#c084fc" }}>
+      Suggested Fix
+    </strong>
+
+    <CopyToClipboardButton
+      textToCopy={item.suggestion}
+      style={{ padding: "2px" }}
+    />
+  </div>
+
+  <code
+    style={{
+      display: "block",
+      whiteSpace: "pre-wrap",
+      wordBreak: "break-word",
+      fontSize: "11px",
+      color: "#d8b4fe",
+    }}
+  >
+    {item.suggestion}
+  </code>
+</div>
                                 </div>
-                                {!analysisResult?._mock && <div
+                                {!(analysisResult?._mock || analysisResult?.analysis?._mock) && <div
                                   style={{
                                     marginTop: "10px",
                                     display: "flex",
@@ -3426,9 +3673,11 @@ export default function Dashboard() {
                             flexDirection: "column",
                           }}
                         >
-                          {renderMarkdown(
-                            analysisResult.analysis.generatedReadme,
-                          )}
+                          <MarkdownErrorBoundary>
+                            {renderMarkdown(
+                              analysisResult.analysis.generatedReadme,
+                            )}
+                          </MarkdownErrorBoundary>
                         </div>
                       )}
                     </div>
@@ -3656,7 +3905,7 @@ export default function Dashboard() {
                                     : "inherit",
                               }}
                             >
-                              {msg.content}
+                              {renderMarkdown(msg.content)}
                             </div>
                             {msg.role === "assistant" && msg.sources && msg.sources.length > 0 && (
                               <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginTop: "6px", borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "6px" }}>
