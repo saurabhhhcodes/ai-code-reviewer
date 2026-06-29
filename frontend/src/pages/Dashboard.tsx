@@ -5,6 +5,7 @@ import SettingsModal from "../components/SettingsModal";
 import { MetricsChart } from '../components/MetricsChart';
 import { VulnerabilitiesBarChart } from '../components/VulnerabilitiesBarChart';
 import CopyToClipboardButton from "../components/CopyToClipboardButton";
+import HealthScoreGauge from "../components/HealthScoreGauge";
 import {
   Terminal,
   ShieldAlert,
@@ -1853,6 +1854,83 @@ export default function Dashboard() {
                   </ul>
                 </div>
               )}
+              <div
+  className="glass-panel"
+  style={{
+    padding: "20px",
+    marginBottom: "16px",
+  }}
+>
+  <h2
+    style={{
+      margin: 0,
+      marginBottom: "12px",
+      color: "#f3f4f6",
+      fontSize: "18px",
+      fontWeight: "700",
+    }}
+  >
+    🏥 Repository Health Score
+  </h2>
+
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      flexWrap: "wrap",
+      gap: "20px",
+    }}
+  >
+    <div>
+      <h1
+        style={{
+          fontSize: "42px",
+          color: "#22c55e",
+          margin: 0,
+        }}
+      >
+        {analysisResult.repositoryHealth?.score ?? 100}/100
+      </h1>
+
+      <p
+        style={{
+          color: "#9ca3af",
+          marginTop: "6px",
+        }}
+      >
+        Grade:{" "}
+        <strong>
+          {analysisResult.repositoryHealth?.grade ?? "A"}
+        </strong>
+      </p>
+    </div>
+
+    <div>
+      <h4 style={{ color: "#f3f4f6" }}>
+        Recommendations
+      </h4>
+
+      <ul
+        style={{
+          margin: 0,
+          paddingLeft: "18px",
+          color: "#d1d5db",
+        }}
+      >
+        {(analysisResult.repositoryHealth?.recommendations || []).map(
+          (item: string, index: number) => (
+            <li key={index}>{item}</li>
+          )
+        )}
+      </ul>
+    </div>
+  </div>
+</div>
+<HealthScoreGauge
+  fileReviews={analysisResult.analysis.fileReviews}
+  isLoading={isLoading}
+/>
               {/* Dashboard View Selection Tabs & Export Controls */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "10px", flexWrap: "wrap", width: "100%" }}>
                 <div style={{ display: "flex", gap: "10px" }}>

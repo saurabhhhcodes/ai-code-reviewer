@@ -621,6 +621,37 @@ app.post('/api/analyze', requireApiKey, requireJsonContentType, analyzeLimiter, 
       const totalFindings = totalBugs + totalSecurityIssues + totalOptimizations + totalStylingIssues;
       const healthScore = Math.max(0, Math.round(100 - totalBugs * 3 - totalSecurityIssues * 15 - totalOptimizations * 1 - totalStylingIssues * 0.5));
 
+      const repositoryHealth = {
+  score: healthScore,
+
+  grade:
+    healthScore >= 90
+      ? "A"
+      : healthScore >= 80
+      ? "B"
+      : healthScore >= 70
+      ? "C"
+      : healthScore >= 60
+      ? "D"
+      : "F",
+
+  breakdown: {
+    security: Math.max(0, 100 - totalSecurityIssues * 15),
+    maintainability: Math.max(0, 100 - totalBugs * 3),
+    optimization: Math.max(0, 100 - totalOptimizations * 2),
+    documentation: 80,
+    duplication: 90,
+    testCoverage: 75,
+  },
+
+  recommendations: [
+    totalSecurityIssues > 0 && "Fix security vulnerabilities",
+    totalBugs > 0 && "Resolve detected bugs",
+    totalOptimizations > 0 && "Optimize code performance",
+    totalStylingIssues > 0 && "Improve code style consistency",
+  ].filter(Boolean),
+};
+
       if (!reviewResult?._mock) {
         try {
           await ensureConnection();
@@ -635,6 +666,7 @@ app.post('/api/analyze', requireApiKey, requireJsonContentType, analyzeLimiter, 
             totalStylingIssues,
             totalFindings,
             healthScore,
+            repositoryHealth,
             language: language || 'General',
             model: model || 'llama-3.3-70b-versatile',
             analyzedAt: new Date(),
@@ -670,15 +702,20 @@ if (reviewResult?.fileReviews) {
       
       // 7. Return result
       return res.json({
-        success: true,
-        repoName,
-        filesReviewedCount: files.length,
-        analysis: reviewResult,
-        sessionId,
-        chatAvailable: sessionPersisted,
-        sessionPersisted,
-        ...(fileWarnings.length > 0 ? { warnings: fileWarnings } : {})
-      });
+  success: true,
+  repoName,
+  filesReviewedCount: files.length,
+
+  analysis: reviewResult,
+
+  repositoryHealth,
+
+  sessionId,
+  chatAvailable: sessionPersisted,
+  sessionPersisted,
+
+  ...(fileWarnings.length > 0 ? { warnings: fileWarnings } : {})
+});
 
     } catch (err) {
       console.error(err);
