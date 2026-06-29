@@ -76,8 +76,9 @@ export const rules = [
   }
 ];
 
-const MAX_LINE_LENGTH = parseInt(process.env.SECRETS_MAX_LINE_LENGTH, 10) || 10000;
-const SCAN_TIMEOUT_MS = parseInt(process.env.SECRETS_SCAN_TIMEOUT_MS, 10) || 100;
+const safeParseInt = (val, radix = 10) => { const n = parseInt(val, radix); return isNaN(n) ? null : n; };
+const MAX_LINE_LENGTH = safeParseInt(process.env.SECRETS_MAX_LINE_LENGTH, 10) ?? 10000;
+const SCAN_TIMEOUT_MS = safeParseInt(process.env.SECRETS_SCAN_TIMEOUT_MS, 10) ?? 100;
 
 export function scanSecrets(fileContent) {
   if (typeof fileContent !== 'string') return [];
@@ -110,7 +111,7 @@ export function scanSecrets(fileContent) {
   return findings;
 }
 
-const MAX_CHANGES_PROCESSED = parseInt(process.env.SECRETS_MAX_CHANGES, 10) || 500;
+const MAX_CHANGES_PROCESSED = safeParseInt(process.env.SECRETS_MAX_CHANGES, 10) ?? 500;
 
 export function scanSecretsInChanges(changes) {
   if (!Array.isArray(changes)) return { findings: [], truncated: false, totalChanges: 0, skippedReason: null };

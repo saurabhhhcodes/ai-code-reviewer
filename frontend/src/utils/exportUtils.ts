@@ -56,7 +56,8 @@ export const generateMarkdownReport = (repoName: string, analysis: AnalysisData)
       all.forEach(f => {
         hasFindings = true;
         const escapePipe = (str: string | number) => String(str).replace(/\|/g, '\\|');
-        findingsTableRows += `| ${escapePipe(file)} | ${escapePipe(f.category)} | ${escapePipe(f.line)} | ${escapePipe(f.type)} | ${escapePipe(f.description)} | \`${escapePipe(f.suggestion)}\` |\n`;
+        const escapedSuggestion = escapePipe(f.suggestion).replace(/`/g, '\\`');
+        findingsTableRows += `| ${escapePipe(file)} | ${escapePipe(f.category)} | ${escapePipe(f.line)} | ${escapePipe(f.type)} | ${escapePipe(f.description)} | \`${escapedSuggestion}\` |\n`;
       });
     });
   }
