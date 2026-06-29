@@ -270,7 +270,9 @@ app.add_middleware(
     allow_headers=["Content-Type", "x-api-key", "x-csrf-token"],
 )
 
-API_KEY = os.getenv("REPOSAGE_API_KEY") or os.getenv("GROQ_API_KEY") or ""
+API_KEY = os.getenv("REPOSAGE_API_KEY", "")
+if not API_KEY:
+    print("⚠️ REPOSAGE_API_KEY not set. AI Engine will accept requests without authentication.")
 
 RATE_LIMIT_WINDOW_SECONDS = 60
 RATE_LIMIT_MAX_REQUESTS = 30

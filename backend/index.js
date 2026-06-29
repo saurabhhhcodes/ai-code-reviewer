@@ -516,7 +516,7 @@ app.post('/api/analyze', requireApiKey, requireJsonContentType, analyzeLimiter, 
         try {
           const aiResponse = await fetchWithTimeout(`${baseUrl}/analyze`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.REPOSAGE_API_KEY || '' },
             body: JSON.stringify({ files, company, language, model, temperature, maxTokens, systemPrompt: validatedPrompt, batchSize })
           }, 120000);
 
@@ -601,14 +601,14 @@ app.post('/api/analyze', requireApiKey, requireJsonContentType, analyzeLimiter, 
         const baseUrl = (process.env.AI_ENGINE_URL || 'http://localhost:8000').replace(/\/+$/, '');
         const splitResp = await fetchWithTimeout(`${baseUrl}/api/rag/split`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.REPOSAGE_API_KEY || '' },
           body: JSON.stringify({ files: storedFiles, repo_url: repoUrl })
         }, 30000);
         if (splitResp.ok) {
           const { chunks } = await splitResp.json();
           await fetchWithTimeout(`${baseUrl}/api/rag/ingest`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.REPOSAGE_API_KEY || '' },
             body: JSON.stringify({ repo_url: repoUrl, chunks })
           }, 60000);
         }
@@ -860,7 +860,7 @@ app.post('/api/chat', requireApiKey, requireJsonContentType, chatLimiter, async 
         const baseUrl = aiEngineUrl.replace(/\/+$/, '');
         const aiResponse = await fetchWithTimeout(`${baseUrl}/chat`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.REPOSAGE_API_KEY || '' },
           body: JSON.stringify({
             files: context.files,
             message,
@@ -911,7 +911,7 @@ app.post('/api/rag/query', requireApiKey, async (req, res) => {
     const baseUrl = aiEngineUrl.replace(/\/+$/, '');
     const aiResponse = await fetchWithTimeout(`${baseUrl}/api/rag/query`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.REPOSAGE_API_KEY || '' },
       body: JSON.stringify({ question, repo_url: repoUrl })
     }, 30000);
 
@@ -1213,7 +1213,7 @@ async function runWebhookReview(owner, repo, pullNumber, headSha) {
       const baseUrl = aiEngineUrl.replace(/\/+$/, '');
       const aiResponse = await fetchWithTimeout(`${baseUrl}/review-diff`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.REPOSAGE_API_KEY || '' },
         body: JSON.stringify({ files: filesToReview })
       }, 60000);
 
