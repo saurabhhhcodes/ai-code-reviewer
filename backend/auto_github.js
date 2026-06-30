@@ -74,16 +74,18 @@ async function autoAssignAndMerge() {
         
         // Example: To automatically merge if ready
         // Uncomment the lines below if you want script to blindly merge them (Use with caution!)
-        /*
         console.log(`   Merging PR #${pr.number}...`);
-        await octokit.rest.pulls.merge({
-          owner,
-          repo,
-          pull_number: pr.number,
-          merge_method: 'squash'
-        });
-        console.log(`✅ Merged PR #${pr.number}`);
-        */
+        try {
+          await octokit.rest.pulls.merge({
+            owner,
+            repo,
+            pull_number: pr.number,
+            merge_method: 'squash'
+          });
+          console.log(`✅ Merged PR #${pr.number}`);
+        } catch (e) {
+          console.error(`❌ Failed to merge PR #${pr.number}:`, e.message);
+        }
       }
       console.log('\n💡 Please review the above PRs manually on GitHub, or uncomment the merge code in this script to auto-merge them.');
     }
