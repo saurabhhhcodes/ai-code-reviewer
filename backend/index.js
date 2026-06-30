@@ -92,6 +92,7 @@ const issueLimiter = rateLimit({
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
+  store: redisClient ? new RedisStore({ sendCommand: (...args) => redisClient.call(...args) }) : undefined,
   message: { error: 'Too many issue creation requests.' }
 });
 
