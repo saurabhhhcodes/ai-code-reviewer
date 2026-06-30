@@ -15,6 +15,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const modalRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
+  const handleSaveRef = useRef<() => void>(() => {});
 
   const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
@@ -58,6 +59,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
         onClose();
         return;
       }
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        handleSaveRef.current();
+        return;
+      }
       trapFocus(e);
     };
     document.addEventListener("keydown", handleKeyDown);
@@ -78,6 +83,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
     );
     onClose();
   };
+  handleSaveRef.current = handleSave;
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
