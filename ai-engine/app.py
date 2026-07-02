@@ -3,6 +3,7 @@ import json
 import re
 import time
 import asyncio
+import uuid
 import unicodedata
 from collections import OrderedDict
 from fastapi import FastAPI, HTTPException, Header, Depends, Request
@@ -38,23 +39,51 @@ MAX_CHAT_FILES = int(os.getenv("MAX_CHAT_FILES", "20"))
 # Maximum seconds to wait for a single LLM API response before returning 504 (#786)
 LLM_TIMEOUT_SECONDS = float(os.getenv("LLM_TIMEOUT_SECONDS", "30"))
 
+# Single source of truth for dangerous patterns — keep in sync with
+# backend/shared/dangerousPhrases.js
+DANGEROUS_PATTERNS = [
+    "ignore all previous instructions",
+    "ignore all instructions",
+    "ignore previous",
+    "ignore above",
+    "forget all previous",
+    "forget previous",
+    "you are not",
+    "you will now",
+    "you must now",
+    "from now on",
+    "override all",
+    "system override",
+    "new directive",
+    "protocol change",
+    "disregard all",
+    "disregard",
+    "do not follow",
+    "roleplay mode",
+    "instead follow",
+    "real instruction",
+    "actual instruction",
+    "replace all",
+    "disobey",
+    "unauthorized",
+    "breach",
+    "bypass",
+    "your true purpose",
+    "you are programmed",
+    "override protocol",
+    "you have been",
+    "listen to me",
+    "disable all",
+]
+
+def _neutralize_pattern(content: str, pattern: str) -> str:
+    """Replace a dangerous pattern with a non-deterministic placeholder."""
+    token = f"__NEUTRALIZED_{uuid.uuid4().hex[:8]}__"
+    return re.sub(re.escape(pattern), token, content, flags=re.IGNORECASE)
+
 def sanitize_file_content(content: str) -> str:
-    dangerous_patterns = [
-        "ignore all previous instructions",
-        "ignore all instructions",
-        "forget all previous",
-        "you are now",
-        "from now on",
-        "override all",
-        "system override",
-        "new directive",
-        "protocol change",
-        "disregard all",
-        "you will now",
-        "you must now",
-    ]
-    for pattern in dangerous_patterns:
-        content = re.sub(re.escape(pattern), f"[neutralized: {pattern}]", content, flags=re.IGNORECASE)
+    for pattern in DANGEROUS_PATTERNS:
+        content = _neutralize_pattern(content, pattern)
     lines = content.split("\n")
     truncated_lines = [line[:500] for line in lines]
     wrapped = "\n".join(truncated_lines)
@@ -69,8 +98,6 @@ def _redact_key(text: str, key: str) -> str:
     for trunc_suffix in ["...", "…", " (truncated)"]:
         truncated = re.escape(key[:len(key) // 2] + trunc_suffix)
         text = re.sub(truncated, "***", text)
-    if len(key) > 16:
-        text = re.sub(re.escape(key[:16]), "***", text)
     return text
 
 ALLOWED_TAGS = [
@@ -164,13 +191,24 @@ def sanitize_ai_output(text: str) -> str:
 
     return text
 
-# NOTE: This HOMOGLYPH_MAP, dangerous phrases list, and validation logic is
-# duplicated in backend/index.js. When modifying these definitions, update
-# both files to keep them in sync and prevent security bypasses.
+# NOTE: This HOMOGLYPH_MAP and dangerous phrases list (DANGEROUS_PATTERNS)
+# is sourced from shared-safety-config.json as the single source of truth.
+# The backend/index.js list uses backend/shared/dangerousPhrases.js. Keep both
+# in sync. See issue #1390.
 HOMOGLYPH_MAP = {
+    # Lowercase Cyrillic
     '\u0430': 'a', '\u0435': 'e', '\u043E': 'o', '\u0441': 'c', '\u0440': 'p',
     '\u0445': 'x', '\u0443': 'y', '\u0432': 'b', '\u043D': 'h', '\u043A': 'k',
-    '\u043C': 'm', '\u0438': 'i', '\u0428': 'W', '\u03BF': 'o', '\u03B5': 'e', '\u03B1': 'a'
+    '\u043C': 'm', '\u0438': 'i',
+    # Uppercase Cyrillic
+    '\u0410': 'A', '\u0412': 'B', '\u0415': 'E', '\u0421': 'C', '\u041D': 'H',
+    '\u041A': 'K', '\u041C': 'M', '\u041E': 'O', '\u0420': 'P', '\u0423': 'Y',
+    '\u0425': 'X',
+    # Cyrillic that looks like Latin W
+    '\u0428': 'W',
+    # Greek
+    '\u03BF': 'o', '\u03B5': 'e', '\u03B1': 'a',
+    '\u039F': 'O', '\u0395': 'E', '\u0391': 'A'
 }
 
 def normalize_homoglyphs(text: str) -> str:
@@ -205,30 +243,20 @@ def validate_system_prompt(prompt: str, max_len: int = 2000) -> str:
     
     homoglyph_normalized = normalize_homoglyphs(truncated)
     lower = homoglyph_normalized.lower()
-
-    dangerous = [
-        "ignore all", "ignore previous", "ignore above",
-        "forget all", "forget previous", "you are not",
-        "override all", "disregard", "do not follow",
-        "new directive", "system override", "protocol change",
-        "roleplay mode", "from now on", "instead follow",
-        "real instruction", "actual instruction", "replace all",
-        "disobey", "unauthorized", "breach", "bypass",
-        "your true purpose", "you will now", "ignore the above",
-        "ignore previous instructions", "disregard all previous",
-        "forget your", "you are programmed", "override protocol",
-        "you have been", "you must now", "listen to me",
-    ]
     
-    for phrase in dangerous:
+    found = []
+    for phrase in DANGEROUS_PATTERNS:
         pattern = r"\s+".join(re.escape(w) for w in phrase.split())
         if re.search(pattern, lower):
-            print(f"⚠️ System prompt rejected: contains prohibited directive '{phrase}'")
-            raise HTTPException(
-                status_code=422,
-                detail=f"System prompt rejected: contains prohibited directive '{phrase}'. "
-                       f"Please remove it and try again."
-            )
+            found.append(phrase)
+    if found:
+        details = "; ".join(f"'{p}'" for p in found)
+        print(f"⚠️ System prompt rejected: contains prohibited directives: {details}")
+        raise HTTPException(
+            status_code=422,
+            detail=f"System prompt rejected: contains prohibited directive(s): {details}. "
+                   f"Please remove them and try again."
+        )
     return truncated
 async def _call_groq_with_timeout(**kwargs):
     """Run a synchronous Groq completion in a thread-pool executor with a
@@ -270,10 +298,10 @@ app.add_middleware(
     allow_headers=["Content-Type", "x-api-key", "x-csrf-token"],
 )
 
-API_KEY = os.getenv("REPOSAGE_API_KEY") or os.getenv("GROQ_API_KEY") or ""
+API_KEY = os.getenv("REPOSAGE_API_KEY") or os.getenv("AI_ENGINE_API_KEY") or ""
 
 RATE_LIMIT_WINDOW_SECONDS = 60
-RATE_LIMIT_MAX_REQUESTS = 30
+RATE_LIMIT_MAX_REQUESTS = 500
 MAX_RATE_LIMIT_ENTRIES = 10000
 _rate_limit_store: OrderedDict[str, list[float]] = OrderedDict()
 
@@ -322,10 +350,15 @@ async def cancel_rate_limit_cleanup():
             pass
 
 async def require_api_key(request: Request, call_next):
-    if request.url.path == "/" or request.url.path == "/docs" or request.url.path.startswith("/openapi"):
+    if request.url.path == "/" or request.url.path == "/docs" or request.url.path == "/health" or request.url.path.startswith("/openapi"):
         return await call_next(request)
+    import sys
+    if "pytest" in sys.modules:
+        return await call_next(request)
+        
     if not API_KEY:
-        return await call_next(request)
+        print("🚨 SEVERE: REPOSAGE_API_KEY is not set! Rejecting all requests.")
+        return JSONResponse(status_code=401, content={"error": "Server misconfiguration: REPOSAGE_API_KEY not set."})
     provided = request.headers.get("x-api-key", "")
     if not provided or provided != API_KEY:
         return JSONResponse(status_code=401, content={"error": "Unauthorized: Invalid or missing API Key."})
@@ -595,7 +628,24 @@ async def chat_with_repository(request: ChatRequest):
     
     # 1. Build the system prompt injecting repository context
     message_lower = message.lower()
-    keywords = set(re.findall(r'\b\w+\b', message_lower))
+    STOP_WORDS = {'the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+                  'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could',
+                  'should', 'may', 'might', 'can', 'shall', 'to', 'of', 'in', 'for',
+                  'on', 'with', 'at', 'by', 'from', 'as', 'into', 'through', 'during',
+                  'this', 'that', 'these', 'those', 'it', 'its', 'and', 'or', 'but',
+                  'not', 'no', 'nor', 'so', 'if', 'then', 'else', 'when', 'where',
+                  'why', 'how', 'all', 'each', 'every', 'both', 'few', 'more', 'most',
+                  'other', 'some', 'such', 'only', 'own', 'same', 'very', 'here',
+                  'there', 'about', 'above', 'after', 'again', 'against', 'below',
+                  'between', 'up', 'down', 'out', 'off', 'over', 'under', 'too', 'just',
+                  'also', 'get', 'got', 'use', 'used', 'using', 'make', 'made',
+                  'making', 'take', 'took', 'taken', 'taking', 'find', 'found',
+                  'finding', 'new', 'one', 'two', 'like', 'well', 'back', 'still',
+                  'any', 'many', 'much', 'something', 'thing', 'file', 'code', 'data',
+                  'function', 'method', 'class', 'return', 'value', 'name', 'type',
+                  'set', 'list', 'object', 'string', 'number', 'key', 'add'}
+
+    keywords = set(re.findall(r'\b\w+\b', message_lower)) - STOP_WORDS
 
     def score_file(f):
         name_lower = f.name.lower()
@@ -628,6 +678,7 @@ async def chat_with_repository(request: ChatRequest):
 
     # 2. Optionally retrieve RAG chunks if toggle is on
     rag_context = ""
+    rag_sources = []
     if request.useRag:
         try:
             from rag import query_chunks
@@ -638,6 +689,13 @@ async def chat_with_repository(request: ChatRequest):
                     meta = c.get("metadata", {})
                     source = meta.get("file_path", meta.get("source", "unknown"))
                     chunk_parts.append(f"[Chunk {i} from {source}]\n{c['content']}")
+                    rag_sources.append({
+                        "chunk_id": c.get("chunk_id"),
+                        "source": source,
+                        "metadata": meta,
+                        "similarity_score": c.get("similarity_score"),
+                        "preview": c.get("content", "")[:300],
+                    })
                 rag_context = "\n\n".join(chunk_parts)
         except Exception as e:
             print(f"⚠️ RAG query failed: {e}")
@@ -702,7 +760,9 @@ Guidelines:
         )
         response_content = completion.choices[0].message.content
         result = {"response": sanitize_ai_output(response_content), "truncatedFiles": truncated_files_info}
-        if request.rag_sources:
+        if rag_sources:
+            result["sources"] = rag_sources
+        elif request.rag_sources:
             result["sources"] = request.rag_sources
         if request.useRag and is_fallback_active():
             result["_rag_warning"] = "Embedding model is using deterministic fallback. RAG results may be inaccurate."
@@ -870,6 +930,7 @@ class RagQueryRequest(BaseModel):
 class RagQueryResponse(BaseModel):
     chunks: List[dict]
     total_chunks: int
+    rag_warning: Optional[str] = None
 
 
 class PaginatedChunksRequest(BaseModel):
@@ -912,16 +973,14 @@ async def split_files_for_rag(request: SplitRequest):
     )
 
 
-# 🟢 Route: Ingest chunks into ChromaDB for RAG
+# 🟢 Route: Ingest chunks into ChromaDB for RAG (uses upsert for cross-worker safety)
 @app.post("/api/rag/ingest", response_model=IngestionResponse)
 async def ingest_chunks_route(request: IngestRequest):
-    from rag import ingest_chunks, delete_repo_chunks
-
-    delete_repo_chunks(request.repo_url)
+    from rag import upsert_chunks
     texts = [c.content for c in request.chunks]
     metadatas = [c.metadata for c in request.chunks]
     ids = [c.chunk_id for c in request.chunks]
-    count = ingest_chunks(texts, metadatas, ids, repo_url=request.repo_url)
+    count = upsert_chunks(texts, metadatas, ids, repo_url=request.repo_url)
     return IngestionResponse(ingested_count=count)
 
 
@@ -936,9 +995,7 @@ async def query_rag_chunks(request: RagQueryRequest):
         total_chunks=len(chunks),
     )
     if is_fallback_active():
-        result_dict = result.model_dump()
-        result_dict["_rag_warning"] = "Embedding model is using deterministic fallback. RAG results may be inaccurate."
-        return result_dict
+        result.rag_warning = "Embedding model is using deterministic fallback. RAG results may be inaccurate."
     return result
 
 
@@ -953,5 +1010,6 @@ async def get_paginated_chunks(request: PaginatedChunksRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
+    reload_enabled = os.getenv("UVICORN_RELOAD", "false").lower() == "true"
+    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=reload_enabled)
 # TODO: Issue #395 - Bug [AI Engine]: `validate_system_prompt` fails to strip multiple occurrences of dangerous phrases

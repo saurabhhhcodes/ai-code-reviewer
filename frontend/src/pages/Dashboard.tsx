@@ -4,6 +4,7 @@ import { useStore, ChatMessage } from '../store/useStore';
 import SettingsModal from "../components/SettingsModal";
 import { MetricsChart } from '../components/MetricsChart';
 import { VulnerabilitiesBarChart } from '../components/VulnerabilitiesBarChart';
+import MarkdownErrorBoundary from '../components/MarkdownErrorBoundary';
 import CopyToClipboardButton from "../components/CopyToClipboardButton";
 import HealthScoreGauge from "../components/HealthScoreGauge";
 import {
@@ -30,7 +31,7 @@ import {
 import { handleMarkdownExport, handleHtmlExport } from "../utils/exportUtils";
 import mermaid from "mermaid";
 import { sanitizeMermaidOutput } from "../utils/sanitize";
-import { apiFetch, getReviewHistory } from "../utils/api";
+import { apiFetch } from "../utils/api";
 
 // Initialize Mermaid outside the component to avoid multiple initializations
 try {
@@ -71,20 +72,6 @@ export interface ReviewItem {
   suggestion: string;
 }
 
-{item.beforeCode && (
-  <>
-    <h5>Before</h5>
-    <pre>{item.beforeCode}</pre>
-  </>
-)}
-
-{item.afterCode && (
-  <>
-    <h5>After</h5>
-    <pre>{item.afterCode}</pre>
-  </>
-)}
-
 export interface FileReview {
   bugs: ReviewItem[];
   security: ReviewItem[];
@@ -97,6 +84,8 @@ interface AnalysisData {
   generatedReadme: string;
   mermaidDiagram?: string;
   metrics?: Record<string, any>;
+  repositoryHealth?: any;
+  dependencyReport?: any;
   _mock?: boolean;
 }
 
@@ -120,6 +109,7 @@ export interface BackendResponse {
   breakingChanges: string[];
   testingRecommendations: string[];
 };
+  repositoryHealth?: any;
   success: boolean;
   repoName: string;
   filesReviewedCount: number;
@@ -153,28 +143,36 @@ function MermaidViewer({ chart, repoName }: MermaidViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    let cancelled = false;
     if (!chart) return;
     setError(null);
     const uniqueId = `mermaid-${Math.floor(Math.random() * 100000)}`;
     const renderChart = async () => {
       try {
         setSvg("");
-        // Clean markdown wraps if present
         let cleanChart = chart
           .replace(/```mermaid/g, "")
           .replace(/```/g, "")
           .trim();
-        if (
-          !cleanChart.startsWith("graph") &&
-          !cleanChart.startsWith("flowchart")
-        ) {
+        const MERMAID_TYPES = [
+          "graph", "flowchart", "sequenceDiagram", "classDiagram",
+          "stateDiagram", "stateDiagram-v2", "erDiagram", "gantt",
+          "pie", "journey", "gitgraph", "mindmap", "timeline",
+          "zenuml", "sankey", "xychart", "block", "quadrantChart",
+          "requirementDiagram", "c4Context", "c4Container", "c4Component",
+          "c4Dynamic", "c4Deployment", "info",
+        ];
+        const firstWord = cleanChart.split(/\s+/)[0];
+        if (!MERMAID_TYPES.includes(firstWord)) {
           cleanChart = `graph TD\n${cleanChart}`;
         }
 
         const { svg: renderedSvg } = await mermaid.render(uniqueId, cleanChart);
+        if (cancelled) return;
         const sanitized = sanitizeMermaidOutput(renderedSvg);
         setSvg(sanitized);
       } catch (err: any) {
+        if (cancelled) return;
         console.error("Mermaid Render Error:", err);
         setError(
           "Could not render architecture diagram. The AI-generated flowchart has syntax errors.",
@@ -183,10 +181,13 @@ function MermaidViewer({ chart, repoName }: MermaidViewerProps) {
     };
 
     renderChart();
+    return () => { cancelled = true; };
   }, [chart]);
 
+  if (!chart) return null;
+
   const svgDataUrl = svg
-    ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
+    ? `data:image/svg+xml;charset=utf-8,${encodeURI(svg)}`
     : null;
 
   const downloadSVG = () => {
@@ -324,6 +325,17 @@ export default function Dashboard() {
   const [activeExtFilter, setActiveExtFilter] = useState('All');
   const [activeTab, setActiveTab] = useState<'bugs' | 'security' | 'optimization' | 'styling' | 'metrics'>('bugs');
   const [apiError, setApiError] = useState<string | null>(null);
+  const [storageWarning, setStorageWarning] = useState(false);
+
+  useEffect(() => {
+    if (!apiError) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setApiError(null);
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [apiError]);
+
   const [auditHistory, setAuditHistory] = useState<AuditHistoryEntry[]>(() => {
     try {
       const savedHistory = localStorage.getItem('reposage_audit_history');
@@ -624,11 +636,13 @@ export default function Dashboard() {
   }, [chatHistory, isChatLoading]);
 
   useEffect(() => {
-  const loadHistory = async () => {
-    try {
-      const history = await getReviewHistory();
+    const loadHistory = async () => {
+      try {
+        const response = await apiFetch('/api/review-history');
+        if (!response.ok) throw new Error("Failed to fetch");
+        const history = await response.json();
 
-      if (history) {
+        if (history) {
         setAuditHistory(history);
       }
     } catch (err) {
@@ -647,12 +661,13 @@ export default function Dashboard() {
     setChatInput("");
     setChatHistory((prev) => {
       const updated = [...prev, { role: "user" as const, content: userMessage }];
-      try { localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(updated)); } catch {}
+      try { localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(truncateChatHistory(updated))); } catch (e) { if (e instanceof DOMException && e.name === 'QuotaExceededError') setStorageWarning(true); }
       return updated;
     });
     setIsChatLoading(true);
 
     try {
+      setApiError(null);
       const chatAiSettings = getSavedAiSettings();
       const response = await apiFetch("/api/chat", {
         method: "POST",
@@ -679,7 +694,7 @@ export default function Dashboard() {
           ...prev,
           { role: "assistant" as const, content: data.response, sources: sources.length > 0 ? sources : undefined },
         ]);
-        try { localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(updated)); } catch {}
+        try { localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(updated)); } catch (e) { if (e instanceof DOMException && e.name === 'QuotaExceededError') setStorageWarning(true); }
         return updated;
       });
     } catch (err: any) {
@@ -762,7 +777,7 @@ export default function Dashboard() {
   };
 
   const calculateTotalFindings = (result: BackendResponse) => {
-    return Object.values(result.analysis.fileReviews || {}).reduce((total, review) => {
+    return Object.values(result.analysis?.fileReviews || {}).reduce((total, review) => {
       return total +
         (review.bugs?.length || 0) +
         (review.security?.length || 0) +
@@ -812,13 +827,14 @@ export default function Dashboard() {
   const loadAuditFromHistory = (entry: AuditHistoryEntry) => {
     setRepoUrl(entry.repoUrl);
     setAnalysisResult(entry.response);
+    setSessionId(entry.response.sessionId ?? null);
     setApiError(null);
     setIsLoading(false);
     setActiveDashboardView('audit');
     setFileFilterQuery('');
     setActiveExtFilter('All');
 
-    const filesList = Object.keys(entry.response.analysis.fileReviews || {});
+    const filesList = Object.keys(entry.response.analysis?.fileReviews || {});
     setSelectedFile(filesList[0] || null);
   };
 
@@ -884,16 +900,14 @@ export default function Dashboard() {
 
       const data: BackendResponse = await response.json();
       setAnalysisResult(data);
-      if (data.sessionId && data.sessionPersisted !== false) {
-        setSessionId(data.sessionId);
-      } else if (data.sessionId && data.sessionPersisted === false) {
-        setSessionId(null);
-      }
+      setSessionId(
+        data.sessionPersisted !== false ? data.sessionId ?? null : null
+      );
       persistAuditHistory(data);
       setChatHistory([]);
 
       // Select the first file reviewed automatically
-      const filesList = Object.keys(data.analysis.fileReviews);
+      const filesList = Object.keys(data.analysis?.fileReviews || {});
       if (filesList.length > 0) {
         setSelectedFile(filesList[0]);
       }
@@ -917,7 +931,7 @@ export default function Dashboard() {
   const downloadReadme = () => {
     if (!analysisResult) return;
     const element = document.createElement("a");
-    const file = new Blob([analysisResult.analysis.generatedReadme], {
+    const file = new Blob([analysisResult.analysis?.generatedReadme || ''], {
       type: "text/plain",
     });
     element.href = URL.createObjectURL(file);
@@ -926,6 +940,8 @@ export default function Dashboard() {
     element.click();
     document.body.removeChild(element);
   };
+
+  const chatInputEmpty = !chatInput.trim();
 
   return (
     <div
@@ -991,6 +1007,7 @@ export default function Dashboard() {
                   pattern="https://github\.com/.*"
                   placeholder="https://github.com/username/repo"
                   value={repoUrl}
+                  readOnly={isLoading}
                   onChange={(e) => setRepoUrl(e.target.value)}
                   style={{
                     width: "100%",
@@ -1127,7 +1144,8 @@ export default function Dashboard() {
                   width: "100%",
                   padding: "12px",
                   borderRadius: "6px",
-                  cursor: "pointer",
+                  cursor: isLoading ? "not-allowed" : "pointer",
+                  opacity: isLoading ? 0.65 : 1,
                   fontSize: "13px",
                   marginTop: "6px",
                   display: "flex",
@@ -1664,7 +1682,47 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* 2. Loading State */}
+          {/* 2. Storage Warning Banner */}
+          {storageWarning && (
+            <div
+              style={{
+                background: "rgba(234, 179, 8, 0.1)",
+                border: "1px solid rgba(234, 179, 8, 0.3)",
+                borderRadius: "8px",
+                padding: "14px 20px",
+                color: "#fde047",
+                fontSize: "13px",
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                marginBottom: "20px",
+              }}
+            >
+              <AlertTriangle size={20} style={{ color: "#eab308" }} />
+              <div>
+                <strong style={{ display: "block" }}>
+                  Storage Quota Exceeded
+                </strong>
+                <span>Chat history could not be saved. Local storage is full. Clear old history or export it to free space.</span>
+              </div>
+              <button
+                onClick={() => setStorageWarning(false)}
+                style={{
+                  marginLeft: "auto",
+                  background: "transparent",
+                  border: "none",
+                  color: "#fde047",
+                  cursor: "pointer",
+                  fontSize: "16px",
+                  padding: "4px 8px",
+                }}
+              >
+                ×
+              </button>
+            </div>
+          )}
+
+          {/* 3. Loading State */}
           {isLoading && (
             <div
               style={{
@@ -2018,7 +2076,7 @@ export default function Dashboard() {
       </thead>
 
       <tbody>
-        {analysisResult.dependencyReport.dependencies.map(
+        {analysisResult.dependencyReport?.dependencies?.map(
           (dep, index) => (
             <tr key={index}>
               <td>{dep.name}</td>
@@ -2555,6 +2613,7 @@ export default function Dashboard() {
                       >
                         <button
                           onClick={() => setActiveTab("bugs")}
+                          aria-current={activeTab === "bugs" ? "true" : undefined}
                           style={{
                             padding: "6px",
                             borderRadius: "6px",
@@ -2581,6 +2640,7 @@ export default function Dashboard() {
                         </button>
                         <button
                           onClick={() => setActiveTab("security")}
+                          aria-current={activeTab === "security" ? "true" : undefined}
                           style={{
                             padding: "6px",
                             borderRadius: "6px",
@@ -2608,6 +2668,7 @@ export default function Dashboard() {
                         </button>
                         <button
                           onClick={() => setActiveTab("optimization")}
+                          aria-current={activeTab === "optimization" ? "true" : undefined}
                           style={{
                             padding: "6px",
                             borderRadius: "6px",
@@ -2637,6 +2698,7 @@ export default function Dashboard() {
                         </button>
                         <button
                           onClick={() => setActiveTab("styling")}
+                          aria-current={activeTab === "styling" ? "true" : undefined}
                           style={{
                             padding: "6px",
                             borderRadius: "6px",
@@ -2664,6 +2726,7 @@ export default function Dashboard() {
                         </button>
                         <button
                           onClick={() => setActiveTab("metrics")}
+                          aria-current={activeTab === "metrics" ? "true" : undefined}
                           style={{
                             padding: "6px",
                             borderRadius: "6px",
@@ -2742,7 +2805,7 @@ export default function Dashboard() {
                                 : 0;
                             const emptyPct =
                               fileMetrics.totalLines > 0
-                                ? 100 - codePct - commentPct
+                                ? Math.max(0, 100 - codePct - commentPct)
                                 : 0;
 
                             const gradeColors = {
@@ -3238,7 +3301,7 @@ export default function Dashboard() {
                                     </div>
                                   </div>
                                 </div>
-                                <MetricsChart sessionId={sessionId} />
+                                <MetricsChart reviewId={sessionId} />
                               </div>
                             );
                           })()
@@ -4045,7 +4108,7 @@ export default function Dashboard() {
                       />
                       <button
                         type="submit"
-                        disabled={isChatLoading || !chatInput.trim()}
+                        disabled={isChatLoading || chatInputEmpty}
                         style={{
                           background:
                             "linear-gradient(135deg, #a855f7 0%, #3b82f6 100%)",
@@ -4057,7 +4120,7 @@ export default function Dashboard() {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          opacity: isChatLoading || !chatInput.trim() ? 0.6 : 1,
+                          opacity: isChatLoading || chatInputEmpty ? 0.6 : 1,
                           transition: "opacity 0.15s ease",
                         }}
                       >

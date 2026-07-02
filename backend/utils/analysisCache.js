@@ -14,6 +14,7 @@ class AnalysisCache {
     this.ttlMs = ttlMs;
     this.maxEntries = 1000;
     this.cache = new Map();
+    this.pending = new Map();
     this.stats = { hits: 0, misses: 0, evictions: 0 };
     this._startSweeper();
   }
@@ -92,6 +93,29 @@ class AnalysisCache {
   }
 
   /**
+   * Retrieve a cached analysis result or fetch it safely if missing/concurrent.
+   */
+  async getOrSet(key, fetcher) {
+    const cached = this.get(key);
+    if (cached) return cached;
+    
+    const existing = this.pending.get(key);
+    if (existing) return existing;
+    
+    const promise = fetcher().then(result => {
+        this.set(key, result);
+        this.pending.delete(key);
+        return result;
+    }).catch(err => {
+        this.pending.delete(key);
+        throw err;
+    });
+    
+    this.pending.set(key, promise);
+    return promise;
+  }
+
+  /**
    * Clear all entries from the cache.
    */
   clear() {
@@ -150,6 +174,26 @@ class AnalysisCache {
       return true;
     }
     return false;
+  }
+
+  /**
+   * Invalidate all cache entries by repo URL.
+   * Iterates the cache and removes entries whose key matches the given repo URL.
+   */
+  invalidateByRepoUrl(repoUrl) {
+    const normalized = repoUrl.replace(/\/+$/, '').toLowerCase();
+    let removed = 0;
+    for (const [key] of this.cache) {
+      const keyStr = key;
+      if (keyStr.includes(normalized)) {
+        this.cache.delete(key);
+        removed++;
+      }
+    }
+    if (removed > 0) {
+      console.log(`🗑️  Invalidated ${removed} cache entries for repo ${repoUrl}`);
+    }
+    return removed;
   }
 
   /**
