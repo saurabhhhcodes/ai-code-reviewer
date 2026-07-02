@@ -196,7 +196,7 @@ export async function readCodeFilesFromRepo(repoUrl, options = {}) {
 
   try {
     const git = simpleGit({ timeout: { block: cloneTimeoutMs } });
-    await git.clone(repoUrl, clonePath, ['--depth', '1']);
+    await git.clone(repoUrl, clonePath, ['--depth', '1', '--config', 'core.hooksPath=/dev/null']);
 
     const ignorePatterns = loadIgnorePatterns(clonePath);
     return walkForExtensions(
