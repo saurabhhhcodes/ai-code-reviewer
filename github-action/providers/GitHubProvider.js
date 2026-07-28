@@ -9,7 +9,7 @@ export class GitHubProvider extends Provider {
   }
 
   init() {
-    console.log("Initialized GitHub Provider");
+    console.log('Initialized GitHub Provider');
   }
 
   getContext() {
@@ -25,8 +25,8 @@ export class GitHubProvider extends Provider {
       repo,
       pull_number: pullNumber,
       mediaType: {
-        format: 'diff'
-      }
+        format: 'diff',
+      },
     });
     return diff;
   }
@@ -37,7 +37,7 @@ export class GitHubProvider extends Provider {
       owner,
       repo,
       path,
-      ref
+      ref,
     });
     return Buffer.from(file.content, 'base64').toString('utf8');
   }
@@ -50,7 +50,7 @@ export class GitHubProvider extends Provider {
       pull_number: pullNumber,
       event: reviewData.event,
       body: reviewData.body,
-      comments: reviewData.comments
+      comments: reviewData.comments,
     });
   }
 
@@ -61,7 +61,7 @@ export class GitHubProvider extends Provider {
         owner,
         repo,
         issue_number: pullNumber,
-        labels: [label]
+        labels: [label],
       });
     } catch (err) {
       console.warn(`Could not add label ${label}: ${err.message}`);
@@ -73,7 +73,7 @@ export class GitHubProvider extends Provider {
     const { data: pr } = await this.octokit.rest.pulls.get({
       owner,
       repo,
-      pull_number: pullNumber
+      pull_number: pullNumber,
     });
     return pr.body || '';
   }
@@ -84,7 +84,7 @@ export class GitHubProvider extends Provider {
       owner,
       repo,
       pull_number: pullNumber,
-      body
+      body,
     });
   }
 }

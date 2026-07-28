@@ -78,7 +78,9 @@ test('requireApiKey calls next() when valid API key is provided', () => {
     headers: { 'x-api-key': 'test-session-key-123' },
   });
   let nextCalled = false;
-  const next = () => { nextCalled = true; };
+  const next = () => {
+    nextCalled = true;
+  };
 
   requireApiKey(req, res, next);
 
@@ -88,7 +90,9 @@ test('requireApiKey calls next() when valid API key is provided', () => {
 test('requireApiKey returns 401 when API key is missing', () => {
   const { req, res } = makeMockReqRes({ headers: {} });
   let nextCalled = false;
-  const next = () => { nextCalled = true; };
+  const next = () => {
+    nextCalled = true;
+  };
 
   requireApiKey(req, res, next);
 
@@ -101,7 +105,9 @@ test('requireApiKey returns 401 when API key is invalid', () => {
     headers: { 'x-api-key': 'wrong-key' },
   });
   let nextCalled = false;
-  const next = () => { nextCalled = true; };
+  const next = () => {
+    nextCalled = true;
+  };
 
   requireApiKey(req, res, next);
 
@@ -116,7 +122,9 @@ test('requireApiKey accepts session cookie as alternative auth', () => {
     headers: { 'x-api-key': 'test-session-key-123' },
   });
   let nextCalled = false;
-  const next = () => { nextCalled = true; };
+  const next = () => {
+    nextCalled = true;
+  };
 
   requireApiKey(req, res, next);
 
@@ -183,11 +191,13 @@ test('createFrontendSessionCookie payload is valid base64url', () => {
 });
 
 test('requireApiKey is exported as a function', () => {
-  assert.strictEqual(typeof requireApiKey, 'function',
-    'requireApiKey should be exported as a function');
+  assert.strictEqual(typeof requireApiKey, 'function', 'requireApiKey should be exported as a function');
 });
 
 test('createFrontendSessionCookie is exported as a function', () => {
-  assert.strictEqual(typeof createFrontendSessionCookie, 'function',
-    'createFrontendSessionCookie should be exported as a function');
+  assert.strictEqual(
+    typeof createFrontendSessionCookie,
+    'function',
+    'createFrontendSessionCookie should be exported as a function',
+  );
 });

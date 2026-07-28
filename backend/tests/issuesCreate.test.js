@@ -45,7 +45,11 @@ async function issuesCreateHandler(req, env = {}) {
   if (parsedUrl.hostname !== 'github.com') {
     return { status: 400, body: { error: 'URL must be a github.com repository.' } };
   }
-  const pathParts = parsedUrl.pathname.replace(/\.git$/, '').replace(/\/$/, '').split('/').filter(Boolean);
+  const pathParts = parsedUrl.pathname
+    .replace(/\.git$/, '')
+    .replace(/\/$/, '')
+    .split('/')
+    .filter(Boolean);
   if (pathParts.length < 2) {
     return { status: 400, body: { error: 'Invalid GitHub repository URL structure.' } };
   }
@@ -73,7 +77,7 @@ async function issuesCreateHandler(req, env = {}) {
 test('returns 400 when GITHUB_PAT is not configured', async () => {
   const result = await issuesCreateHandler(
     { body: { title: 'Test', body: 'Desc', repoUrl: 'https://github.com/org/repo' } },
-    { GITHUB_PAT: undefined }
+    { GITHUB_PAT: undefined },
   );
   assert.equal(result.status, 400);
   assert.ok(result.body.error.includes('GITHUB_PAT'));
@@ -82,7 +86,7 @@ test('returns 400 when GITHUB_PAT is not configured', async () => {
 test('returns 400 when title is missing', async () => {
   const result = await issuesCreateHandler(
     { body: { body: 'Desc', repoUrl: 'https://github.com/org/repo' } },
-    { GITHUB_PAT: 'fake-token' }
+    { GITHUB_PAT: 'fake-token' },
   );
   assert.equal(result.status, 400);
   assert.ok(result.body.error.includes('Title'));
@@ -91,7 +95,7 @@ test('returns 400 when title is missing', async () => {
 test('returns 400 when title exceeds 256 characters', async () => {
   const result = await issuesCreateHandler(
     { body: { title: 'x'.repeat(257), body: 'Desc', repoUrl: 'https://github.com/org/repo' } },
-    { GITHUB_PAT: 'fake-token' }
+    { GITHUB_PAT: 'fake-token' },
   );
   assert.equal(result.status, 400);
   assert.ok(result.body.error.includes('Title'));
@@ -100,7 +104,7 @@ test('returns 400 when title exceeds 256 characters', async () => {
 test('returns 400 when body is missing', async () => {
   const result = await issuesCreateHandler(
     { body: { title: 'Test Title', repoUrl: 'https://github.com/org/repo' } },
-    { GITHUB_PAT: 'fake-token' }
+    { GITHUB_PAT: 'fake-token' },
   );
   assert.equal(result.status, 400);
   assert.ok(result.body.error.includes('Body'));
@@ -109,7 +113,7 @@ test('returns 400 when body is missing', async () => {
 test('returns 400 when body exceeds 65536 characters', async () => {
   const result = await issuesCreateHandler(
     { body: { title: 'Test', body: 'x'.repeat(65537), repoUrl: 'https://github.com/org/repo' } },
-    { GITHUB_PAT: 'fake-token' }
+    { GITHUB_PAT: 'fake-token' },
   );
   assert.equal(result.status, 400);
   assert.ok(result.body.error.includes('Body'));
@@ -118,7 +122,7 @@ test('returns 400 when body exceeds 65536 characters', async () => {
 test('returns 400 when labels is not an array', async () => {
   const result = await issuesCreateHandler(
     { body: { title: 'Test', body: 'Desc', repoUrl: 'https://github.com/org/repo', labels: 'bug' } },
-    { GITHUB_PAT: 'fake-token' }
+    { GITHUB_PAT: 'fake-token' },
   );
   assert.equal(result.status, 400);
   assert.ok(result.body.error.includes('array'));
@@ -126,8 +130,15 @@ test('returns 400 when labels is not an array', async () => {
 
 test('returns 400 when labels exceeds 10 items', async () => {
   const result = await issuesCreateHandler(
-    { body: { title: 'Test', body: 'Desc', repoUrl: 'https://github.com/org/repo', labels: Array.from({ length: 11 }, (_, i) => `label${i}`) } },
-    { GITHUB_PAT: 'fake-token' }
+    {
+      body: {
+        title: 'Test',
+        body: 'Desc',
+        repoUrl: 'https://github.com/org/repo',
+        labels: Array.from({ length: 11 }, (_, i) => `label${i}`),
+      },
+    },
+    { GITHUB_PAT: 'fake-token' },
   );
   assert.equal(result.status, 400);
   assert.ok(result.body.error.includes('10'));
@@ -136,7 +147,7 @@ test('returns 400 when labels exceeds 10 items', async () => {
 test('returns 400 when a label exceeds 50 characters', async () => {
   const result = await issuesCreateHandler(
     { body: { title: 'Test', body: 'Desc', repoUrl: 'https://github.com/org/repo', labels: ['a'.repeat(51)] } },
-    { GITHUB_PAT: 'fake-token' }
+    { GITHUB_PAT: 'fake-token' },
   );
   assert.equal(result.status, 400);
   assert.ok(result.body.error.includes('50'));
@@ -145,7 +156,7 @@ test('returns 400 when a label exceeds 50 characters', async () => {
 test('returns 400 for invalid GitHub repository URL', async () => {
   const result = await issuesCreateHandler(
     { body: { title: 'Test', body: 'Desc', repoUrl: 'not-a-url' } },
-    { GITHUB_PAT: 'fake-token' }
+    { GITHUB_PAT: 'fake-token' },
   );
   assert.equal(result.status, 400);
   assert.ok(result.body.error.includes('Invalid GitHub'));
@@ -154,7 +165,7 @@ test('returns 400 for invalid GitHub repository URL', async () => {
 test('returns 400 for non-github.com URL', async () => {
   const result = await issuesCreateHandler(
     { body: { title: 'Test', body: 'Desc', repoUrl: 'https://gitlab.com/org/repo' } },
-    { GITHUB_PAT: 'fake-token' }
+    { GITHUB_PAT: 'fake-token' },
   );
   assert.equal(result.status, 400);
   assert.ok(result.body.error.includes('github.com'));
@@ -163,7 +174,7 @@ test('returns 400 for non-github.com URL', async () => {
 test('returns 400 for URL with fewer than two path segments', async () => {
   const result = await issuesCreateHandler(
     { body: { title: 'Test', body: 'Desc', repoUrl: 'https://github.com/orgonly' } },
-    { GITHUB_PAT: 'fake-token' }
+    { GITHUB_PAT: 'fake-token' },
   );
   assert.equal(result.status, 400);
   assert.ok(result.body.error.includes('Invalid GitHub repository URL structure'));
@@ -171,8 +182,15 @@ test('returns 400 for URL with fewer than two path segments', async () => {
 
 test('returns 200 with issue details for valid request', async () => {
   const result = await issuesCreateHandler(
-    { body: { title: 'Bug Report', body: 'Something is broken.', repoUrl: 'https://github.com/acme/app', labels: ['bug'] } },
-    { GITHUB_PAT: 'fake-token' }
+    {
+      body: {
+        title: 'Bug Report',
+        body: 'Something is broken.',
+        repoUrl: 'https://github.com/acme/app',
+        labels: ['bug'],
+      },
+    },
+    { GITHUB_PAT: 'fake-token' },
   );
   assert.equal(result.status, 200);
   assert.equal(result.body.success, true);
@@ -182,8 +200,10 @@ test('returns 200 with issue details for valid request', async () => {
 
 test('returns 200 with valid request that has empty labels array', async () => {
   const result = await issuesCreateHandler(
-    { body: { title: 'Feature Request', body: 'Add this feature.', repoUrl: 'https://github.com/org/repo', labels: [] } },
-    { GITHUB_PAT: 'fake-token' }
+    {
+      body: { title: 'Feature Request', body: 'Add this feature.', repoUrl: 'https://github.com/org/repo', labels: [] },
+    },
+    { GITHUB_PAT: 'fake-token' },
   );
   assert.equal(result.status, 200);
   assert.equal(result.body.success, true);
@@ -192,7 +212,7 @@ test('returns 200 with valid request that has empty labels array', async () => {
 test('handles URL with .git suffix', async () => {
   const result = await issuesCreateHandler(
     { body: { title: 'Test', body: 'Desc', repoUrl: 'https://github.com/org/repo.git' } },
-    { GITHUB_PAT: 'fake-token' }
+    { GITHUB_PAT: 'fake-token' },
   );
   assert.equal(result.status, 200);
 });
@@ -200,7 +220,7 @@ test('handles URL with .git suffix', async () => {
 test('handles URL with trailing slash', async () => {
   const result = await issuesCreateHandler(
     { body: { title: 'Test', body: 'Desc', repoUrl: 'https://github.com/org/repo/' } },
-    { GITHUB_PAT: 'fake-token' }
+    { GITHUB_PAT: 'fake-token' },
   );
   assert.equal(result.status, 200);
 });

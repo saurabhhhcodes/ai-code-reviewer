@@ -203,45 +203,43 @@ export async function readCodeFilesFromRepo(repoUrl, options = {}) {
     const git = simpleGit({
       timeout: { block: cloneTimeoutMs },
       unsafe: {
-        allowUnsafeHooksPath: true
-      }
+        allowUnsafeHooksPath: true,
+      },
     });
 
     if (isPrWebhook) {
-      await git.clone(repoUrl, clonePath, [
-        '--config', 'core.hooksPath=/dev/null',
-        '--no-checkout'
-      ]);
+      await git.clone(repoUrl, clonePath, ['--config', 'core.hooksPath=/dev/null', '--no-checkout']);
       await git.cwd(clonePath).fetch(['origin', options.webhookPr.baseBranch]);
       await git.cwd(clonePath).fetch(['origin', options.webhookPr.headBranch]);
-      
-      const diffString = await getPullRequestDiff(clonePath, options.webhookPr.baseBranch, options.webhookPr.headBranch);
+
+      const diffString = await getPullRequestDiff(
+        clonePath,
+        options.webhookPr.baseBranch,
+        options.webhookPr.headBranch,
+      );
       const prompt = buildDeltaReviewPrompt(diffString);
-      
-      return [{
-        path: 'pr_delta.patch',
-        content: prompt,
-        sizeBytes: Buffer.byteLength(prompt, 'utf8'),
-        language: 'diff'
-      }];
+
+      return [
+        {
+          path: 'pr_delta.patch',
+          content: prompt,
+          sizeBytes: Buffer.byteLength(prompt, 'utf8'),
+          language: 'diff',
+        },
+      ];
     } else {
       await git.clone(repoUrl, clonePath, [
-        '--config', 'core.hooksPath=/dev/null',
-        '--depth', '1',
+        '--config',
+        'core.hooksPath=/dev/null',
+        '--depth',
+        '1',
         '--single-branch',
-        '--no-checkout'
+        '--no-checkout',
       ]);
       await git.cwd(clonePath).checkout(['HEAD']);
 
       const ignorePatterns = loadIgnorePatterns(clonePath);
-      return walkForExtensions(
-        clonePath,
-        extensionSet,
-        ignorePatterns,
-        maxFiles,
-        maxDepth,
-        maxBytes
-      );
+      return walkForExtensions(clonePath, extensionSet, ignorePatterns, maxFiles, maxDepth, maxBytes);
     }
   } finally {
     deleteFolderRecursive(clonePath);

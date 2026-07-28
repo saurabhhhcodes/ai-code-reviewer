@@ -14,10 +14,16 @@ import { createServer } from 'http';
 const repoContexts = new Map();
 
 function validateChatParams(body) {
-  let { message, history = [], model = 'llama-3.3-70b-versatile',
-          temperature = 0.7, maxTokens = 2048,
-          systemPrompt = 'You are a helpful code reviewer.',
-          sessionId, useRag } = body;
+  let {
+    message,
+    history = [],
+    model = 'llama-3.3-70b-versatile',
+    temperature = 0.7,
+    maxTokens = 2048,
+    systemPrompt = 'You are a helpful code reviewer.',
+    sessionId,
+    useRag,
+  } = body;
 
   if (!message) {
     return { status: 400, error: 'Message is required.' };

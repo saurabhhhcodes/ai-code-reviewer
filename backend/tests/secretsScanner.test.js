@@ -41,7 +41,7 @@ test('scanSecrets detects AWS Access Key', async () => {
   const code = 'AWS_KEY = "AKIAIOSFODNN7EXAMPLE"';
   const findings = scanSecrets(code);
   assert.ok(findings.length > 0);
-  assert.ok(findings.some(f => f.type === 'AWS Access Key Check'));
+  assert.ok(findings.some((f) => f.type === 'AWS Access Key Check'));
 });
 
 test('scanSecrets detects Google Cloud API key', async () => {
@@ -49,7 +49,7 @@ test('scanSecrets detects Google Cloud API key', async () => {
   const code = 'GCP_KEY = "AIzaSyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"';
   const findings = scanSecrets(code);
   assert.ok(findings.length > 0);
-  assert.ok(findings.some(f => f.type === 'Google Cloud API Key'));
+  assert.ok(findings.some((f) => f.type === 'Google Cloud API Key'));
 });
 
 test('scanSecrets detects database connection string with credentials', async () => {
@@ -57,7 +57,7 @@ test('scanSecrets detects database connection string with credentials', async ()
   const code = 'DB_URL = "postgresql://user:password123@localhost:5432/db"';
   const findings = scanSecrets(code);
   assert.ok(findings.length > 0);
-  assert.ok(findings.some(f => f.type === 'Database Connection Credentials'));
+  assert.ok(findings.some((f) => f.type === 'Database Connection Credentials'));
 });
 
 test('scanSecrets detects generic private key', async () => {
@@ -65,7 +65,7 @@ test('scanSecrets detects generic private key', async () => {
   const code = '-----BEGIN RSA PRIVATE KEY-----\nMIIBOQIBAAJBALRiMLAHudeSA2...\n-----END RSA PRIVATE KEY-----';
   const findings = scanSecrets(code);
   assert.ok(findings.length > 0);
-  assert.ok(findings.some(f => f.type === 'Generic Private Key'));
+  assert.ok(findings.some((f) => f.type === 'Generic Private Key'));
 });
 
 test('scanSecrets detects hardcoded password assignment', async () => {
@@ -73,7 +73,7 @@ test('scanSecrets detects hardcoded password assignment', async () => {
   const code = 'password = "supersecret123"';
   const findings = scanSecrets(code);
   assert.ok(findings.length > 0);
-  assert.ok(findings.some(f => f.type === 'Common Environment Credential'));
+  assert.ok(findings.some((f) => f.type === 'Common Environment Credential'));
 });
 
 test('scanSecrets detects hardcoded secret_key assignment', async () => {
@@ -81,15 +81,16 @@ test('scanSecrets detects hardcoded secret_key assignment', async () => {
   const code = 'secret_key = "sk_test_fakesecretfakevaluefake"';
   const findings = scanSecrets(code);
   assert.ok(findings.length > 0);
-  assert.ok(findings.some(f => f.type === 'Common Environment Credential'));
+  assert.ok(findings.some((f) => f.type === 'Common Environment Credential'));
 });
 
 test('scanSecrets detects JWT token', async () => {
   const { scanSecrets } = await import('../utils/secretsScanner.js');
-  const code = 'token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4ifQ.kiyOrthPqWEOOWKky_qUrsJNRF7gV1b0"';
+  const code =
+    'token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4ifQ.kiyOrthPqWEOOWKky_qUrsJNRF7gV1b0"';
   const findings = scanSecrets(code);
   assert.ok(findings.length > 0);
-  assert.ok(findings.some(f => f.type === 'JWT Token Check'));
+  assert.ok(findings.some((f) => f.type === 'JWT Token Check'));
 });
 
 test('scanSecrets detects auth_token assignment', async () => {
@@ -97,7 +98,7 @@ test('scanSecrets detects auth_token assignment', async () => {
   const code = 'auth_token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.fakefakefakefakefakefakefakefakefake"';
   const findings = scanSecrets(code);
   assert.ok(findings.length > 0);
-  assert.ok(findings.some(f => f.type === 'Common Environment Credential'));
+  assert.ok(findings.some((f) => f.type === 'Common Environment Credential'));
 });
 
 test('scanSecrets detects Slack Token Check', async () => {
@@ -105,7 +106,7 @@ test('scanSecrets detects Slack Token Check', async () => {
   const code = 'slack_token = "xoxb-mockslacktokenvalue"';
   const findings = scanSecrets(code);
   assert.ok(findings.length > 0);
-  assert.ok(findings.some(f => f.type === 'Slack Token Check'));
+  assert.ok(findings.some((f) => f.type === 'Slack Token Check'));
 });
 
 test('scanSecrets detects Discord Bot Token', async () => {
@@ -113,7 +114,7 @@ test('scanSecrets detects Discord Bot Token', async () => {
   const code = 'discord_token = "notarealdiscorduseridher.notrea.notarealdiscordbottokenhere"';
   const findings = scanSecrets(code);
   assert.ok(findings.length > 0);
-  assert.ok(findings.some(f => f.type === 'Discord Bot Token'));
+  assert.ok(findings.some((f) => f.type === 'Discord Bot Token'));
 });
 
 test('scanSecrets returns findings with expected shape', async () => {
@@ -174,7 +175,8 @@ test('scanSecrets handles multiline content', async () => {
 
 test('scanSecrets detects multiple credentials on different lines', async () => {
   const { scanSecrets } = await import('../utils/secretsScanner.js');
-  const code = 'AWS_KEY = "AKIAIOSFODNN7EXAMPLE"\npassword = "supersecret123"\nDB_URL = "postgresql://user:pass@localhost/db"';
+  const code =
+    'AWS_KEY = "AKIAIOSFODNN7EXAMPLE"\npassword = "supersecret123"\nDB_URL = "postgresql://user:pass@localhost/db"';
   const findings = scanSecrets(code);
   assert.ok(findings.length >= 3, 'Should find secrets on each line');
 });
@@ -185,7 +187,7 @@ test('scanSecrets detects variable-length Slack Incoming Webhooks', async () => 
   const legacyWebhook = 'https://' + 'hooks.slack.com/services/T12345678/B12345678/A12345678901234567890124';
   // Modern / longer lengths (9, 11, 30)
   const modernWebhook = 'https://' + 'hooks.slack.com/services/T123456789/B12345678901/A123456789012345678901234567890';
-  
+
   const findings = scanSecrets(`${legacyWebhook}\n${modernWebhook}`);
   assert.equal(findings.length, 2);
   assert.equal(findings[0].type, 'Slack Incoming Webhook');

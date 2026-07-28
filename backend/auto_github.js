@@ -4,18 +4,30 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const GITHUB_TOKEN = process.env.GITHUB_PAT || process.env.GITHUB_TOKEN;
-const GITHUB_OWNER = process.env.GITHUB_OWNER || (process.env.GITHUB_REPOSITORY ? process.env.GITHUB_REPOSITORY.split('/')[0] : null);
-const GITHUB_REPO = process.env.GITHUB_REPO || (process.env.GITHUB_REPOSITORY ? process.env.GITHUB_REPOSITORY.split('/')[1] : null);
+const GITHUB_OWNER =
+  process.env.GITHUB_OWNER || (process.env.GITHUB_REPOSITORY ? process.env.GITHUB_REPOSITORY.split('/')[0] : null);
+const GITHUB_REPO =
+  process.env.GITHUB_REPO || (process.env.GITHUB_REPOSITORY ? process.env.GITHUB_REPOSITORY.split('/')[1] : null);
 
 function parseArgs() {
   const args = process.argv.slice(2);
   const parsed = {};
   for (let i = 0; i < args.length; i++) {
     switch (args[i]) {
-      case '--owner': case '-o': parsed.owner = args[++i]; break;
-      case '--repo': case '-r': parsed.repo = args[++i]; break;
-      case '--token': case '-t': parsed.token = args[++i]; break;
-      case '--help': case '-h':
+      case '--owner':
+      case '-o':
+        parsed.owner = args[++i];
+        break;
+      case '--repo':
+      case '-r':
+        parsed.repo = args[++i];
+        break;
+      case '--token':
+      case '-t':
+        parsed.token = args[++i];
+        break;
+      case '--help':
+      case '-h':
         console.log(`Usage: node auto_github.js [options]
 
 Options:
@@ -63,7 +75,7 @@ async function autoAssignAndMerge() {
       owner,
       repo,
       state: 'open',
-      per_page: 100
+      per_page: 100,
     });
 
     for (const issue of issues) {
@@ -73,21 +85,21 @@ async function autoAssignAndMerge() {
         owner,
         repo,
         issue_number: issue.number,
-        per_page: 100
+        per_page: 100,
       });
 
       for (const comment of comments) {
         if (comment.body?.toLowerCase()?.includes('assign me')) {
           const userToAssign = comment.user.login;
-          const assignees = issue.assignees.map(a => a.login);
-          
+          const assignees = issue.assignees.map((a) => a.login);
+
           if (!assignees.includes(userToAssign)) {
             console.log(`👉 Assigning @${userToAssign} to Issue #${issue.number}...`);
             await octokit.rest.issues.addAssignees({
               owner,
               repo,
               issue_number: issue.number,
-              assignees: [userToAssign]
+              assignees: [userToAssign],
             });
             console.log(`✅ Assigned @${userToAssign} to Issue #${issue.number}`);
           }
@@ -101,7 +113,7 @@ async function autoAssignAndMerge() {
       owner,
       repo,
       state: 'open',
-      per_page: 100
+      per_page: 100,
     });
 
     if (prs.length === 0) {
@@ -123,7 +135,7 @@ async function autoAssignAndMerge() {
           repo,
           issue_number: pr.number,
         });
-        const labelNames = labels.map(l => l.name);
+        const labelNames = labels.map((l) => l.name);
         const mergeLabel = process.env.AUTO_MERGE_LABEL || 'gssoc:approved';
         if (!labelNames.includes(mergeLabel)) {
           console.log(`   ⏭️ Skipping PR #${pr.number} — missing label "${mergeLabel}"`);
@@ -153,9 +165,7 @@ async function autoAssignAndMerge() {
           repo,
           pull_number: pr.number,
         });
-        const hasApprovedReview = reviews.some(
-          r => r.state === 'APPROVED' && r.user.login !== pr.user.login
-        );
+        const hasApprovedReview = reviews.some((r) => r.state === 'APPROVED' && r.user.login !== pr.user.login);
         if (!hasApprovedReview) {
           console.log(`   ⏭️ Skipping PR #${pr.number} — no approved review found (self-approvals excluded)`);
           continue;
@@ -167,7 +177,7 @@ async function autoAssignAndMerge() {
             owner,
             repo,
             pull_number: pr.number,
-            merge_method: 'squash'
+            merge_method: 'squash',
           });
           console.log(`✅ Merged PR #${pr.number}`);
         } catch (e) {
@@ -178,7 +188,6 @@ async function autoAssignAndMerge() {
     }
 
     console.log(`\n🎉 Automator finished successfully for ${owner}/${repo}!`);
-
   } catch (error) {
     console.error(`❌ An error occurred for ${owner}/${repo}:`, error.message);
   }

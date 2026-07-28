@@ -1,12 +1,4 @@
-import {
-  Activity,
-  AlertTriangle,
-  Code2,
-  FileCode,
-  Languages,
-  ShieldAlert,
-  Sparkles,
-} from 'lucide-react';
+import { Activity, AlertTriangle, Code2, FileCode, Languages, ShieldAlert, Sparkles } from 'lucide-react';
 
 interface ReviewItem {
   type: string;
@@ -71,9 +63,7 @@ function getAggregateGrade(metrics: Record<string, FileMetrics>) {
     return null;
   }
 
-  return grades.reduce((worst, grade) => (
-    gradeRank[grade] > gradeRank[worst] ? grade : worst
-  ), 'A');
+  return grades.reduce((worst, grade) => (gradeRank[grade] > gradeRank[worst] ? grade : worst), 'A');
 }
 
 function getHealthStatus(totalFindings: number, securityIssues: number, grade: string | null) {
@@ -113,7 +103,10 @@ function formatLanguages(fileReviews: Record<string, FileReview>) {
   }, {});
 
   const languages = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-  const preview = languages.slice(0, 3).map(([extension]) => extension.toUpperCase()).join(', ');
+  const preview = languages
+    .slice(0, 3)
+    .map(([extension]) => extension.toUpperCase())
+    .join(', ');
 
   return {
     count: languages.length,
@@ -147,11 +140,11 @@ export default function RepositorySummaryCard({ result, isLoading = false }: Pro
   const health = hasMetrics
     ? getHealthStatus(findings.total, findings.security, aggregateGrade)
     : {
-      label: 'Awaiting Metrics',
-      color: '#64748b',
-      background: 'rgba(100, 116, 139, 0.1)',
-      border: 'rgba(100, 116, 139, 0.26)',
-    };
+        label: 'Awaiting Metrics',
+        color: '#64748b',
+        background: 'rgba(100, 116, 139, 0.1)',
+        border: 'rgba(100, 116, 139, 0.26)',
+      };
   const gradeColor = aggregateGrade ? gradeColors[aggregateGrade] : null;
 
   const summaryItems = [

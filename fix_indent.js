@@ -16,4 +16,4 @@ const replacement = `try:
 
 content = content.replace(regex, replacement);
 fs.writeFileSync(file, content);
-console.log("Fixed indent");
+console.log('Fixed indent');

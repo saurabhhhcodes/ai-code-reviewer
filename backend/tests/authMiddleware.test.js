@@ -37,7 +37,9 @@ function makeMockReqRes({ providedKey = '', cookie = '' } = {}) {
 test('requireApiKey calls next() when valid key is provided', () => {
   const { req, res } = makeMockReqRes({ providedKey: 'test-secret-key' });
   let nextCalled = false;
-  const next = () => { nextCalled = true; };
+  const next = () => {
+    nextCalled = true;
+  };
 
   requireApiKey(req, res, next);
 
@@ -61,7 +63,9 @@ test('requireApiKey calls next() when a valid frontend session cookie is provide
   const session = createFrontendSessionCookie(cookieRes);
   const { req, res } = makeMockReqRes({ cookie: session.cookieHeader });
   let nextCalled = false;
-  const next = () => { nextCalled = true; };
+  const next = () => {
+    nextCalled = true;
+  };
 
   requireApiKey(req, res, next);
 
@@ -114,17 +118,19 @@ test('requireApiKey returns 500 when REPOSAGE_API_KEY is not configured', () => 
 
 test('requireApiKey returns 401 and safely handles error when session cookie payload is corrupt JSON', () => {
   const secret = process.env.REPOSAGE_API_KEY || 'test-secret-key';
-  
+
   // Create a payload that is NOT valid JSON but is correctly signed
   const corruptPayload = Buffer.from('this-is-not-valid-json').toString('base64url');
   const signature = crypto.createHmac('sha256', secret).update(corruptPayload).digest('base64url');
-  
+
   // Construct the spoofed cookie: rps_v1_session=payload.signature
   const sessionCookie = `rps_v1_session=${corruptPayload}.${signature}`;
-  
+
   const { req, res } = makeMockReqRes({ cookie: sessionCookie });
   let nextCalled = false;
-  const next = () => { nextCalled = true; };
+  const next = () => {
+    nextCalled = true;
+  };
 
   // This will hit the catch block of JSON.parse in the middleware
   requireApiKey(req, res, next);

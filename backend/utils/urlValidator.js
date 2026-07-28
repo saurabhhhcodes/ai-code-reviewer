@@ -4,12 +4,7 @@ import { promisify } from 'node:util';
 
 const dnsLookup = promisify(dns.lookup);
 
-const METADATA_IPS = new Set([
-  '169.254.169.254',
-  'fd00:ec2::254',
-  '100.100.100.200',
-  '100.100.100.204',
-]);
+const METADATA_IPS = new Set(['169.254.169.254', 'fd00:ec2::254', '100.100.100.200', '100.100.100.204']);
 
 function isPrivateIP(ip) {
   if (METADATA_IPS.has(ip)) return true;
@@ -127,6 +122,6 @@ export function parseRepoUrl(url) {
   const parts = cleanUrl.split('/');
   return {
     owner: parts[parts.length - 2],
-    repo: parts[parts.length - 1]
+    repo: parts[parts.length - 1],
   };
 }

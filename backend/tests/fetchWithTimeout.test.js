@@ -56,7 +56,7 @@ test('fetchWithTimeout passes headers through in options', async () => {
 
   try {
     await fetchWithTimeout('https://example.com/api', {
-      headers: { 'Authorization': 'Bearer token123', 'Content-Type': 'application/json' }
+      headers: { Authorization: 'Bearer token123', 'Content-Type': 'application/json' },
     });
     assert.equal(capturedOptions.headers['Authorization'], 'Bearer token123');
     assert.equal(capturedOptions.headers['Content-Type'], 'application/json');
@@ -68,12 +68,12 @@ test('fetchWithTimeout passes headers through in options', async () => {
 test('fetchWithTimeout throws when timeout expires before fetch resolves', async () => {
   const originalFetch = globalThis.fetch;
   // Use a fetch that resolves after 500ms — well past our 5ms timeout
-  globalThis.fetch = async () => new Promise(resolve => setTimeout(() => resolve(new Response('late')), 500));
+  globalThis.fetch = async () => new Promise((resolve) => setTimeout(() => resolve(new Response('late')), 500));
 
   try {
     const promise = fetchWithTimeout('https://example.com/api', {}, 5);
     // Wait long enough for the abort to fire (5ms timeout, give it 200ms)
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await new Promise((resolve) => setTimeout(resolve, 200));
     // If we get here without throwing, the test should fail
     await promise;
     assert.fail('Expected an error to be thrown due to timeout');
@@ -122,7 +122,9 @@ test('fetchWithTimeout passes signal to fetch call', async () => {
 
 test('fetchWithTimeout propagates fetch errors as-is', async () => {
   const originalFetch = globalThis.fetch;
-  globalThis.fetch = async () => { throw new Error('Network failure'); };
+  globalThis.fetch = async () => {
+    throw new Error('Network failure');
+  };
 
   try {
     await fetchWithTimeout('https://example.com/api');
@@ -178,11 +180,7 @@ test('fetchWithTimeout merges global options with signal', async () => {
   };
 
   try {
-    await fetchWithTimeout(
-      'https://example.com/api',
-      { method: 'GET', credentials: 'include' },
-      30000
-    );
+    await fetchWithTimeout('https://example.com/api', { method: 'GET', credentials: 'include' }, 30000);
     // Signal should be merged into options, not replacing them
     assert.equal(capturedOptions.method, 'GET');
     assert.equal(capturedOptions.credentials, 'include');

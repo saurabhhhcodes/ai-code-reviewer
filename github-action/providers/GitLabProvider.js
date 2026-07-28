@@ -5,7 +5,7 @@ export class GitLabProvider extends Provider {
     super();
     this.token = token;
     this.apiUrl = apiUrl.replace(/\/$/, '');
-    
+
     // In GitLab CI, these environment variables are automatically set
     this.projectId = process.env.CI_PROJECT_ID;
     this.mrIid = process.env.CI_MERGE_REQUEST_IID;
@@ -14,7 +14,7 @@ export class GitLabProvider extends Provider {
 
   init() {
     if (!this.projectId || !this.mrIid) {
-      throw new Error("GitLab Provider requires CI_PROJECT_ID and CI_MERGE_REQUEST_IID environment variables.");
+      throw new Error('GitLab Provider requires CI_PROJECT_ID and CI_MERGE_REQUEST_IID environment variables.');
     }
     console.log(`Initialized GitLab Provider for Project ${this.projectId}, MR !${this.mrIid}`);
   }
@@ -24,7 +24,7 @@ export class GitLabProvider extends Provider {
       owner: 'gitlab',
       repo: this.projectId,
       pullNumber: this.mrIid,
-      headSha: this.commitSha
+      headSha: this.commitSha,
     };
   }
 
@@ -32,9 +32,9 @@ export class GitLabProvider extends Provider {
     const url = `${this.apiUrl}${endpoint}`;
     const headers = {
       'PRIVATE-TOKEN': this.token,
-      ...options.headers
+      ...options.headers,
     };
-    
+
     const response = await fetch(url, { ...options, headers });
     if (!response.ok) {
       const errText = await response.text();
@@ -47,8 +47,8 @@ export class GitLabProvider extends Provider {
     // Fetch MR changes
     const response = await this._fetch(`/projects/${this.projectId}/merge_requests/${this.mrIid}/changes`);
     const data = await response.json();
-    
-    // We need to convert GitLab changes array into a unified diff format string, 
+
+    // We need to convert GitLab changes array into a unified diff format string,
     // or we can adjust `parseDiff` to handle it.
     // For simplicity in keeping the core logic intact, we reconstruct a unified diff.
     let diffString = '';
@@ -75,7 +75,7 @@ export class GitLabProvider extends Provider {
       await this._fetch(`/projects/${this.projectId}/merge_requests/${this.mrIid}/notes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ body: reviewData.body })
+        body: JSON.stringify({ body: reviewData.body }),
       });
     }
 
@@ -103,9 +103,9 @@ export class GitLabProvider extends Provider {
               head_sha: headSha,
               start_sha: startSha,
               new_path: comment.path,
-              new_line: comment.line
-            }
-          })
+              new_line: comment.line,
+            },
+          }),
         });
       } catch (err) {
         console.error(`Failed to post comment on ${comment.path}:${comment.line} - ${err.message}`);
@@ -123,7 +123,7 @@ export class GitLabProvider extends Provider {
         await this._fetch(`/projects/${this.projectId}/merge_requests/${this.mrIid}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ labels: labels.join(',') })
+          body: JSON.stringify({ labels: labels.join(',') }),
         });
       }
     } catch (err) {
@@ -141,7 +141,7 @@ export class GitLabProvider extends Provider {
     await this._fetch(`/projects/${this.projectId}/merge_requests/${this.mrIid}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ description: body })
+      body: JSON.stringify({ description: body }),
     });
   }
 }

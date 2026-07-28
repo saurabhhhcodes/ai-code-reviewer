@@ -7,14 +7,12 @@ test('mockAIReview returns empty structure when files list is empty', () => {
   assert.deepEqual(result, {
     fileReviews: {},
     generatedReadme: '',
-    mermaidDiagram: ''
+    mermaidDiagram: '',
   });
 });
 
 test('mockAIReview returns expected mock review layout for files', () => {
-  const files = [
-    { name: 'src/index.js', content: 'const x = 1;' }
-  ];
+  const files = [{ name: 'src/index.js', content: 'const x = 1;' }];
   const modelName = 'my-custom-model';
   const result = mockAIReview(files, modelName);
 

@@ -10,7 +10,11 @@ async function withTempFile(fn) {
   try {
     return await fn(filePath);
   } finally {
-    try { fs.unlinkSync(filePath); } catch { /* ignore */ }
+    try {
+      fs.unlinkSync(filePath);
+    } catch {
+      /* ignore */
+    }
   }
 }
 
@@ -50,9 +54,7 @@ test('generateHTMLReport counts bugs and security as error severity', async () =
             { line: 5, description: 'null pointer', rule: 'no-null' },
             { line: 20, description: 'type error', rule: 'type-error' },
           ],
-          security: [
-            { line: 15, description: 'SQL injection', rule: 'sql-injection' },
-          ],
+          security: [{ line: 15, description: 'SQL injection', rule: 'sql-injection' }],
           optimization: [],
           styling: [],
         },
@@ -76,9 +78,7 @@ test('generateHTMLReport counts optimization as warning severity', async () => {
         'src/utils.js': {
           bugs: [],
           security: [],
-          optimization: [
-            { line: 3, description: 'cache this result', rule: 'use-cache' },
-          ],
+          optimization: [{ line: 3, description: 'cache this result', rule: 'use-cache' }],
           styling: [],
         },
       },
@@ -102,9 +102,7 @@ test('generateHTMLReport counts styling as info severity', async () => {
           bugs: [],
           security: [],
           optimization: [],
-          styling: [
-            { line: 1, description: 'missing trailing comma', rule: 'trailing-comma' },
-          ],
+          styling: [{ line: 1, description: 'missing trailing comma', rule: 'trailing-comma' }],
         },
       },
     };
@@ -254,8 +252,7 @@ test('generateHTMLReport applies escapeHtml to repoName in meta section', async 
 
     const html = fs.readFileSync(outputPath, 'utf-8');
     // repoName is escaped in the meta section (Repository: field)
-    assert.ok(html.includes('&lt;script&gt;alert(1)&lt;/script&gt;'),
-      'script tag should be escaped in meta section');
+    assert.ok(html.includes('&lt;script&gt;alert(1)&lt;/script&gt;'), 'script tag should be escaped in meta section');
   });
 });
 
@@ -276,8 +273,7 @@ test('generateHTMLReport applies escapeHtml to file paths in table', async () =>
     generateHTMLReport('xss-repo', files, reviewResult, outputPath);
 
     const html = fs.readFileSync(outputPath, 'utf-8');
-    assert.equal(html.includes('<img src=x onerror=alert(1)>'), false,
-      'raw img tag in file path should not appear');
+    assert.equal(html.includes('<img src=x onerror=alert(1)>'), false, 'raw img tag in file path should not appear');
   });
 });
 
@@ -320,10 +316,7 @@ test('generateHTMLReport shows "No findings" message when all categories are emp
     generateHTMLReport('clean-repo', files, reviewResult, outputPath);
 
     const html = fs.readFileSync(outputPath, 'utf-8');
-    assert.ok(
-      html.includes('No findings') || html.includes('No findings'),
-      'no findings message should appear'
-    );
+    assert.ok(html.includes('No findings') || html.includes('No findings'), 'no findings message should appear');
   });
 });
 
@@ -365,13 +358,11 @@ test('generateHTMLReport sorts findings stably even with custom/unknown severity
     const reviewResult = {
       fileReviews: {
         'test.js': {
-          bugs: [
-            { line: 10, description: 'bug 1', rule: 'b1' }
-          ],
+          bugs: [{ line: 10, description: 'bug 1', rule: 'b1' }],
           security: [],
           optimization: [
             // Injecting unknown severity category name which would normally cause NaN sort
-            { line: 20, description: 'opt 1', rule: 'o1', severity: 'super-critical' }
+            { line: 20, description: 'opt 1', rule: 'o1', severity: 'super-critical' },
           ],
           styling: [],
         },
@@ -380,7 +371,7 @@ test('generateHTMLReport sorts findings stably even with custom/unknown severity
 
     const result = generateHTMLReport('test-repo', files, reviewResult, outputPath);
     assert.equal(result.success, true);
-    
+
     const html = fs.readFileSync(outputPath, 'utf-8');
     assert.ok(html.includes('super-critical'));
   });

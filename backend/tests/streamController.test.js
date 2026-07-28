@@ -13,7 +13,7 @@ describe('streamReview', () => {
         if (key === 'Connection') assert.equal(value, 'keep-alive');
       },
       write: (data) => writtenData.push(data),
-      end: () => {}
+      end: () => {},
     };
 
     await streamReview(req, res);
@@ -25,14 +25,20 @@ describe('streamReview', () => {
     const res = {
       setHeader: () => {},
       write: (data) => writtenData.push(data),
-      end: () => {}
+      end: () => {},
     };
 
     await streamReview(req, res);
 
     assert.ok(writtenData.length > 0, 'should have written data');
-    assert.ok(writtenData.some(d => d.includes('data:')), 'all writes should be SSE data events');
-    assert.ok(writtenData.some(d => d.includes('[DONE]')), 'should end with [DONE]');
+    assert.ok(
+      writtenData.some((d) => d.includes('data:')),
+      'all writes should be SSE data events',
+    );
+    assert.ok(
+      writtenData.some((d) => d.includes('[DONE]')),
+      'should end with [DONE]',
+    );
     assert.ok(writtenData[writtenData.length - 1].includes('[DONE]'), 'last write should be [DONE]');
   });
 
@@ -45,12 +51,14 @@ describe('streamReview', () => {
           // Simulate immediate close
           handler();
         }
-      }
+      },
     };
     const res = {
       setHeader: () => {},
-      write: (data) => { writeCount++; },
-      end: () => {}
+      write: (data) => {
+        writeCount++;
+      },
+      end: () => {},
     };
 
     await streamReview(req, res);

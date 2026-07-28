@@ -59,7 +59,7 @@ test('readFilesRecursively includes an extensionless file with a recognized sheb
   fs.writeFileSync(path.join(tempDir, 'process'), '#!/usr/bin/env python3\nimport os\nos.system(user_input)');
 
   const files = readFilesRecursively(tempDir, [], tempDir, []);
-  const found = files.find(f => f.name === 'process');
+  const found = files.find((f) => f.name === 'process');
 
   assert.ok(found, 'extensionless shebang script should be included, not silently skipped');
   assert.equal(found.detectedLanguage, 'python');
@@ -76,7 +76,7 @@ test('readFilesRecursively skips an extensionless file with no shebang (unchange
   fs.writeFileSync(path.join(tempDir, 'Makefile'), 'build:\n\tgo build ./...');
 
   const files = readFilesRecursively(tempDir, [], tempDir, []);
-  const fileNames = files.map(f => f.name);
+  const fileNames = files.map((f) => f.name);
 
   assert.equal(fileNames.includes('LICENSE'), false, 'non-script extensionless files should still be skipped');
   assert.equal(fileNames.includes('Makefile'), false, 'non-script extensionless files should still be skipped');
@@ -93,7 +93,7 @@ test('readFilesRecursively includes multiple shebang languages in the same direc
   fs.writeFileSync(path.join(tempDir, 'migrate'), '#!/usr/bin/env node\nconsole.log("migrating")');
 
   const files = readFilesRecursively(tempDir, [], tempDir, []);
-  const byName = Object.fromEntries(files.map(f => [f.name, f]));
+  const byName = Object.fromEntries(files.map((f) => [f.name, f]));
 
   assert.equal(byName['deploy']?.detectedLanguage, 'shell');
   assert.equal(byName['migrate']?.detectedLanguage, 'javascript');
@@ -109,7 +109,7 @@ test('readFilesRecursively does not add a detectedLanguage field for files with 
   fs.writeFileSync(path.join(tempDir, 'script.py'), '#!/usr/bin/env python3\nprint("hi")');
 
   const files = readFilesRecursively(tempDir, [], tempDir, []);
-  const found = files.find(f => f.name === 'script.py');
+  const found = files.find((f) => f.name === 'script.py');
 
   assert.ok(found, '.py file should be included as before');
   assert.equal(found.detectedLanguage, undefined, 'extension-based files should not gain a detectedLanguage field');

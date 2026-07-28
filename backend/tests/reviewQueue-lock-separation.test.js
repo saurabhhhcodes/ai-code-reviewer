@@ -11,17 +11,17 @@ describe('ReviewQueue lock separation', () => {
 
   it('enqueue and runExclusive should not interfere with separate keys', async () => {
     const results = [];
-    
+
     // Start enqueue for key1
     const enqueuePromise = reviewQueue.enqueue('key1', { id: 1 }, async (item) => {
       results.push(`enqueue-key1-${item.id}`);
-      await new Promise(r => setTimeout(r, 50));
+      await new Promise((r) => setTimeout(r, 50));
     });
 
     // Start runExclusive for key2 (different key)
     const exclusivePromise = reviewQueue.runExclusive('key2', async () => {
       results.push('exclusive-key2');
-      await new Promise(r => setTimeout(r, 50));
+      await new Promise((r) => setTimeout(r, 50));
     });
 
     await Promise.all([enqueuePromise, exclusivePromise]);
@@ -33,18 +33,18 @@ describe('ReviewQueue lock separation', () => {
 
   it('enqueue and runExclusive on same key should serialize independently', async () => {
     const results = [];
-    
+
     // Start enqueue for key1
     const enqueuePromise = reviewQueue.enqueue('key1', { id: 1 }, async (item) => {
       results.push(`enqueue-${item.id}-start`);
-      await new Promise(r => setTimeout(r, 50));
+      await new Promise((r) => setTimeout(r, 50));
       results.push(`enqueue-${item.id}-end`);
     });
 
     // runExclusive on different key should run in parallel
     const exclusivePromise = reviewQueue.runExclusive('key2', async () => {
       results.push('exclusive-start');
-      await new Promise(r => setTimeout(r, 30));
+      await new Promise((r) => setTimeout(r, 30));
       results.push('exclusive-end');
     });
 

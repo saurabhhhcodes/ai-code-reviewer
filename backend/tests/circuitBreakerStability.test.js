@@ -11,15 +11,19 @@ test('CircuitBreaker: requires multiple successes in HALF_OPEN state to close', 
 
   // Trip to OPEN
   try {
-    await cb.call(async () => { throw new Error('err'); });
+    await cb.call(async () => {
+      throw new Error('err');
+    });
   } catch {}
   try {
-    await cb.call(async () => { throw new Error('err'); });
+    await cb.call(async () => {
+      throw new Error('err');
+    });
   } catch {}
   assert.equal(cb.getState(), 'OPEN');
 
   // Wait for cooldown
-  await new Promise(r => setTimeout(r, 60));
+  await new Promise((r) => setTimeout(r, 60));
 
   // Trigger first request in HALF_OPEN (transits automatically on call)
   const res1 = await cb.call(async () => 'ok1');

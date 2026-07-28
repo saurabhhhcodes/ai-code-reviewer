@@ -13,8 +13,8 @@ const ORIGINAL_EXISTS_SYNC = fs.existsSync;
 
 function withNotebookFixture(notebook, fn) {
   const content = JSON.stringify(notebook);
-  fs.existsSync = (p) => p === FIXTURE_PATH ? true : ORIGINAL_EXISTS_SYNC(p);
-  fs.readFileSync = (p) => p === FIXTURE_PATH ? content : ORIGINAL_READ_FILE_SYNC(p);
+  fs.existsSync = (p) => (p === FIXTURE_PATH ? true : ORIGINAL_EXISTS_SYNC(p));
+  fs.readFileSync = (p) => (p === FIXTURE_PATH ? content : ORIGINAL_READ_FILE_SYNC(p));
   try {
     return fn();
   } finally {

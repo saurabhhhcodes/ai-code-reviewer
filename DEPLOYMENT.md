@@ -3,6 +3,7 @@
 This guide explains how to easily deploy all three parts of RepoSage for free.
 
 ## 1. Frontend (React + Vite) ➜ Vercel
+
 Vercel is the best place to host the frontend. We have already added a `vercel.json` file to handle routing properly.
 
 1. Create a free account at [vercel.com](https://vercel.com/) and connect your GitHub.
@@ -10,10 +11,11 @@ Vercel is the best place to host the frontend. We have already added a `vercel.j
 3. Important: Open the **"Framework Preset"** section and ensure it says **Vite**.
 4. Open the **"Root Directory"** setting and type `frontend`.
 5. Under **Environment Variables**, add:
-   * `VITE_API_URL`: *(The URL of your deployed backend, e.g., `https://reposage-backend.onrender.com`)*
+   - `VITE_API_URL`: _(The URL of your deployed backend, e.g., `https://reposage-backend.onrender.com`)_
 6. Click **Deploy**.
 
 ## 2. Backend & AI Engine ➜ Render
+
 Render is perfect for our Node.js and Python services because they run continuously and won't time out during heavy repository analysis. We have provided a `render.yaml` file to make this a 1-click deployment!
 
 1. Create a free account at [render.com](https://render.com/) and connect your GitHub.
@@ -21,10 +23,11 @@ Render is perfect for our Node.js and Python services because they run continuou
 3. Select your `ai-code-reviewer` repository.
 4. Render will automatically read the `render.yaml` file and prepare **both** the Node.js Backend and the Python AI Engine.
 5. It will ask you to fill in the environment variables:
-   * `GROQ_API_KEY`: *(Your Groq API key)*
-   * `ALLOWED_ORIGINS`: *(The URL of your deployed Vercel frontend, e.g., `https://reposage-frontend.vercel.app`)*
-   * `SESSION_SECRET`: *(A long, random string used to sign frontend session cookies)*
+   - `GROQ_API_KEY`: _(Your Groq API key)_
+   - `ALLOWED_ORIGINS`: _(The URL of your deployed Vercel frontend, e.g., `https://reposage-frontend.vercel.app`)_
+   - `SESSION_SECRET`: _(A long, random string used to sign frontend session cookies)_
 6. Click **Apply**.
 
 ### 🎉 That's it!
+
 Every time you or a GSSoC contributor pushes code to the `main` branch, Vercel and Render will automatically rebuild and deploy the updates!

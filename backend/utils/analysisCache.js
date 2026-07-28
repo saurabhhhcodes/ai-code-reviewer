@@ -21,7 +21,9 @@ class AsyncLock {
     while (this._promise) {
       await this._promise;
     }
-    this._promise = new Promise(resolve => { this._resolve = resolve; });
+    this._promise = new Promise((resolve) => {
+      this._resolve = resolve;
+    });
     try {
       return await fn();
     } finally {
@@ -71,9 +73,9 @@ class AnalysisCache {
       .createHash('sha256')
       .update(
         files
-          .map(f => `${f.name}:${crypto.createHash('sha256').update(f.content).digest('hex')}`)
+          .map((f) => `${f.name}:${crypto.createHash('sha256').update(f.content).digest('hex')}`)
           .sort()
-          .join('|')
+          .join('|'),
       )
       .digest('hex')
       .slice(0, 12);
@@ -118,7 +120,9 @@ class AnalysisCache {
     this.cache.set(key, entry);
     this.stats.hits++;
     const qualityLabel = entry.isMock ? '⚠️ MOCK' : '✅';
-    console.log(`${qualityLabel} Analysis cache hit for key ${key.slice(0, 8)}... (${this.cache.size} entries, ${this.stats.hits} hits, ${this.stats.misses} misses)`);
+    console.log(
+      `${qualityLabel} Analysis cache hit for key ${key.slice(0, 8)}... (${this.cache.size} entries, ${this.stats.hits} hits, ${this.stats.misses} misses)`,
+    );
     return JSON.parse(JSON.stringify(entry.result));
   }
 
@@ -147,7 +151,7 @@ class AnalysisCache {
     const now = Date.now();
     const ttl = options.isMock ? this.mockTtlMs : this.ttlMs;
     const expiresAt = now + ttl;
-    const absoluteExpiresAt = now + (ttl * this.absoluteMaxMultiplier);
+    const absoluteExpiresAt = now + ttl * this.absoluteMaxMultiplier;
     const repoUrl = options.repoUrl;
     const normalizedRepoUrl = repoUrl ? repoUrl.replace(/\/+$/, '').toLowerCase() : undefined;
     this.cache.set(key, { result, expiresAt, absoluteExpiresAt, repoUrl: normalizedRepoUrl, isMock: !!options.isMock });
@@ -158,7 +162,9 @@ class AnalysisCache {
       this._repoUrlIndex.get(normalizedRepoUrl).add(key);
     }
     const qualityLabel = options.isMock ? '⚠️ MOCK' : '💾';
-    console.log(`${qualityLabel} Cached analysis result for key ${key.slice(0, 8)}... (${this.cache.size}/${this.maxEntries} entries, ${this.stats.evictions} evictions, ttl=${ttl}ms)`);
+    console.log(
+      `${qualityLabel} Cached analysis result for key ${key.slice(0, 8)}... (${this.cache.size}/${this.maxEntries} entries, ${this.stats.evictions} evictions, ttl=${ttl}ms)`,
+    );
   }
 
   /**
@@ -188,17 +194,19 @@ class AnalysisCache {
           return pending;
         }
 
-        const promise = fetcher().then(result => {
-          const cacheHint = (result && result._cacheHint) || {};
-          const resultData = (result && result._data !== undefined) ? result._data : result;
-          const isMock = cacheHint.isMock === true || result._mock === true;
-          this.set(key, resultData, { repoUrl, isMock });
-          this.pending.delete(key);
-          return resultData;
-        }).catch(err => {
-          this.pending.delete(key);
-          throw err;
-        });
+        const promise = fetcher()
+          .then((result) => {
+            const cacheHint = (result && result._cacheHint) || {};
+            const resultData = result && result._data !== undefined ? result._data : result;
+            const isMock = cacheHint.isMock === true || result._mock === true;
+            this.set(key, resultData, { repoUrl, isMock });
+            this.pending.delete(key);
+            return resultData;
+          })
+          .catch((err) => {
+            this.pending.delete(key);
+            throw err;
+          });
 
         this.pending.set(key, promise);
         return promise;
@@ -306,9 +314,10 @@ class AnalysisCache {
   }
 
   getStats() {
-    const hitRate = this.stats.hits + this.stats.misses > 0
-      ? ((this.stats.hits / (this.stats.hits + this.stats.misses)) * 100).toFixed(1)
-      : 'N/A';
+    const hitRate =
+      this.stats.hits + this.stats.misses > 0
+        ? ((this.stats.hits / (this.stats.hits + this.stats.misses)) * 100).toFixed(1)
+        : 'N/A';
 
     let totalAge = 0;
     let mockCount = 0;
@@ -362,8 +371,8 @@ class AnalysisCache {
       return 0;
     }
     let removed = 0;
-      for (const key of keys) {
-        if (this.cache.delete(key)) {
+    for (const key of keys) {
+      if (this.cache.delete(key)) {
         removed++;
       }
     }

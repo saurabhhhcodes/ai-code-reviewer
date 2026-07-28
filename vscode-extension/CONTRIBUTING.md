@@ -11,12 +11,14 @@ Thank you for your interest in contributing to the RepoSage VS Code extension!
 ## Setup
 
 1. Clone the repository and navigate to the extension:
+
    ```bash
    git clone https://github.com/kalyan-1845/ai-code-reviewer.git
    cd ai-code-reviewer/vscode-extension
    ```
 
 2. Install dependencies:
+
    ```bash
    npm install
    ```

@@ -3,11 +3,7 @@ import crypto from 'crypto';
 export function verifyWebhookSignature(rawBody, signature, secret) {
   if (!signature || !secret) return false;
 
-  const bodyStr = typeof rawBody === 'string'
-    ? rawBody
-    : Buffer.isBuffer(rawBody)
-      ? rawBody.toString('utf-8')
-      : '';
+  const bodyStr = typeof rawBody === 'string' ? rawBody : Buffer.isBuffer(rawBody) ? rawBody.toString('utf-8') : '';
 
   const hmac = crypto.createHmac('sha256', secret).update(bodyStr);
   const expected = `sha256=${hmac.digest('hex')}`;

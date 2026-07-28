@@ -16,7 +16,7 @@ test('DedupStore: expires memory entries after TTL', async () => {
   const store = new DedupStore();
 
   await store.set('key1', 'val1', 10);
-  await new Promise(resolve => setTimeout(resolve, 20));
+  await new Promise((resolve) => setTimeout(resolve, 20));
 
   assert.equal(await store.get('key1'), null);
 });
@@ -24,11 +24,11 @@ test('DedupStore: expires memory entries after TTL', async () => {
 test('DedupStore: sets and gets values in memory when Redis is absent', async () => {
   const store = new DedupStore();
   await store.set('key1', 'value1', 100);
-  
+
   assert.equal(await store.get('key1'), 'value1');
-  
+
   // Wait for expiration
-  await new Promise(r => setTimeout(r, 120));
+  await new Promise((r) => setTimeout(r, 120));
   assert.equal(await store.get('key1'), null);
 });
 
@@ -54,14 +54,13 @@ test('DedupStore: handles type transitions safely without throwing TypeError', a
 
   // 2. Call isMember and removeFromSet on it — should handle it safely
   assert.equal(await store.isMember('mixedKey', 'member'), false);
-  
+
   // 3. Should delete or ignore smoothly
   await store.removeFromSet('mixedKey', 'member');
-  
+
   // 4. Calling addToSet should safely overwrite/re-initialize the value as a Set
   await store.addToSet('mixedKey', 'member');
   assert.equal(await store.isMember('mixedKey', 'member'), true);
-
 });
 
 test('DedupStore: delete removes the entry and subsequent has returns false', async () => {
@@ -118,13 +117,13 @@ test('DedupStore: expire updates the expiration of an existing key', async () =>
   assert.equal(await store.get('key1'), 'value1');
 
   // Wait for original TTL to expire
-  await new Promise(r => setTimeout(r, 30));
+  await new Promise((r) => setTimeout(r, 30));
   assert.equal(await store.get('key1'), null, 'key should have expired');
 
   // Re-set and then extend TTL
   await store.set('key1', 'value1', 20);
   await store.expire('key1', 100000);
-  await new Promise(r => setTimeout(r, 30));
+  await new Promise((r) => setTimeout(r, 30));
   assert.equal(await store.get('key1'), 'value1', 'TTL should have been extended');
 });
 
@@ -148,7 +147,7 @@ test('DedupStore: has returns false for non-existent key', async () => {
 test('DedupStore: has returns false after key expires', async () => {
   const store = new DedupStore();
   await store.set('key1', 'value1', 20);
-  await new Promise(r => setTimeout(r, 30));
+  await new Promise((r) => setTimeout(r, 30));
   assert.equal(await store.has('key1'), false);
 });
 
@@ -173,7 +172,7 @@ test('DedupStore: delete clears entry even when sweeper is stopped', async () =>
   const store = new DedupStore();
   await store.set('key1', 'value1', 10);
   store.stopSweeper();
-  await new Promise(r => setTimeout(r, 20));
+  await new Promise((r) => setTimeout(r, 20));
   // With sweeper stopped, entry might still be in memory but expired
   // delete should still remove it regardless
   await store.delete('key1');

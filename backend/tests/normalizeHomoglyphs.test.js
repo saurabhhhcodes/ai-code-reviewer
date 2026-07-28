@@ -5,13 +5,29 @@ import assert from 'node:assert/strict';
 // This mirrors the implementation in the app module (line 193-196 of index.js).
 
 const HOMOGLYPH_MAP = {
-  '\u0430': 'a', '\u0435': 'e', '\u043e': 'o', '\u0441': 'c', '\u0440': 'p',
-  '\u0445': 'x', '\u0443': 'y', '\u0432': 'b', '\u043D': 'h', '\u0431': 'k',
-  '\u043C': 'm', '\u0438': 'i', '\u0428': 'W', '\u03bf': 'o', '\u03b5': 'e', '\u03b1': 'a'
+  '\u0430': 'a',
+  '\u0435': 'e',
+  '\u043e': 'o',
+  '\u0441': 'c',
+  '\u0440': 'p',
+  '\u0445': 'x',
+  '\u0443': 'y',
+  '\u0432': 'b',
+  '\u043D': 'h',
+  '\u0431': 'k',
+  '\u043C': 'm',
+  '\u0438': 'i',
+  '\u0428': 'W',
+  '\u03bf': 'o',
+  '\u03b5': 'e',
+  '\u03b1': 'a',
 };
 
 function normalizeHomoglyphs(text) {
-  return text.split('').map(ch => HOMOGLYPH_MAP[ch] || ch).join('');
+  return text
+    .split('')
+    .map((ch) => HOMOGLYPH_MAP[ch] || ch)
+    .join('');
 }
 
 // --- Tests ---
@@ -32,7 +48,7 @@ test('normalizeHomoglyphs normalizes Cyrillic letters', () => {
 });
 
 test('normalizeHomoglyphs normalizes Greek homoglyphs', () => {
-  assert.equal(normalizeHomoglyphs('\u03bf'), 'o');  // Greek omicron
+  assert.equal(normalizeHomoglyphs('\u03bf'), 'o'); // Greek omicron
   assert.equal(normalizeHomoglyphs('\u03b5'), 'e'); // Greek epsilon
   assert.equal(normalizeHomoglyphs('\u03b1'), 'a'); // Greek alpha
 });

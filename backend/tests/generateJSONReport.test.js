@@ -16,7 +16,11 @@ async function withTempFile(fn) {
   try {
     return await fn(filePath);
   } finally {
-    try { fs.unlinkSync(filePath); } catch { /* ignore */ }
+    try {
+      fs.unlinkSync(filePath);
+    } catch {
+      /* ignore */
+    }
   }
 }
 
@@ -56,9 +60,7 @@ test('generateJSONReport counts bugs and security as error severity', async () =
             { line: 5, description: 'null pointer access', rule: 'no-null' },
             { line: 20, description: 'type error', rule: 'type-error' },
           ],
-          security: [
-            { line: 15, description: 'SQL injection risk', rule: 'sql-injection' },
-          ],
+          security: [{ line: 15, description: 'SQL injection risk', rule: 'sql-injection' }],
           optimization: [],
           styling: [],
         },
@@ -112,9 +114,7 @@ test('generateJSONReport counts styling as info severity', async () => {
           bugs: [],
           security: [],
           optimization: [],
-          styling: [
-            { line: 1, description: 'missing trailing comma', rule: 'trailing-comma' },
-          ],
+          styling: [{ line: 1, description: 'missing trailing comma', rule: 'trailing-comma' }],
         },
       },
     };
@@ -293,7 +293,7 @@ test('generateJSONReport is prototype pollution safe with custom/malicious sever
         'src/vuln.js': {
           bugs: [
             // Injecting 'toString' as a category/severity
-            { line: 5, description: 'malicious', rule: 'toString' }
+            { line: 5, description: 'malicious', rule: 'toString' },
           ],
           security: [],
           optimization: [],
@@ -305,7 +305,7 @@ test('generateJSONReport is prototype pollution safe with custom/malicious sever
     // Override categorizeFinding temporarily to return 'toString'
     const severityConfig = await import('../utils/severityConfig.js');
     const originalCategorize = severityConfig.categorizeFinding;
-    
+
     // Note: since ES modules exports are read-only, we should test with custom categories if possible.
     // Wait, in generateJSONReport:
     // processIssues(review.bugs, 'error') - calls categorizeFinding(issue).
@@ -319,7 +319,7 @@ test('generateJSONReport is prototype pollution safe with custom/malicious sever
     // But what if we verify that severityCount and categoryCount have null prototype?
     const result = generateJSONReport('test-repo', files, reviewResult, outputPath);
     assert.equal(result.success, true);
-    
+
     const report = JSON.parse(fs.readFileSync(outputPath, 'utf-8'));
     // Since severityCount and categoryCount are serialized to JSON, they should be plain objects in the output
     assert.equal(report.by_severity.error, 1);

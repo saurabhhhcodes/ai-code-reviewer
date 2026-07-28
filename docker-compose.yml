@@ -3,14 +3,14 @@ services:
     image: chromadb/chroma:latest
     container_name: reposage-chromadb
     ports:
-      - "8001:8000"
+      - '8001:8000'
     volumes:
       - chroma_data:/chroma/chroma
     environment:
       - IS_PERSISTENT=TRUE
       - ANONYMIZED_TELEMETRY=${ANONYMIZED_TELEMETRY:-FALSE}
     healthcheck:
-      test: ["CMD", "wget", "--spider", "http://localhost:8000/api/v1/heartbeat"]
+      test: ['CMD', 'wget', '--spider', 'http://localhost:8000/api/v1/heartbeat']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -23,7 +23,7 @@ services:
       dockerfile: Dockerfile.dev
     container_name: reposage-ai-engine
     ports:
-      - "8000:8000"
+      - '8000:8000'
     volumes:
       - ./ai-engine:/usr/src/app
       - /usr/src/app/__pycache__
@@ -42,7 +42,7 @@ services:
       chromadb:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--spider", "http://localhost:8000/health"]
+      test: ['CMD', 'wget', '--spider', 'http://localhost:8000/health']
       interval: 10s
       timeout: 5s
       retries: 10
@@ -55,7 +55,7 @@ services:
       dockerfile: Dockerfile.dev
     container_name: reposage-backend
     ports:
-      - "5000:5000"
+      - '5000:5000'
     volumes:
       - ./backend:/usr/src/app
       - /usr/src/app/node_modules
@@ -76,7 +76,7 @@ services:
       ai-engine:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--spider", "http://localhost:5000/health"]
+      test: ['CMD', 'wget', '--spider', 'http://localhost:5000/health']
       interval: 10s
       timeout: 5s
       retries: 10
@@ -89,7 +89,7 @@ services:
       dockerfile: Dockerfile.dev
     container_name: reposage-frontend
     ports:
-      - "3000:3000"
+      - '3000:3000'
     volumes:
       - ./frontend:/usr/src/app
       - /usr/src/app/node_modules

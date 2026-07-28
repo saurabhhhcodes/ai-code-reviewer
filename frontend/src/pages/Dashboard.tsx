@@ -1,19 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useDebounce } from '../hooks/useDebounce';
 import { useStore, ChatMessage } from '../store/useStore';
-import SettingsModal from "../components/SettingsModal";
-import DashboardFooter from "../components/DashboardFooter";
-import KeyboardShortcutsHelp from "../components/KeyboardShortcutsHelp";
+import SettingsModal from '../components/SettingsModal';
+import DashboardFooter from '../components/DashboardFooter';
+import KeyboardShortcutsHelp from '../components/KeyboardShortcutsHelp';
 import { VulnerabilitiesBarChart } from '../components/VulnerabilitiesBarChart';
 import MarkdownErrorBoundary from '../components/MarkdownErrorBoundary';
-import CopyToClipboardButton from "../components/CopyToClipboardButton";
-import SectionErrorBoundary from "../components/SectionErrorBoundary";
-import AnalysisForm from "../components/AnalysisForm";
-import AuditHistoryPanel from "../components/AuditHistoryPanel";
-import MentorshipPortal from "../components/MentorshipPortal";
-import HealthScoreSection from "../components/HealthScoreSection";
-import ChatPanel from "../components/ChatPanel";
-import MermaidDiagramViewer from "../components/MermaidDiagramViewer";
+import CopyToClipboardButton from '../components/CopyToClipboardButton';
+import SectionErrorBoundary from '../components/SectionErrorBoundary';
+import AnalysisForm from '../components/AnalysisForm';
+import AuditHistoryPanel from '../components/AuditHistoryPanel';
+import MentorshipPortal from '../components/MentorshipPortal';
+import HealthScoreSection from '../components/HealthScoreSection';
+import ChatPanel from '../components/ChatPanel';
+import MermaidDiagramViewer from '../components/MermaidDiagramViewer';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -40,28 +40,24 @@ import {
   Folder,
   FolderOpen,
   FileText,
-} from "lucide-react";
-import { handleMarkdownExport, handleHtmlExport, handlePdfExport } from "../utils/exportUtils";
-import { sanitizeAuditEntry } from "../utils/sanitize";
+} from 'lucide-react';
+import { handleMarkdownExport, handleHtmlExport, handlePdfExport } from '../utils/exportUtils';
+import { sanitizeAuditEntry } from '../utils/sanitize';
 // Path resolves correctly: pages/ -> ../utils/api -> frontend/src/utils/api
-import { apiFetch } from "../utils/api";
+import { apiFetch } from '../utils/api';
 import { usePersistentReport } from '../hooks/usePersistentReport';
-import { useStreamingReview } from "../hooks/useStreamingReview";
+import { useStreamingReview } from '../hooks/useStreamingReview';
 
 const LazyMetricsChart = React.lazy(() =>
-  import('../components/MetricsChart').then((module) => ({ default: module.MetricsChart }))
+  import('../components/MetricsChart').then((module) => ({ default: module.MetricsChart })),
 );
-
-
 
 const getSavedAiSettings = () => {
   try {
-    const saved = JSON.parse(
-      localStorage.getItem("reposage_ai_settings") || "{}"
-    );
-    return saved && typeof saved === "object" ? saved : {};
+    const saved = JSON.parse(localStorage.getItem('reposage_ai_settings') || '{}');
+    return saved && typeof saved === 'object' ? saved : {};
   } catch (error) {
-    console.warn("Invalid saved AI settings; using defaults.", error);
+    console.warn('Invalid saved AI settings; using defaults.', error);
     return {};
   }
 };
@@ -93,24 +89,24 @@ interface AnalysisData {
 
 export interface BackendResponse {
   dependencyReport?: {
-  dependencies: {
-    name: string;
-    currentVersion: string;
-    latestVersion: string;
-    risk: string;
-    deprecated: boolean;
-    vulnerable: boolean;
-    recommendation: string;
-  }[];
-};
+    dependencies: {
+      name: string;
+      currentVersion: string;
+      latestVersion: string;
+      risk: string;
+      deprecated: boolean;
+      vulnerable: boolean;
+      recommendation: string;
+    }[];
+  };
   prSummary?: {
-  overallPurpose: string;
-  filesChanged: number;
-  majorLogicUpdates: string[];
-  potentialRisks: string[];
-  breakingChanges: string[];
-  testingRecommendations: string[];
-};
+    overallPurpose: string;
+    filesChanged: number;
+    majorLogicUpdates: string[];
+    potentialRisks: string[];
+    breakingChanges: string[];
+    testingRecommendations: string[];
+  };
   repositoryHealth?: any;
   success: boolean;
   repoName: string;
@@ -124,8 +120,6 @@ export interface BackendResponse {
   warnings?: Array<{ file: string; warning: string }>;
 }
 
-
-
 export interface AuditHistoryEntry {
   id: string;
   repoUrl: string;
@@ -136,7 +130,6 @@ export interface AuditHistoryEntry {
   response: BackendResponse;
 }
 
-
 export default function Dashboard() {
   const { reviewText, isStreaming, error: streamError } = useStreamingReview();
   const [showSettings, setShowSettings] = useState(false);
@@ -145,14 +138,14 @@ export default function Dashboard() {
   const [showShortcutsHelp, setShowShortcutsHelp] = useState(false);
 
   // Input State
-  const [repoUrl, setRepoUrl] = useState("");
-  const [company, setCompany] = useState("General");
-  const [language, setLanguage] = useState("English");
-  const [selectedModel, setSelectedModel] = useState("llama-3.3-70b-versatile");
+  const [repoUrl, setRepoUrl] = useState('');
+  const [company, setCompany] = useState('General');
+  const [language, setLanguage] = useState('English');
+  const [selectedModel, setSelectedModel] = useState('llama-3.3-70b-versatile');
 
   // Loading & Flow State
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingStep, _setLoadingStep] = useState("");
+  const [loadingStep, _setLoadingStep] = useState('');
 
   // Response & View State
   const { analysisResult, setAnalysisResult, selectedFile, setSelectedFile, chatHistory, setChatHistory } = useStore();
@@ -167,14 +160,14 @@ export default function Dashboard() {
   const [storageWarning, setStorageWarning] = useState(false);
 
   // Accessibility Announcement State
-  const [announcement, setAnnouncement] = useState("");
+  const [announcement, setAnnouncement] = useState('');
   const hasResult = !!analysisResult;
 
   useEffect(() => {
     if (isLoading) {
-      setAnnouncement("Starting AI analysis, please wait...");
+      setAnnouncement('Starting AI analysis, please wait...');
     } else if (hasResult) {
-      setAnnouncement("Analysis complete. Results are now available below.");
+      setAnnouncement('Analysis complete. Results are now available below.');
     }
   }, [isLoading, hasResult]);
 
@@ -233,7 +226,9 @@ export default function Dashboard() {
         if (!a.isFolder && b.isFolder) return 1;
         return a.name.localeCompare(b.name);
       });
-      nodes.forEach(n => { if (n.isFolder) sortTree(n.children); });
+      nodes.forEach((n) => {
+        if (n.isFolder) sortTree(n.children);
+      });
       return nodes;
     };
 
@@ -242,24 +237,20 @@ export default function Dashboard() {
 
   const fileTreeData = React.useMemo(() => {
     if (!analysisResult?.analysis?.fileReviews) return [];
-    
-    const filteredFiles = Object.keys(
-      analysisResult.analysis.fileReviews,
-    ).filter((filePath) => {
-      const matchesSearch = filePath
-        .toLowerCase()
-        .includes(debouncedFileFilterQuery.toLowerCase());
+
+    const filteredFiles = Object.keys(analysisResult.analysis.fileReviews).filter((filePath) => {
+      const matchesSearch = filePath.toLowerCase().includes(debouncedFileFilterQuery.toLowerCase());
       if (!matchesSearch) return false;
 
-      const ext = filePath.split(".").pop()?.toLowerCase();
-      if (activeExtFilter === "JS/TS") {
-        return ["js", "jsx", "ts", "tsx"].includes(ext || "");
+      const ext = filePath.split('.').pop()?.toLowerCase();
+      if (activeExtFilter === 'JS/TS') {
+        return ['js', 'jsx', 'ts', 'tsx'].includes(ext || '');
       }
-      if (activeExtFilter === "Python") {
-        return ext === "py";
+      if (activeExtFilter === 'Python') {
+        return ext === 'py';
       }
-      if (activeExtFilter === "CSS/HTML") {
-        return ["css", "html"].includes(ext || "");
+      if (activeExtFilter === 'CSS/HTML') {
+        return ['css', 'html'].includes(ext || '');
       }
       return true; // All
     });
@@ -291,7 +282,7 @@ export default function Dashboard() {
   };
 
   const toggleFolder = (folderPath: string) => {
-    setExpandedFolders(prev => {
+    setExpandedFolders((prev) => {
       const next = new Set(prev);
       if (next.has(folderPath)) {
         next.delete(folderPath);
@@ -305,7 +296,7 @@ export default function Dashboard() {
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       // Escape to close modals and clear errors
-      if (e.key === "Escape") {
+      if (e.key === 'Escape') {
         setApiError(null);
         setShowSettings(false);
         setShowShortcutsHelp(false);
@@ -315,70 +306,80 @@ export default function Dashboard() {
       }
 
       // Ctrl+K to search files
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
         searchInputRef.current?.focus();
       }
 
       // / to focus search input
-      if (e.key === "/" && e.target !== searchInputRef.current &&
-          document.activeElement?.tagName !== "INPUT" &&
-          document.activeElement?.tagName !== "TEXTAREA") {
+      if (
+        e.key === '/' &&
+        e.target !== searchInputRef.current &&
+        document.activeElement?.tagName !== 'INPUT' &&
+        document.activeElement?.tagName !== 'TEXTAREA'
+      ) {
         e.preventDefault();
         searchInputRef.current?.focus();
       }
 
       // Ctrl+N to start a new analysis
-      if ((e.metaKey || e.ctrlKey) && e.key === "n") {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'n') {
         e.preventDefault();
         const repoInput = document.querySelector<HTMLInputElement>("input[placeholder*='github.com']");
         repoInput?.focus();
       }
 
       // Ctrl+L to clear chat history
-      if ((e.metaKey || e.ctrlKey) && e.key === "l") {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'l') {
         e.preventDefault();
         setChatHistory([]);
       }
 
       // Ctrl+B to toggle sidebar (focus file list)
-      if ((e.metaKey || e.ctrlKey) && e.key === "b") {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
         e.preventDefault();
         const fileTree = document.querySelector<HTMLElement>("[class*='file-tree'], [class*='FileTree']");
         fileTree?.focus();
       }
 
       // Ctrl+E to export HTML report
-      if ((e.metaKey || e.ctrlKey) && e.key === "e") {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'e') {
         e.preventDefault();
         downloadReadme();
       }
 
       // Ctrl+, to open settings
-      if ((e.metaKey || e.ctrlKey) && e.key === ",") {
+      if ((e.metaKey || e.ctrlKey) && e.key === ',') {
         e.preventDefault();
         setShowSettings(true);
       }
 
       // ? to show shortcuts
-      if (e.key === "?" && document.activeElement?.tagName !== "INPUT" && document.activeElement?.tagName !== "TEXTAREA") {
+      if (
+        e.key === '?' &&
+        document.activeElement?.tagName !== 'INPUT' &&
+        document.activeElement?.tagName !== 'TEXTAREA'
+      ) {
         setShowShortcutsHelp(true);
       }
     };
-    document.addEventListener("keydown", handler);
-    return () => document.removeEventListener("keydown", handler);
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
   }, [apiError, setChatHistory, downloadReadme, setShowSettings, setShowShortcutsHelp]);
 
   const isValidAuditEntry = (entry: unknown): entry is AuditHistoryEntry => {
     if (!entry || typeof entry !== 'object') return false;
     const e = entry as Record<string, unknown>;
-    return typeof e.id === 'string' &&
+    return (
+      typeof e.id === 'string' &&
       typeof e.repoUrl === 'string' &&
       typeof e.repoName === 'string' &&
       typeof e.auditedAt === 'string' &&
       typeof e.totalFindings === 'number' &&
       typeof e.overallGrade === 'string' &&
-      e.response !== null && typeof e.response === 'object';
+      e.response !== null &&
+      typeof e.response === 'object'
+    );
   };
 
   const [auditHistory, setAuditHistory] = useState<AuditHistoryEntry[]>(() => {
@@ -396,16 +397,9 @@ export default function Dashboard() {
 
   // Automated Issue Generator States
   const [isGssocLabelingEnabled, setIsGssocLabelingEnabled] = useState(true);
-  const [creatingIssues, setCreatingIssues] = useState<Record<string, boolean>>(
-    {},
-  );
-  const [createdIssues, setCreatedIssues] = useState<Record<string, string>>(
-    {},
-  );
-  const [readmeViewMode, setReadmeViewMode] = useState<"raw" | "preview">(
-    "preview",
-  );
-
+  const [creatingIssues, setCreatingIssues] = useState<Record<string, boolean>>({});
+  const [createdIssues, setCreatedIssues] = useState<Record<string, string>>({});
+  const [readmeViewMode, setReadmeViewMode] = useState<'raw' | 'preview'>('preview');
 
   // Simple markdown compiler for premium preview rendering
   const renderMarkdown = (md: string) => {
@@ -420,22 +414,22 @@ export default function Dashboard() {
 
             if (match) {
               return (
-                <div style={{ position: "relative", margin: "8px 0" }}>
+                <div style={{ position: 'relative', margin: '8px 0' }}>
                   <SyntaxHighlighter
                     {...rest}
                     style={vscDarkPlus as any}
                     language={match[1]}
                     PreTag="div"
                     customStyle={{
-                      background: "rgba(0,0,0,0.3)",
-                      border: "1px solid rgba(255,255,255,0.05)",
-                      borderRadius: "6px",
-                      padding: "10px",
-                      paddingRight: "40px",
-                      overflowX: "auto",
+                      background: 'rgba(0,0,0,0.3)',
+                      border: '1px solid rgba(255,255,255,0.05)',
+                      borderRadius: '6px',
+                      padding: '10px',
+                      paddingRight: '40px',
+                      overflowX: 'auto',
                       margin: 0,
-                      fontFamily: "monospace",
-                      fontSize: "11px",
+                      fontFamily: 'monospace',
+                      fontSize: '11px',
                     }}
                   >
                     {codeString}
@@ -443,12 +437,12 @@ export default function Dashboard() {
                   <CopyToClipboardButton
                     textToCopy={codeString}
                     style={{
-                      position: "absolute",
-                      top: "8px",
-                      right: "8px",
-                      background: "rgba(15, 23, 42, 0.6)",
-                      border: "1px solid rgba(255,255,255,0.08)",
-                      padding: "4px",
+                      position: 'absolute',
+                      top: '8px',
+                      right: '8px',
+                      background: 'rgba(15, 23, 42, 0.6)',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      padding: '4px',
                     }}
                   />
                 </div>
@@ -457,23 +451,23 @@ export default function Dashboard() {
 
             if (isBlock) {
               return (
-                <div style={{ position: "relative", margin: "8px 0" }}>
+                <div style={{ position: 'relative', margin: '8px 0' }}>
                   <pre
                     style={{
-                      background: "rgba(0,0,0,0.3)",
-                      border: "1px solid rgba(255,255,255,0.05)",
-                      borderRadius: "6px",
-                      padding: "10px",
-                      paddingRight: "40px",
-                      overflowX: "auto",
+                      background: 'rgba(0,0,0,0.3)',
+                      border: '1px solid rgba(255,255,255,0.05)',
+                      borderRadius: '6px',
+                      padding: '10px',
+                      paddingRight: '40px',
+                      overflowX: 'auto',
                       margin: 0,
                     }}
                   >
                     <code
                       style={{
-                        fontFamily: "monospace",
-                        fontSize: "11px",
-                        color: "#c084fc",
+                        fontFamily: 'monospace',
+                        fontSize: '11px',
+                        color: '#c084fc',
                       }}
                       {...rest}
                     >
@@ -483,12 +477,12 @@ export default function Dashboard() {
                   <CopyToClipboardButton
                     textToCopy={codeString}
                     style={{
-                      position: "absolute",
-                      top: "8px",
-                      right: "8px",
-                      background: "rgba(15, 23, 42, 0.6)",
-                      border: "1px solid rgba(255,255,255,0.08)",
-                      padding: "4px",
+                      position: 'absolute',
+                      top: '8px',
+                      right: '8px',
+                      background: 'rgba(15, 23, 42, 0.6)',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      padding: '4px',
                     }}
                   />
                 </div>
@@ -498,12 +492,12 @@ export default function Dashboard() {
             return (
               <code
                 style={{
-                  background: "#1e1e1e",
-                  padding: "2px 4px",
-                  borderRadius: "4px",
-                  fontFamily: "monospace",
-                  fontSize: "11px",
-                  color: "#d8b4fe",
+                  background: '#1e1e1e',
+                  padding: '2px 4px',
+                  borderRadius: '4px',
+                  fontFamily: 'monospace',
+                  fontSize: '11px',
+                  color: '#d8b4fe',
                 }}
                 {...rest}
               >
@@ -511,12 +505,51 @@ export default function Dashboard() {
               </code>
             );
           },
-          h1: ({ node, ...props }: any) => <h1 style={{ fontSize: "18px", fontWeight: 800, color: "#f3f4f6", margin: "14px 0 8px 0", borderBottom: "1px solid rgba(255,255,255,0.08)", paddingBottom: "4px" }} {...props} />,
-          h2: ({ node, ...props }: any) => <h2 style={{ fontSize: "14px", fontWeight: 700, color: "#e5e7eb", margin: "12px 0 6px 0" }} {...props} />,
-          h3: ({ node, ...props }: any) => <h3 style={{ fontSize: "12px", fontWeight: 600, color: "#d1d5db", margin: "10px 0 4px 0" }} {...props} />,
-          li: ({ node, ...props }: any) => <li style={{ marginLeft: "16px", marginBottom: "4px", fontSize: "12px", color: "#d1d5db", fontFamily: "inherit", lineHeight: 1.6 }} {...props} />,
-          p: ({ node, ...props }: any) => <p style={{ margin: "0 0 6px 0", fontSize: "12px", color: "#d1d5db", lineHeight: 1.6, fontFamily: "inherit" }} {...props} />,
-          strong: ({ node, ...props }: any) => <strong style={{ color: "#fff", fontWeight: 700 }} {...props} />
+          h1: ({ node, ...props }: any) => (
+            <h1
+              style={{
+                fontSize: '18px',
+                fontWeight: 800,
+                color: '#f3f4f6',
+                margin: '14px 0 8px 0',
+                borderBottom: '1px solid rgba(255,255,255,0.08)',
+                paddingBottom: '4px',
+              }}
+              {...props}
+            />
+          ),
+          h2: ({ node, ...props }: any) => (
+            <h2 style={{ fontSize: '14px', fontWeight: 700, color: '#e5e7eb', margin: '12px 0 6px 0' }} {...props} />
+          ),
+          h3: ({ node, ...props }: any) => (
+            <h3 style={{ fontSize: '12px', fontWeight: 600, color: '#d1d5db', margin: '10px 0 4px 0' }} {...props} />
+          ),
+          li: ({ node, ...props }: any) => (
+            <li
+              style={{
+                marginLeft: '16px',
+                marginBottom: '4px',
+                fontSize: '12px',
+                color: '#d1d5db',
+                fontFamily: 'inherit',
+                lineHeight: 1.6,
+              }}
+              {...props}
+            />
+          ),
+          p: ({ node, ...props }: any) => (
+            <p
+              style={{
+                margin: '0 0 6px 0',
+                fontSize: '12px',
+                color: '#d1d5db',
+                lineHeight: 1.6,
+                fontFamily: 'inherit',
+              }}
+              {...props}
+            />
+          ),
+          strong: ({ node, ...props }: any) => <strong style={{ color: '#fff', fontWeight: 700 }} {...props} />,
         }}
       >
         {md}
@@ -524,12 +557,7 @@ export default function Dashboard() {
     );
   };
 
-  const handleCreateGitHubIssue = async (
-    file: string,
-    item: ReviewItem,
-    category: string,
-    itemKey: string,
-  ) => {
+  const handleCreateGitHubIssue = async (file: string, item: ReviewItem, category: string, itemKey: string) => {
     if (!analysisResult) return;
 
     setCreatingIssues((prev) => ({ ...prev, [itemKey]: true }));
@@ -550,14 +578,12 @@ export default function Dashboard() {
       `---\n` +
       `*Generated automatically by **RepoSage AI Copilot**.*`;
 
-    const gssoLabel = localStorage.getItem("reposage_gssoc_label") || "gssoc26";
-    const labels = isGssocLabelingEnabled
-      ? [gssoLabel, "good-first-issue", category]
-      : [category];
+    const gssoLabel = localStorage.getItem('reposage_gssoc_label') || 'gssoc26';
+    const labels = isGssocLabelingEnabled ? [gssoLabel, 'good-first-issue', category] : [category];
 
     try {
-      const response = await apiFetch("/api/issues/create", {
-        method: "POST",
+      const response = await apiFetch('/api/issues/create', {
+        method: 'POST',
         body: JSON.stringify({
           repoUrl,
           title,
@@ -568,14 +594,14 @@ export default function Dashboard() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to create GitHub Issue");
+        throw new Error(errorData.error || 'Failed to create GitHub Issue');
       }
 
       const data = await response.json();
       if (data.success && data.issueUrl) {
         setCreatedIssues((prev) => ({ ...prev, [itemKey]: data.issueUrl }));
       } else {
-        throw new Error("Response did not contain issue URL");
+        throw new Error('Response did not contain issue URL');
       }
     } catch (err: unknown) {
       console.error(err);
@@ -607,7 +633,9 @@ export default function Dashboard() {
                 const evicted = data.slice(Math.max(1, Math.ceil(data.length * 0.5)));
                 localStorage.setItem(storageKey, JSON.stringify(evicted));
               }
-            } catch { /* ignore corrupt entries */ }
+            } catch {
+              /* ignore corrupt entries */
+            }
           }
         }
       }
@@ -616,10 +644,8 @@ export default function Dashboard() {
   };
 
   // AI Chat with Repository States
-  const [activeDashboardView, setActiveDashboardView] = useState<
-    "audit" | "chat" | "diagram"
-  >("audit");
-  const [chatInput, setChatInput] = useState("");
+  const [activeDashboardView, setActiveDashboardView] = useState<'audit' | 'chat' | 'diagram'>('audit');
+  const [chatInput, setChatInput] = useState('');
   const CHAT_HISTORY_KEY = 'reposage_chat_history';
   const MAX_CHAT_HISTORY_LENGTH = 40;
   const truncateChatHistory = (history: ChatMessage[]) => {
@@ -637,7 +663,7 @@ export default function Dashboard() {
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatHistory, isChatLoading]);
   const chatHistoryRef = useRef<ChatMessage[]>(chatHistory);
   chatHistoryRef.current = chatHistory;
@@ -647,7 +673,7 @@ export default function Dashboard() {
     const loadHistory = async () => {
       try {
         const response = await apiFetch('/api/review-history', { signal: controller.signal });
-        if (!response.ok) throw new Error("Failed to fetch");
+        if (!response.ok) throw new Error('Failed to fetch');
         const history = await response.json();
 
         if (history && !controller.signal.aborted) {
@@ -655,7 +681,7 @@ export default function Dashboard() {
         }
       } catch (err) {
         if (err instanceof DOMException && err.name === 'AbortError') return;
-        console.error("Failed to load review history", err);
+        console.error('Failed to load review history', err);
       }
     };
 
@@ -668,13 +694,13 @@ export default function Dashboard() {
     if (!chatInput.trim() || isChatLoading) return;
 
     const userMessage = chatInput;
-    setChatInput("");
+    setChatInput('');
 
     // Use chatHistoryRef to avoid stale closure — the ref always holds the latest
     // Zustand state, so rapid successive sends never drop messages.
     const updatedHistory = truncateChatHistory([
       ...(chatHistoryRef.current || []),
-      { role: "user" as const, content: userMessage }
+      { role: 'user' as const, content: userMessage },
     ]);
     setChatHistory(updatedHistory);
     if (!safeSetItem(CHAT_HISTORY_KEY, JSON.stringify(updatedHistory))) setStorageWarning(true);
@@ -684,23 +710,23 @@ export default function Dashboard() {
     try {
       setApiError(null);
       const chatAiSettings = getSavedAiSettings();
-      const response = await apiFetch("/api/chat", {
-        method: "POST",
+      const response = await apiFetch('/api/chat', {
+        method: 'POST',
         body: JSON.stringify({
-            message: userMessage,
-            history: updatedHistory,
-            model: selectedModel,
-            temperature: chatAiSettings.temperature ?? 0.4,
-            maxTokens: chatAiSettings.maxTokens ?? 2048,
-            sessionId,
-            sessionOwnerToken: localStorage.getItem("sessionOwnerToken") || "",
-            useRag,
-            systemPrompt: chatAiSettings.systemPrompt ?? "",
-          }),
+          message: userMessage,
+          history: updatedHistory,
+          model: selectedModel,
+          temperature: chatAiSettings.temperature ?? 0.4,
+          maxTokens: chatAiSettings.maxTokens ?? 2048,
+          sessionId,
+          sessionOwnerToken: localStorage.getItem('sessionOwnerToken') || '',
+          useRag,
+          systemPrompt: chatAiSettings.systemPrompt ?? '',
+        }),
       });
 
       if (!response.ok) {
-        throw new Error("Chat service encountered an error.");
+        throw new Error('Chat service encountered an error.');
       }
 
       const data = await response.json();
@@ -708,18 +734,22 @@ export default function Dashboard() {
       setChatHistory((prev) => {
         const updated = truncateChatHistory([
           ...prev,
-          { role: "assistant" as const, content: data.response ?? data.message ?? "", sources: sources.length > 0 ? sources : undefined },
+          {
+            role: 'assistant' as const,
+            content: data.response ?? data.message ?? '',
+            sources: sources.length > 0 ? sources : undefined,
+          },
         ]);
         if (!safeSetItem(CHAT_HISTORY_KEY, JSON.stringify(updated))) setStorageWarning(true);
         return updated;
       });
     } catch (err: unknown) {
       console.error(err);
-      let errMsg = (err instanceof Error ? err.message : String(err)) || "Chat service unavailable.";
-      if (errMsg.includes("Failed to fetch") || errMsg.toLowerCase().includes("offline")) {
-        errMsg = "Backend AI Engine offline. Please ensure the server is running.";
-      } else if (errMsg.toLowerCase().includes("api key") || errMsg.toLowerCase().includes("unauthorized")) {
-        errMsg = "Missing or invalid API Key. Please configure it in settings.";
+      let errMsg = (err instanceof Error ? err.message : String(err)) || 'Chat service unavailable.';
+      if (errMsg.includes('Failed to fetch') || errMsg.toLowerCase().includes('offline')) {
+        errMsg = 'Backend AI Engine offline. Please ensure the server is running.';
+      } else if (errMsg.toLowerCase().includes('api key') || errMsg.toLowerCase().includes('unauthorized')) {
+        errMsg = 'Missing or invalid API Key. Please configure it in settings.';
         setShowSettings(true);
       }
       setApiError(errMsg);
@@ -729,76 +759,66 @@ export default function Dashboard() {
   };
 
   // GSSoC Issues State (Mentorship Panel)
-  const [assignedContributors, setAssignedContributors] = useState<
-    Record<string, string>
-  >(() => {
-    const saved = localStorage.getItem("reposage_contributor_assignments");
+  const [assignedContributors, setAssignedContributors] = useState<Record<string, string>>(() => {
+    const saved = localStorage.getItem('reposage_contributor_assignments');
     if (saved) {
       try {
         return JSON.parse(saved);
       } catch (e) {
-        console.error("Failed to parse saved assignments", e);
+        console.error('Failed to parse saved assignments', e);
       }
     }
     return {
-      "copy-code-button": "Siddharth-iang",
-      "secret-scanning-rules": "Siddharth-iang",
-      "api-documentation": "skhazi123",
-      "persist-assignments": "bhavyaxtech",
-      "theme-toggle": "Unassigned",
-      "file-filter-search": "nikita-sdev",
-      "html-report-exporter": "A-R-Narke",
-      "complexity-metrics": "Nikitasoni22",
+      'copy-code-button': 'Siddharth-iang',
+      'secret-scanning-rules': 'Siddharth-iang',
+      'api-documentation': 'skhazi123',
+      'persist-assignments': 'bhavyaxtech',
+      'theme-toggle': 'Unassigned',
+      'file-filter-search': 'nikita-sdev',
+      'html-report-exporter': 'A-R-Narke',
+      'complexity-metrics': 'Nikitasoni22',
     };
   });
 
   const handleAssignContributor = (issueKey: string) => {
-    const name = prompt(
-      "Enter the contributor's GitHub username to assign this issue:",
-    );
+    const name = prompt("Enter the contributor's GitHub username to assign this issue:");
     if (name) {
       const updated = {
         ...assignedContributors,
         [issueKey]: name,
       };
       setAssignedContributors(updated);
-      localStorage.setItem(
-        "reposage_contributor_assignments",
-        JSON.stringify(updated),
-      );
+      localStorage.setItem('reposage_contributor_assignments', JSON.stringify(updated));
     }
   };
 
   const handleResetAssignments = () => {
-    const confirmReset = window.confirm(
-      "Are you sure you want to reset all contributor assignments?",
-    );
+    const confirmReset = window.confirm('Are you sure you want to reset all contributor assignments?');
     if (confirmReset) {
       const initial = {
-        "copy-code-button": "Unassigned",
-        "secret-scanning-rules": "Unassigned",
-        "api-documentation": "Unassigned",
-        "persist-assignments": "Unassigned",
-        "theme-toggle": "Unassigned",
-        "file-filter-search": "Unassigned",
-        "html-report-exporter": "Unassigned",
-        "complexity-metrics": "Unassigned",
+        'copy-code-button': 'Unassigned',
+        'secret-scanning-rules': 'Unassigned',
+        'api-documentation': 'Unassigned',
+        'persist-assignments': 'Unassigned',
+        'theme-toggle': 'Unassigned',
+        'file-filter-search': 'Unassigned',
+        'html-report-exporter': 'Unassigned',
+        'complexity-metrics': 'Unassigned',
       };
       setAssignedContributors(initial);
-      localStorage.setItem(
-        "reposage_contributor_assignments",
-        JSON.stringify(initial),
-      );
+      localStorage.setItem('reposage_contributor_assignments', JSON.stringify(initial));
     }
   };
 
   const calculateTotalFindings = (result: BackendResponse) => {
     return Object.values(result.analysis?.fileReviews || {}).reduce((total, review) => {
-      return total +
+      return (
+        total +
         (review.bugs?.length || 0) +
         (review.security?.length || 0) +
         (review.optimization?.length || 0) +
-        (review.styling?.length || 0);
+        (review.styling?.length || 0)
+      );
     }, 0);
   };
 
@@ -818,17 +838,16 @@ export default function Dashboard() {
       auditedAt: new Date().toISOString(),
       totalFindings,
       overallGrade: getAuditGrade(totalFindings),
-      response: result
+      response: result,
     };
 
-    setAuditHistory(prev => {
-      const updatedHistory = [
-        entry,
-        ...prev.filter(item => item.repoUrl !== repoUrl)
-      ].slice(0, 5); // reduced to 5 to save space
+    setAuditHistory((prev) => {
+      const updatedHistory = [entry, ...prev.filter((item) => item.repoUrl !== repoUrl)].slice(0, 5); // reduced to 5 to save space
 
       try {
-        const sanitized = updatedHistory.map((entry) => sanitizeAuditEntry(entry as unknown as Record<string, unknown>));
+        const sanitized = updatedHistory.map((entry) =>
+          sanitizeAuditEntry(entry as unknown as Record<string, unknown>),
+        );
         localStorage.setItem('reposage_audit_history', JSON.stringify(sanitized));
       } catch (e: unknown) {
         if (e instanceof DOMException && e.name === 'QuotaExceededError') {
@@ -875,14 +894,16 @@ export default function Dashboard() {
     setAnalysisResult(null);
     setSelectedFile(null);
     setChatHistory([]);
-    try { localStorage.removeItem('reposage_chat_history'); } catch {};
+    try {
+      localStorage.removeItem('reposage_chat_history');
+    } catch {}
 
     setIsLoading(true);
 
     try {
       const aiSettings = getSavedAiSettings();
-      const response = await apiFetch("/api/analyze", {
-        method: "POST",
+      const response = await apiFetch('/api/analyze', {
+        method: 'POST',
         body: JSON.stringify({
           repoUrl,
           company,
@@ -890,25 +911,23 @@ export default function Dashboard() {
           model: selectedModel,
           temperature: aiSettings.temperature ?? 0.7,
           maxTokens: aiSettings.maxTokens ?? 2048,
-          systemPrompt: aiSettings.systemPrompt ?? "",
+          systemPrompt: aiSettings.systemPrompt ?? '',
           batchSize: aiSettings.batchSize ?? 5,
         }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(
-          errorData.error || "Server error occurred during analysis.",
-        );
+        throw new Error(errorData.error || 'Server error occurred during analysis.');
       }
 
       const data: BackendResponse = await response.json();
-      const currentSessionId = data.sessionPersisted === true ? data.sessionId ?? null : null;
+      const currentSessionId = data.sessionPersisted === true ? (data.sessionId ?? null) : null;
       setSessionId(currentSessionId);
       await saveReport(data, repoUrl, currentSessionId);
       setAnalysisResult(data);
       if (data.sessionPersisted === true && data.sessionOwnerToken) {
-        localStorage.setItem("sessionOwnerToken", data.sessionOwnerToken);
+        localStorage.setItem('sessionOwnerToken', data.sessionOwnerToken);
       }
       persistAuditHistory(data);
       setChatHistory([]);
@@ -920,11 +939,17 @@ export default function Dashboard() {
       }
     } catch (err: unknown) {
       console.error(err);
-      let errMsg = (err instanceof Error ? err.message : String(err)) || "Could not connect to the backend server. Make sure node backend is running on port 5000.";
-      if (errMsg.includes("Failed to fetch") || errMsg.toLowerCase().includes("offline")) {
-        errMsg = "Backend AI Engine offline. Please ensure the server is running.";
-      } else if (errMsg.toLowerCase().includes("api key") || errMsg.toLowerCase().includes("unauthorized") || errMsg.includes("not configured")) {
-        errMsg = "Missing or invalid API Key. Please configure it in settings.";
+      let errMsg =
+        (err instanceof Error ? err.message : String(err)) ||
+        'Could not connect to the backend server. Make sure node backend is running on port 5000.';
+      if (errMsg.includes('Failed to fetch') || errMsg.toLowerCase().includes('offline')) {
+        errMsg = 'Backend AI Engine offline. Please ensure the server is running.';
+      } else if (
+        errMsg.toLowerCase().includes('api key') ||
+        errMsg.toLowerCase().includes('unauthorized') ||
+        errMsg.includes('not configured')
+      ) {
+        errMsg = 'Missing or invalid API Key. Please configure it in settings.';
         setShowSettings(true);
       }
       setApiError(errMsg);
@@ -936,13 +961,13 @@ export default function Dashboard() {
   // Helper to trigger README download
   function downloadReadme() {
     if (!analysisResult) return;
-    const element = document.createElement("a");
+    const element = document.createElement('a');
     const file = new Blob([analysisResult.analysis?.generatedReadme || ''], {
-      type: "text/plain",
+      type: 'text/plain',
     });
     const url = URL.createObjectURL(file);
     element.href = url;
-    element.download = "GENERATED_README.md";
+    element.download = 'GENERATED_README.md';
     let appended = false;
     try {
       document.body.appendChild(element);
@@ -954,15 +979,34 @@ export default function Dashboard() {
       }
       URL.revokeObjectURL(url);
     }
-  };
+  }
 
   const chatInputEmpty = !chatInput.trim();
 
   if (isHydrating) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', flexDirection: 'column', background: 'var(--bg-color)' }}>
-         <div className="spin-slow" style={{ width: "40px", height: "40px", border: "3px solid rgba(168,85,247,0.2)", borderTopColor: "#a855f7", borderRadius: "50%", marginBottom: "16px" }}></div>
-         <p style={{ color: '#9ca3af', fontSize: '14px', fontWeight: 500 }}>Restoring previous analysis...</p>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+          flexDirection: 'column',
+          background: 'var(--bg-color)',
+        }}
+      >
+        <div
+          className="spin-slow"
+          style={{
+            width: '40px',
+            height: '40px',
+            border: '3px solid rgba(168,85,247,0.2)',
+            borderTopColor: '#a855f7',
+            borderRadius: '50%',
+            marginBottom: '16px',
+          }}
+        ></div>
+        <p style={{ color: '#9ca3af', fontSize: '14px', fontWeight: 500 }}>Restoring previous analysis...</p>
       </div>
     );
   }
@@ -970,24 +1014,24 @@ export default function Dashboard() {
   return (
     <div
       style={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        boxSizing: "border-box",
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        boxSizing: 'border-box',
       }}
     >
       <div
         aria-live="polite"
         aria-atomic="true"
         style={{
-          position: "absolute",
-          width: "1px",
-          height: "1px",
+          position: 'absolute',
+          width: '1px',
+          height: '1px',
           padding: 0,
-          margin: "-1px",
-          overflow: "hidden",
-          clip: "rect(0, 0, 0, 0)",
-          whiteSpace: "nowrap",
+          margin: '-1px',
+          overflow: 'hidden',
+          clip: 'rect(0, 0, 0, 0)',
+          whiteSpace: 'nowrap',
           border: 0,
         }}
       >
@@ -997,17 +1041,15 @@ export default function Dashboard() {
       <main
         style={{
           flexGrow: 1,
-          padding: "8px 24px 24px 24px",
-          display: "grid",
-          gridTemplateColumns: "320px 1fr",
-          gap: "20px",
-          boxSizing: "border-box",
+          padding: '8px 24px 24px 24px',
+          display: 'grid',
+          gridTemplateColumns: '320px 1fr',
+          gap: '20px',
+          boxSizing: 'border-box',
         }}
       >
         {/* LEFT COLUMN: Setup & GSSoC Contributor Portal */}
-        <section
-          style={{ display: "flex", flexDirection: "column", gap: "20px" }}
-        >
+        <section style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <SectionErrorBoundary sectionName="AnalysisForm">
             <AnalysisForm
               repoUrl={repoUrl}
@@ -1043,32 +1085,30 @@ export default function Dashboard() {
         {/* RIGHT COLUMN: Loading, Dashboard Audit, or Fallback Welcome Screen */}
         <section
           style={{
-            display: "flex",
-            flexDirection: "column",
-            boxSizing: "border-box",
+            display: 'flex',
+            flexDirection: 'column',
+            boxSizing: 'border-box',
           }}
         >
           {/* 1. API Error Banner */}
           {apiError && (
             <div
               style={{
-                background: "rgba(239, 68, 68, 0.1)",
-                border: "1px solid rgba(239, 68, 68, 0.3)",
-                borderRadius: "8px",
-                padding: "14px 20px",
-                color: "#fca5a5",
-                fontSize: "13px",
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-                marginBottom: "20px",
+                background: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                borderRadius: '8px',
+                padding: '14px 20px',
+                color: '#fca5a5',
+                fontSize: '13px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                marginBottom: '20px',
               }}
             >
-              <AlertOctagon size={20} style={{ color: "#ef4444" }} />
+              <AlertOctagon size={20} style={{ color: '#ef4444' }} />
               <div>
-                <strong style={{ display: "block" }}>
-                  Backend Connection Error
-                </strong>
+                <strong style={{ display: 'block' }}>Backend Connection Error</strong>
                 <span>{apiError}</span>
               </div>
             </div>
@@ -1078,35 +1118,35 @@ export default function Dashboard() {
           {storageWarning && (
             <div
               style={{
-                background: "rgba(234, 179, 8, 0.1)",
-                border: "1px solid rgba(234, 179, 8, 0.3)",
-                borderRadius: "8px",
-                padding: "14px 20px",
-                color: "#fde047",
-                fontSize: "13px",
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-                marginBottom: "20px",
+                background: 'rgba(234, 179, 8, 0.1)',
+                border: '1px solid rgba(234, 179, 8, 0.3)',
+                borderRadius: '8px',
+                padding: '14px 20px',
+                color: '#fde047',
+                fontSize: '13px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                marginBottom: '20px',
               }}
             >
-              <AlertTriangle size={20} style={{ color: "#eab308" }} />
+              <AlertTriangle size={20} style={{ color: '#eab308' }} />
               <div>
-                <strong style={{ display: "block" }}>
-                  Storage Quota Exceeded
-                </strong>
-                <span>Chat history could not be saved. Local storage is full. Clear old history or export it to free space.</span>
+                <strong style={{ display: 'block' }}>Storage Quota Exceeded</strong>
+                <span>
+                  Chat history could not be saved. Local storage is full. Clear old history or export it to free space.
+                </span>
               </div>
               <button
                 onClick={() => setStorageWarning(false)}
                 style={{
-                  marginLeft: "auto",
-                  background: "transparent",
-                  border: "none",
-                  color: "#fde047",
-                  cursor: "pointer",
-                  fontSize: "16px",
-                  padding: "4px 8px",
+                  marginLeft: 'auto',
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#fde047',
+                  cursor: 'pointer',
+                  fontSize: '16px',
+                  padding: '4px 8px',
                 }}
               >
                 ×
@@ -1119,29 +1159,39 @@ export default function Dashboard() {
             <div
               style={{
                 flexGrow: 1,
-                display: "flex",
-                flexDirection: "column",
-                gap: "16px",
-                boxSizing: "border-box",
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '16px',
+                boxSizing: 'border-box',
               }}
             >
-              <div style={{ display: "flex", gap: "10px", marginBottom: "4px" }}>
-                 <div className="skeleton" style={{ width: "140px", height: "32px" }}></div>
-                 <div className="skeleton" style={{ width: "140px", height: "32px" }}></div>
-                 <div className="skeleton" style={{ width: "140px", height: "32px" }}></div>
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '4px' }}>
+                <div className="skeleton" style={{ width: '140px', height: '32px' }}></div>
+                <div className="skeleton" style={{ width: '140px', height: '32px' }}></div>
+                <div className="skeleton" style={{ width: '140px', height: '32px' }}></div>
               </div>
-              <div style={{ display: "flex", gap: "16px", height: "120px" }}>
-                 <div className="skeleton" style={{ flex: 1, height: "100%" }}></div>
-                 <div className="skeleton" style={{ flex: 1, height: "100%" }}></div>
-                 <div className="skeleton" style={{ flex: 1, height: "100%" }}></div>
+              <div style={{ display: 'flex', gap: '16px', height: '120px' }}>
+                <div className="skeleton" style={{ flex: 1, height: '100%' }}></div>
+                <div className="skeleton" style={{ flex: 1, height: '100%' }}></div>
+                <div className="skeleton" style={{ flex: 1, height: '100%' }}></div>
               </div>
-              <div style={{ display: "flex", gap: "16px", flexGrow: 1 }}>
-                 <div className="skeleton" style={{ width: "260px", height: "400px" }}></div>
-                 <div className="skeleton" style={{ flexGrow: 1, height: "400px" }}></div>
+              <div style={{ display: 'flex', gap: '16px', flexGrow: 1 }}>
+                <div className="skeleton" style={{ width: '260px', height: '400px' }}></div>
+                <div className="skeleton" style={{ flexGrow: 1, height: '400px' }}></div>
               </div>
-              <div style={{ textAlign: "center", marginTop: "10px" }}>
-                 <div className="spin-slow" style={{ width: "24px", height: "24px", border: "2px solid rgba(168,85,247,0.1)", borderTopColor: "#a855f7", borderRadius: "50%", margin: "0 auto 8px auto" }}></div>
-                 <p style={{ margin: 0, fontSize: "13px", color: "#9ca3af", fontStyle: "italic" }}>{loadingStep}</p>
+              <div style={{ textAlign: 'center', marginTop: '10px' }}>
+                <div
+                  className="spin-slow"
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    border: '2px solid rgba(168,85,247,0.1)',
+                    borderTopColor: '#a855f7',
+                    borderRadius: '50%',
+                    margin: '0 auto 8px auto',
+                  }}
+                ></div>
+                <p style={{ margin: 0, fontSize: '13px', color: '#9ca3af', fontStyle: 'italic' }}>{loadingStep}</p>
               </div>
             </div>
           )}
@@ -1152,91 +1202,89 @@ export default function Dashboard() {
               className="glass-panel"
               style={{
                 flexGrow: 1,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: "40px",
-                textAlign: "center",
-                gap: "24px",
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '40px',
+                textAlign: 'center',
+                gap: '24px',
               }}
             >
               <div
                 style={{
-                  background: "rgba(59, 130, 246, 0.1)",
-                  padding: "16px",
-                  borderRadius: "50%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  background: 'rgba(59, 130, 246, 0.1)',
+                  padding: '16px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
               >
-                <Code2 size={48} style={{ color: "#3b82f6" }} />
+                <Code2 size={48} style={{ color: '#3b82f6' }} />
               </div>
-              <div style={{ maxWidth: "500px" }}>
+              <div style={{ maxWidth: '500px' }}>
                 <h2
                   style={{
-                    fontSize: "20px",
+                    fontSize: '20px',
                     fontWeight: 700,
-                    margin: "0 0 10px 0",
-                    color: "#f3f4f6",
+                    margin: '0 0 10px 0',
+                    color: '#f3f4f6',
                   }}
                 >
                   AI-Powered Code Audit Console
                 </h2>
                 <p
                   style={{
-                    margin: "0 0 20px 0",
-                    fontSize: "14px",
-                    color: "#9ca3af",
+                    margin: '0 0 20px 0',
+                    fontSize: '14px',
+                    color: '#9ca3af',
                     lineHeight: 1.5,
                   }}
                 >
-                  Enter a public GitHub repository link on the left panel to
-                  trigger a complete multi-file AI evaluation. Our service
-                  clones the codebase, audits variables for null risks or
-                  hardcoded credentials, and outputs an automated custom
-                  README.md structure.
+                  Enter a public GitHub repository link on the left panel to trigger a complete multi-file AI
+                  evaluation. Our service clones the codebase, audits variables for null risks or hardcoded credentials,
+                  and outputs an automated custom README.md structure.
                 </p>
                 <div
                   style={{
-                    display: "flex",
-                    justifyContent: "center",
-                    gap: "10px",
+                    display: 'flex',
+                    justifyContent: 'center',
+                    gap: '10px',
                   }}
                 >
                   <button
                     onClick={() => {
-                      setRepoUrl("https://github.com/google/guava");
-                      setCompany("Google");
+                      setRepoUrl('https://github.com/google/guava');
+                      setCompany('Google');
                     }}
                     style={{
-                      background: "rgba(255,255,255,0.05)",
-                      color: "#d1d5db",
-                      border: "1px solid rgba(255,255,255,0.1)",
-                      borderRadius: "6px",
-                      padding: "8px 16px",
-                      fontSize: "12px",
+                      background: 'rgba(255,255,255,0.05)',
+                      color: '#d1d5db',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: '6px',
+                      padding: '8px 16px',
+                      fontSize: '12px',
                       fontWeight: 600,
-                      cursor: "pointer",
+                      cursor: 'pointer',
                     }}
                   >
                     💡 Load Sample: Guava
                   </button>
                   <button
                     onClick={() => {
-                      setRepoUrl("https://github.com/KalyanReddyB/AuraCore");
-                      setCompany("Stripe");
+                      setRepoUrl('https://github.com/KalyanReddyB/AuraCore');
+                      setCompany('Stripe');
                     }}
                     style={{
-                      background: "rgba(255,255,255,0.05)",
-                      color: "#d1d5db",
-                      border: "1px solid rgba(255,255,255,0.1)",
-                      borderRadius: "6px",
-                      padding: "8px 16px",
-                      fontSize: "12px",
+                      background: 'rgba(255,255,255,0.05)',
+                      color: '#d1d5db',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: '6px',
+                      padding: '8px 16px',
+                      fontSize: '12px',
                       fontWeight: 600,
-                      cursor: "pointer",
+                      cursor: 'pointer',
                     }}
                   >
                     💡 Load Sample: AuraCore
@@ -1249,21 +1297,21 @@ export default function Dashboard() {
           {streamError && (
             <div
               style={{
-                background: "rgba(239, 68, 68, 0.1)",
-                border: "1px solid rgba(239, 68, 68, 0.3)",
-                borderRadius: "8px",
-                padding: "14px 20px",
-                color: "#fca5a5",
-                fontSize: "13px",
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-                marginBottom: "20px",
+                background: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                borderRadius: '8px',
+                padding: '14px 20px',
+                color: '#fca5a5',
+                fontSize: '13px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                marginBottom: '20px',
               }}
             >
-              <AlertOctagon size={20} style={{ color: "#ef4444" }} />
+              <AlertOctagon size={20} style={{ color: '#ef4444' }} />
               <div>
-                <strong style={{ display: "block" }}>Streaming Error</strong>
+                <strong style={{ display: 'block' }}>Streaming Error</strong>
                 <span>{streamError}</span>
               </div>
             </div>
@@ -1275,22 +1323,34 @@ export default function Dashboard() {
               className="glass-panel"
               style={{
                 flexGrow: 1,
-                display: "flex",
-                flexDirection: "column",
-                padding: "24px",
-                boxSizing: "border-box",
-                overflowY: "auto",
-                maxHeight: "80vh",
+                display: 'flex',
+                flexDirection: 'column',
+                padding: '24px',
+                boxSizing: 'border-box',
+                overflowY: 'auto',
+                maxHeight: '80vh',
               }}
             >
-              <h2 style={{ color: "#f3f4f6", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "12px" }}>
-                {isStreaming ? "Streaming AI Review..." : "AI Code Review Complete"}
+              <h2 style={{ color: '#f3f4f6', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '12px' }}>
+                {isStreaming ? 'Streaming AI Review...' : 'AI Code Review Complete'}
               </h2>
-              {isStreaming && <div className="spin-slow" style={{ width: "24px", height: "24px", border: "2px solid rgba(168,85,247,0.1)", borderTopColor: "#a855f7", borderRadius: "50%", margin: "12px 0" }}></div>}
+              {isStreaming && (
+                <div
+                  className="spin-slow"
+                  style={{
+                    width: '24px',
+                    height: '24px',
+                    border: '2px solid rgba(168,85,247,0.1)',
+                    borderTopColor: '#a855f7',
+                    borderRadius: '50%',
+                    margin: '12px 0',
+                  }}
+                ></div>
+              )}
               <ReactMarkdown
                 components={{
                   code({ node, inline, className, children, ...props }: any) {
-                    const match = /language-(\w+)/.exec(className || "");
+                    const match = /language-(\w+)/.exec(className || '');
                     return !inline && match ? (
                       <SyntaxHighlighter
                         style={vscDarkPlus as any}
@@ -1298,22 +1358,22 @@ export default function Dashboard() {
                         PreTag="div"
                         customStyle={{
                           margin: 0,
-                          borderRadius: "6px",
-                          background: "#1e1e1e",
-                          fontSize: "12px",
+                          borderRadius: '6px',
+                          background: '#1e1e1e',
+                          fontSize: '12px',
                         }}
                         {...props}
                       >
-                        {String(children).replace(/\n$/, "")}
+                        {String(children).replace(/\n$/, '')}
                       </SyntaxHighlighter>
                     ) : (
                       <code
                         style={{
-                          background: "rgba(255,255,255,0.1)",
-                          padding: "2px 4px",
-                          borderRadius: "4px",
-                          fontSize: "12px",
-                          color: "#d8b4fe",
+                          background: 'rgba(255,255,255,0.1)',
+                          padding: '2px 4px',
+                          borderRadius: '4px',
+                          fontSize: '12px',
+                          color: '#d8b4fe',
                         }}
                         {...props}
                       >
@@ -1334,50 +1394,50 @@ export default function Dashboard() {
               ref={reportRef}
               style={{
                 flexGrow: 1,
-                display: "flex",
-                flexDirection: "column",
-                gap: "16px",
-                boxSizing: "border-box",
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '16px',
+                boxSizing: 'border-box',
               }}
             >
               {(analysisResult._mock || analysisResult.analysis?._mock) && (
                 <div
                   style={{
-                    background: "rgba(251,191,36,0.12)",
-                    border: "1px solid rgba(251,191,36,0.35)",
-                    borderRadius: "8px",
-                    padding: "12px 16px",
-                    color: "#fbbf24",
-                    fontSize: "13px",
+                    background: 'rgba(251,191,36,0.12)',
+                    border: '1px solid rgba(251,191,36,0.35)',
+                    borderRadius: '8px',
+                    padding: '12px 16px',
+                    color: '#fbbf24',
+                    fontSize: '13px',
                     fontWeight: 600,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
                   }}
                 >
-                  <span style={{ fontSize: "16px" }}>⚠️</span>
+                  <span style={{ fontSize: '16px' }}>⚠️</span>
                   <span>
-                    AI Engine offline — showing simulated review results.
-                    Start the backend AI service for real analysis.
+                    AI Engine offline — showing simulated review results. Start the backend AI service for real
+                    analysis.
                   </span>
                 </div>
               )}
               {analysisResult.partial_review && (
                 <div
                   style={{
-                    background: "rgba(251,191,36,0.12)",
-                    border: "1px solid rgba(251,191,36,0.35)",
-                    borderRadius: "8px",
-                    padding: "12px 16px",
-                    color: "#fbbf24",
-                    fontSize: "13px",
+                    background: 'rgba(251,191,36,0.12)',
+                    border: '1px solid rgba(251,191,36,0.35)',
+                    borderRadius: '8px',
+                    padding: '12px 16px',
+                    color: '#fbbf24',
+                    fontSize: '13px',
                     fontWeight: 600,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
                   }}
                 >
-                  <AlertTriangle size={18} style={{ color: "#fbbf24" }} />
+                  <AlertTriangle size={18} style={{ color: '#fbbf24' }} />
                   <span>
                     Warning: Repository size exceeded AI context limits. This is a partial review of the core files.
                   </span>
@@ -1386,24 +1446,24 @@ export default function Dashboard() {
               {analysisResult.warnings && analysisResult.warnings.length > 0 && (
                 <div
                   style={{
-                    background: "rgba(239,68,68,0.1)",
-                    border: "1px solid rgba(239,68,68,0.35)",
-                    borderRadius: "8px",
-                    padding: "12px 16px",
-                    color: "#fca5a5",
-                    fontSize: "13px",
+                    background: 'rgba(239,68,68,0.1)',
+                    border: '1px solid rgba(239,68,68,0.35)',
+                    borderRadius: '8px',
+                    padding: '12px 16px',
+                    color: '#fca5a5',
+                    fontSize: '13px',
                     fontWeight: 600,
-                    display: "flex",
-                    alignItems: "flex-start",
-                    gap: "8px",
-                    flexDirection: "column",
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '8px',
+                    flexDirection: 'column',
                   }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <ShieldAlert size={16} style={{ color: "#ef4444" }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <ShieldAlert size={16} style={{ color: '#ef4444' }} />
                     <span>Potential prompt injection detected in repository files</span>
                   </div>
-                  <ul style={{ margin: 0, paddingLeft: "24px", fontSize: "11px", fontWeight: 400 }}>
+                  <ul style={{ margin: 0, paddingLeft: '24px', fontSize: '11px', fontWeight: 400 }}>
                     {analysisResult.warnings.map((w, i) => (
                       <li key={i}>
                         <strong>{w.file}</strong>: {w.warning}
@@ -1413,91 +1473,77 @@ export default function Dashboard() {
                 </div>
               )}
               <SectionErrorBoundary sectionName="HealthScore">
-                <HealthScoreSection
-                  analysisResult={analysisResult}
-                  isLoading={isLoading}
-                />
+                <HealthScoreSection analysisResult={analysisResult} isLoading={isLoading} />
               </SectionErrorBoundary>
               {/* Dashboard View Selection Tabs & Export Controls */}
-              <div data-html2canvas-ignore="true" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "10px", flexWrap: "wrap", width: "100%" }}>
-                <div style={{ display: "flex", gap: "10px" }}>
+              <div
+                data-html2canvas-ignore="true"
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  gap: '10px',
+                  flexWrap: 'wrap',
+                  width: '100%',
+                }}
+              >
+                <div style={{ display: 'flex', gap: '10px' }}>
                   <button
-                    onClick={() => setActiveDashboardView("audit")}
+                    onClick={() => setActiveDashboardView('audit')}
                     style={{
-                      background:
-                        activeDashboardView === "audit"
-                          ? "rgba(59,130,246,0.1)"
-                          : "rgba(255,255,255,0.03)",
-                      border: "1px solid",
-                      borderColor:
-                        activeDashboardView === "audit"
-                          ? "rgba(59,130,246,0.4)"
-                          : "rgba(255,255,255,0.08)",
-                      color:
-                        activeDashboardView === "audit" ? "#60a5fa" : "#9ca3af",
-                      borderRadius: "6px",
-                      padding: "8px 16px",
-                      fontSize: "12px",
+                      background: activeDashboardView === 'audit' ? 'rgba(59,130,246,0.1)' : 'rgba(255,255,255,0.03)',
+                      border: '1px solid',
+                      borderColor: activeDashboardView === 'audit' ? 'rgba(59,130,246,0.4)' : 'rgba(255,255,255,0.08)',
+                      color: activeDashboardView === 'audit' ? '#60a5fa' : '#9ca3af',
+                      borderRadius: '6px',
+                      padding: '8px 16px',
+                      fontSize: '12px',
                       fontWeight: 700,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      transition: "all 0.2s ease-in-out",
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      transition: 'all 0.2s ease-in-out',
                     }}
                   >
                     <Layers size={14} /> Code Audit Report
                   </button>
                   <button
-                    onClick={() => setActiveDashboardView("chat")}
+                    onClick={() => setActiveDashboardView('chat')}
                     style={{
-                      background:
-                        activeDashboardView === "chat"
-                          ? "rgba(168,85,247,0.1)"
-                          : "rgba(255,255,255,0.03)",
-                      border: "1px solid",
-                      borderColor:
-                        activeDashboardView === "chat"
-                          ? "rgba(168,85,247,0.4)"
-                          : "rgba(255,255,255,0.08)",
-                      color:
-                        activeDashboardView === "chat" ? "#c084fc" : "#9ca3af",
-                      borderRadius: "6px",
-                      padding: "8px 16px",
-                      fontSize: "12px",
+                      background: activeDashboardView === 'chat' ? 'rgba(168,85,247,0.1)' : 'rgba(255,255,255,0.03)',
+                      border: '1px solid',
+                      borderColor: activeDashboardView === 'chat' ? 'rgba(168,85,247,0.4)' : 'rgba(255,255,255,0.08)',
+                      color: activeDashboardView === 'chat' ? '#c084fc' : '#9ca3af',
+                      borderRadius: '6px',
+                      padding: '8px 16px',
+                      fontSize: '12px',
                       fontWeight: 700,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      transition: "all 0.2s ease-in-out",
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      transition: 'all 0.2s ease-in-out',
                     }}
                   >
                     <MessageSquare size={14} /> AI Code Chatbot
                   </button>
                   <button
-                    onClick={() => setActiveDashboardView("diagram")}
+                    onClick={() => setActiveDashboardView('diagram')}
                     style={{
-                      background:
-                        activeDashboardView === "diagram"
-                          ? "rgba(34,197,94,0.1)"
-                          : "rgba(255,255,255,0.03)",
-                      border: "1px solid",
-                      borderColor:
-                        activeDashboardView === "diagram"
-                          ? "rgba(34,197,94,0.4)"
-                          : "rgba(255,255,255,0.08)",
-                      color:
-                        activeDashboardView === "diagram" ? "#4ade80" : "#9ca3af",
-                      borderRadius: "6px",
-                      padding: "8px 16px",
-                      fontSize: "12px",
+                      background: activeDashboardView === 'diagram' ? 'rgba(34,197,94,0.1)' : 'rgba(255,255,255,0.03)',
+                      border: '1px solid',
+                      borderColor: activeDashboardView === 'diagram' ? 'rgba(34,197,94,0.4)' : 'rgba(255,255,255,0.08)',
+                      color: activeDashboardView === 'diagram' ? '#4ade80' : '#9ca3af',
+                      borderRadius: '6px',
+                      padding: '8px 16px',
+                      fontSize: '12px',
                       fontWeight: 700,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      transition: "all 0.2s ease-in-out",
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      transition: 'all 0.2s ease-in-out',
                     }}
                   >
                     <Sparkles size={14} /> Architecture Diagram
@@ -1505,22 +1551,24 @@ export default function Dashboard() {
                 </div>
 
                 {/* Export Controls */}
-                <div style={{ display: "flex", gap: "10px" }}>
+                <div style={{ display: 'flex', gap: '10px' }}>
                   <button
-                    onClick={() => analysisResult && handleHtmlExport(analysisResult.repoName, analysisResult.analysis, apiFetch)}
+                    onClick={() =>
+                      analysisResult && handleHtmlExport(analysisResult.repoName, analysisResult.analysis, apiFetch)
+                    }
                     style={{
-                      background: "rgba(59, 130, 246, 0.1)",
-                      border: "1px solid rgba(59, 130, 246, 0.3)",
-                      color: "#60a5fa",
-                      borderRadius: "6px",
-                      padding: "8px 16px",
-                      fontSize: "12px",
+                      background: 'rgba(59, 130, 246, 0.1)',
+                      border: '1px solid rgba(59, 130, 246, 0.3)',
+                      color: '#60a5fa',
+                      borderRadius: '6px',
+                      padding: '8px 16px',
+                      fontSize: '12px',
                       fontWeight: 700,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      transition: "all 0.2s ease-in-out",
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      transition: 'all 0.2s ease-in-out',
                     }}
                     className="hover:bg-blue-500/20"
                     title="Export the complete audit report as HTML"
@@ -1528,20 +1576,22 @@ export default function Dashboard() {
                     <Download size={14} /> Export HTML
                   </button>
                   <button
-                    onClick={() => analysisResult && handleMarkdownExport(analysisResult.repoName, analysisResult.analysis)}
+                    onClick={() =>
+                      analysisResult && handleMarkdownExport(analysisResult.repoName, analysisResult.analysis)
+                    }
                     style={{
-                      background: "rgba(168, 85, 247, 0.1)",
-                      border: "1px solid rgba(168, 85, 247, 0.3)",
-                      color: "#c084fc",
-                      borderRadius: "6px",
-                      padding: "8px 16px",
-                      fontSize: "12px",
+                      background: 'rgba(168, 85, 247, 0.1)',
+                      border: '1px solid rgba(168, 85, 247, 0.3)',
+                      color: '#c084fc',
+                      borderRadius: '6px',
+                      padding: '8px 16px',
+                      fontSize: '12px',
                       fontWeight: 700,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      transition: "all 0.2s ease-in-out",
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      transition: 'all 0.2s ease-in-out',
                     }}
                     className="hover:bg-purple-500/20"
                     title="Export the complete audit report as Markdown"
@@ -1551,18 +1601,18 @@ export default function Dashboard() {
                   <button
                     onClick={() => analysisResult && handlePdfExport(analysisResult.repoName, reportRef.current)}
                     style={{
-                      background: "rgba(220, 38, 38, 0.1)",
-                      border: "1px solid rgba(220, 38, 38, 0.3)",
-                      color: "#f87171",
-                      borderRadius: "6px",
-                      padding: "8px 16px",
-                      fontSize: "12px",
+                      background: 'rgba(220, 38, 38, 0.1)',
+                      border: '1px solid rgba(220, 38, 38, 0.3)',
+                      color: '#f87171',
+                      borderRadius: '6px',
+                      padding: '8px 16px',
+                      fontSize: '12px',
                       fontWeight: 700,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      transition: "all 0.2s ease-in-out",
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      transition: 'all 0.2s ease-in-out',
                     }}
                     className="hover:bg-red-500/20"
                     title="Export the complete audit report as PDF"
@@ -1576,19 +1626,45 @@ export default function Dashboard() {
                 className="pdf-grid-container"
                 style={{
                   flexGrow: 1,
-                  display: "grid",
-                  gridTemplateColumns:
-                    activeDashboardView === "audit"
-                      ? "240px 1fr 1fr"
-                      : "240px 1fr",
-                  gap: "20px",
-                  boxSizing: "border-box",
+                  display: 'grid',
+                  gridTemplateColumns: activeDashboardView === 'audit' ? '240px 1fr 1fr' : '240px 1fr',
+                  gap: '20px',
+                  boxSizing: 'border-box',
                 }}
               >
                 {/* File Tree List */}
-                <div data-html2canvas-ignore="true" className="glass-panel" style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px', overflowY: 'auto', maxHeight: '72vh' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                    <h3 style={{ fontSize: '12px', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', margin: 0, letterSpacing: '0.5px' }}>File Navigator</h3>
+                <div
+                  data-html2canvas-ignore="true"
+                  className="glass-panel"
+                  style={{
+                    padding: '16px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px',
+                    overflowY: 'auto',
+                    maxHeight: '72vh',
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginBottom: '4px',
+                    }}
+                  >
+                    <h3
+                      style={{
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        color: '#9ca3af',
+                        textTransform: 'uppercase',
+                        margin: 0,
+                        letterSpacing: '0.5px',
+                      }}
+                    >
+                      File Navigator
+                    </h3>
                     <div style={{ display: 'flex', gap: '2px' }}>
                       <button
                         onClick={() => {
@@ -1607,8 +1683,14 @@ export default function Dashboard() {
                           justifyContent: 'center',
                           transition: 'all 0.2s ease',
                         }}
-                        onMouseEnter={(e) => { e.currentTarget.style.color = '#f3f4f6'; e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.color = '#9ca3af'; e.currentTarget.style.background = 'transparent'; }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.color = '#f3f4f6';
+                          e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.color = '#9ca3af';
+                          e.currentTarget.style.background = 'transparent';
+                        }}
                         aria-label="Expand all folders"
                       >
                         <ChevronsUpDown size={15} />
@@ -1628,8 +1710,14 @@ export default function Dashboard() {
                           justifyContent: 'center',
                           transition: 'all 0.2s ease',
                         }}
-                        onMouseEnter={(e) => { e.currentTarget.style.color = '#f3f4f6'; e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.color = '#9ca3af'; e.currentTarget.style.background = 'transparent'; }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.color = '#f3f4f6';
+                          e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.color = '#9ca3af';
+                          e.currentTarget.style.background = 'transparent';
+                        }}
                         aria-label="Collapse all folders"
                       >
                         <ChevronsDownUp size={15} />
@@ -1640,7 +1728,7 @@ export default function Dashboard() {
                     style={{
                       position: 'relative',
                       width: '100%',
-                      marginBottom: '8px'
+                      marginBottom: '8px',
                     }}
                   >
                     <Search
@@ -1651,7 +1739,7 @@ export default function Dashboard() {
                         top: '50%',
                         transform: 'translateY(-50%)',
                         color: 'var(--subtext-color)',
-                        pointerEvents: 'none'
+                        pointerEvents: 'none',
                       }}
                     />
 
@@ -1670,15 +1758,15 @@ export default function Dashboard() {
                         color: 'var(--text-color)',
                         fontSize: '11px',
                         boxSizing: 'border-box',
-                        outline: 'none'
+                        outline: 'none',
                       }}
                     />
 
                     {fileFilterQuery && (
                       <button
                         onClick={() => {
-                          setFileFilterQuery('')
-                          setIsClearHovered(false)
+                          setFileFilterQuery('');
+                          setIsClearHovered(false);
                         }}
                         onMouseEnter={() => setIsClearHovered(true)}
                         onMouseLeave={() => setIsClearHovered(false)}
@@ -1693,7 +1781,7 @@ export default function Dashboard() {
                           cursor: 'pointer',
                           color: 'var(--subtext-color)',
                           display: 'flex',
-                          alignItems: 'center'
+                          alignItems: 'center',
                         }}
                         aria-label="Clear search"
                       >
@@ -1702,29 +1790,20 @@ export default function Dashboard() {
                     )}
                   </div>
                   <div style={{ display: 'flex', gap: '4px', marginBottom: '8px', flexWrap: 'wrap' }}>
-                    {['All', 'JS/TS', 'Python', 'CSS/HTML'].map(tag => (
+                    {['All', 'JS/TS', 'Python', 'CSS/HTML'].map((tag) => (
                       <button
                         key={tag}
                         onClick={() => setActiveExtFilter(tag)}
                         style={{
-                          background:
-                            activeExtFilter === tag
-                              ? "#a855f7"
-                              : "rgba(255,255,255,0.05)",
-                          border:
-                            activeExtFilter === tag
-                              ? "1px solid #a855f7"
-                              : "1px solid var(--border-color)",
-                          borderRadius: "4px",
-                          color:
-                            activeExtFilter === tag
-                              ? "white"
-                              : "var(--text-color)",
-                          padding: "2px 6px",
-                          fontSize: "9px",
+                          background: activeExtFilter === tag ? '#a855f7' : 'rgba(255,255,255,0.05)',
+                          border: activeExtFilter === tag ? '1px solid #a855f7' : '1px solid var(--border-color)',
+                          borderRadius: '4px',
+                          color: activeExtFilter === tag ? 'white' : 'var(--text-color)',
+                          padding: '2px 6px',
+                          fontSize: '9px',
                           fontWeight: 600,
-                          cursor: "pointer",
-                          transition: "all 0.15s",
+                          cursor: 'pointer',
+                          transition: 'all 0.15s',
                         }}
                       >
                         {tag}
@@ -1736,14 +1815,14 @@ export default function Dashboard() {
                       return (
                         <div
                           style={{
-                            textAlign: "center",
-                            padding: "24px 10px",
-                            color: "var(--subtext-color)",
-                            fontSize: "11px",
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                            gap: "6px",
+                            textAlign: 'center',
+                            padding: '24px 10px',
+                            color: 'var(--subtext-color)',
+                            fontSize: '11px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '6px',
                           }}
                         >
                           <span>🚫 No matching files found</span>
@@ -1775,8 +1854,12 @@ export default function Dashboard() {
                                 gap: '5px',
                                 transition: 'all 0.15s',
                               }}
-                              onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
-                              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'transparent';
+                              }}
                             >
                               {isExpanded ? (
                                 <ChevronDown size={12} style={{ color: '#9ca3af', flexShrink: 0 }} />
@@ -1788,11 +1871,13 @@ export default function Dashboard() {
                               ) : (
                                 <Folder size={14} style={{ color: '#60a5fa', flexShrink: 0 }} />
                               )}
-                              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{node.name}</span>
+                              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {node.name}
+                              </span>
                             </button>
                             {isExpanded && (
                               <div style={{ transition: 'all 0.15s ease-in-out' }}>
-                                {node.children.map(child => renderTreeNode(child, depth + 1))}
+                                {node.children.map((child) => renderTreeNode(child, depth + 1))}
                               </div>
                             )}
                           </div>
@@ -1809,18 +1894,12 @@ export default function Dashboard() {
                             padding: '5px 8px',
                             paddingLeft: `${8 + depth * 14}px`,
                             borderRadius: '4px',
-                            background:
-                              selectedFile === node.fullPath
-                                ? 'rgba(59,130,246,0.1)'
-                                : 'transparent',
+                            background: selectedFile === node.fullPath ? 'rgba(59,130,246,0.1)' : 'transparent',
                             border:
                               selectedFile === node.fullPath
                                 ? '1px solid rgba(59,130,246,0.3)'
                                 : '1px solid transparent',
-                            color:
-                              selectedFile === node.fullPath
-                                ? '#60a5fa'
-                                : 'var(--text-color)',
+                            color: selectedFile === node.fullPath ? '#60a5fa' : 'var(--text-color)',
                             textAlign: 'left',
                             fontSize: '12px',
                             fontWeight: selectedFile === node.fullPath ? 600 : 500,
@@ -1834,7 +1913,8 @@ export default function Dashboard() {
                             transition: 'all 0.15s',
                           }}
                           onMouseEnter={(e) => {
-                            if (selectedFile !== node.fullPath) e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+                            if (selectedFile !== node.fullPath)
+                              e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
                           }}
                           onMouseLeave={(e) => {
                             if (selectedFile !== node.fullPath) e.currentTarget.style.background = 'transparent';
@@ -1843,93 +1923,100 @@ export default function Dashboard() {
                           <FileCode
                             size={14}
                             style={{
-                              color:
-                                selectedFile === node.fullPath
-                                  ? '#60a5fa'
-                                  : 'var(--subtext-color)',
+                              color: selectedFile === node.fullPath ? '#60a5fa' : 'var(--subtext-color)',
                               flexShrink: 0,
                             }}
                           />
-                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{node.name}</span>
+                          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {node.name}
+                          </span>
                         </button>
                       );
                     };
 
-                    return fileTreeData.map(node => renderTreeNode(node, 0));
+                    return fileTreeData.map((node) => renderTreeNode(node, 0));
                   })()}
                 </div>
 
-                {activeDashboardView === "audit" && (
+                {activeDashboardView === 'audit' && (
                   <>
                     {/* Central Audit Hub */}
                     <div
                       className="glass-panel"
                       style={{
-                        padding: "20px",
-                        display: "flex",
-                        flexDirection: "column",
-                        boxSizing: "border-box",
+                        padding: '20px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        boxSizing: 'border-box',
                       }}
                     >
-                      {analysisResult && (() => {
-                        const fileReviews = analysisResult.analysis.fileReviews || {};
-                        const breakdown: Record<string, number> = { bugs: 0, security: 0, optimization: 0, styling: 0 };
-                        Object.values(fileReviews).forEach((fr: any) => {
-                          breakdown.bugs += fr.bugs?.length || 0;
-                          breakdown.security += fr.security?.length || 0;
-                          breakdown.optimization += fr.optimization?.length || 0;
-                          breakdown.styling += fr.styling?.length || 0;
-                        });
-                        return <div style={{ marginBottom: "16px" }}><VulnerabilitiesBarChart data={breakdown} /></div>;
-                      })()}
+                      {analysisResult &&
+                        (() => {
+                          const fileReviews = analysisResult.analysis.fileReviews || {};
+                          const breakdown: Record<string, number> = {
+                            bugs: 0,
+                            security: 0,
+                            optimization: 0,
+                            styling: 0,
+                          };
+                          Object.values(fileReviews).forEach((fr: any) => {
+                            breakdown.bugs += fr.bugs?.length || 0;
+                            breakdown.security += fr.security?.length || 0;
+                            breakdown.optimization += fr.optimization?.length || 0;
+                            breakdown.styling += fr.styling?.length || 0;
+                          });
+                          return (
+                            <div style={{ marginBottom: '16px' }}>
+                              <VulnerabilitiesBarChart data={breakdown} />
+                            </div>
+                          );
+                        })()}
                       <div
                         style={{
-                          borderBottom: "1px solid rgba(255,255,255,0.08)",
-                          paddingBottom: "12px",
-                          marginBottom: "16px",
+                          borderBottom: '1px solid rgba(255,255,255,0.08)',
+                          paddingBottom: '12px',
+                          marginBottom: '16px',
                         }}
                       >
                         <div
                           style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
                           }}
                         >
                           <span
                             style={{
-                              fontSize: "10px",
-                              background: "#3b82f6",
-                              color: "#eff6ff",
-                              padding: "2px 8px",
-                              borderRadius: "20px",
+                              fontSize: '10px',
+                              background: '#3b82f6',
+                              color: '#eff6ff',
+                              padding: '2px 8px',
+                              borderRadius: '20px',
                               fontWeight: 600,
-                              textTransform: "uppercase",
+                              textTransform: 'uppercase',
                             }}
                           >
                             File Audit
                           </span>
                           <label
                             style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "6px",
-                              cursor: "pointer",
-                              fontSize: "11px",
-                              color: "#9ca3af",
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              cursor: 'pointer',
+                              fontSize: '11px',
+                              color: '#9ca3af',
                             }}
                           >
                             <input
                               type="checkbox"
                               checked={isGssocLabelingEnabled}
-                              onChange={(e) =>
-                                setIsGssocLabelingEnabled(e.target.checked)
-                              }
+                              onChange={(e) => setIsGssocLabelingEnabled(e.target.checked)}
                               style={{
-                                cursor: "pointer",
-                                accentColor: "#a855f7",
-                                width: "13px",
-                                height: "13px",
+                                cursor: 'pointer',
+                                accentColor: '#a855f7',
+                                width: '13px',
+                                height: '13px',
                               }}
                             />
                             <span>GSSoC Labeling</span>
@@ -1937,245 +2024,201 @@ export default function Dashboard() {
                         </div>
                         <h3
                           style={{
-                            fontSize: "15px",
+                            fontSize: '15px',
                             fontWeight: 700,
-                            color: "#f3f4f6",
-                            margin: "6px 0 0 0",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
+                            color: '#f3f4f6',
+                            margin: '6px 0 0 0',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
                           }}
                         >
-                          📄 {selectedFile || "Select a file"}
+                          📄 {selectedFile || 'Select a file'}
                         </h3>
                       </div>
 
                       {/* Compact Metrics Summary Banner */}
-                      {selectedFile &&
-                        analysisResult.analysis.metrics?.[selectedFile] && (
-                          <div
-                            style={{
-                              display: "grid",
-                              gridTemplateColumns: "repeat(4, 1fr)",
-                              gap: "8px",
-                              marginBottom: "16px",
-                            }}
-                          >
-                            {[
-                              {
-                                label: "Total Lines",
-                                value:
-                                  analysisResult.analysis.metrics[selectedFile]
-                                    .totalLines,
-                                color: "#60a5fa",
-                              },
-                              {
-                                label: "Code Lines",
-                                value:
-                                  analysisResult.analysis.metrics[selectedFile]
-                                    .codeLines,
-                                color: "#22c55e",
-                              },
-                              {
-                                label: "Comments",
-                                value:
-                                  analysisResult.analysis.metrics[selectedFile]
-                                    .commentLines,
-                                color: "#a855f7",
-                              },
-                              {
-                                label: "Empty Lines",
-                                value:
-                                  analysisResult.analysis.metrics[selectedFile]
-                                    .emptyLines,
-                                color: "#f59e0b",
-                              },
-                            ].map((stat) => (
-                              <div
-                                key={stat.label}
+                      {selectedFile && analysisResult.analysis.metrics?.[selectedFile] && (
+                        <div
+                          style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(4, 1fr)',
+                            gap: '8px',
+                            marginBottom: '16px',
+                          }}
+                        >
+                          {[
+                            {
+                              label: 'Total Lines',
+                              value: analysisResult.analysis.metrics[selectedFile].totalLines,
+                              color: '#60a5fa',
+                            },
+                            {
+                              label: 'Code Lines',
+                              value: analysisResult.analysis.metrics[selectedFile].codeLines,
+                              color: '#22c55e',
+                            },
+                            {
+                              label: 'Comments',
+                              value: analysisResult.analysis.metrics[selectedFile].commentLines,
+                              color: '#a855f7',
+                            },
+                            {
+                              label: 'Empty Lines',
+                              value: analysisResult.analysis.metrics[selectedFile].emptyLines,
+                              color: '#f59e0b',
+                            },
+                          ].map((stat) => (
+                            <div
+                              key={stat.label}
+                              style={{
+                                background: `${stat.color}08`,
+                                border: `1px solid ${stat.color}25`,
+                                borderRadius: '8px',
+                                padding: '10px 12px',
+                                textAlign: 'center',
+                                transition: 'all 0.2s ease',
+                              }}
+                            >
+                              <span
                                 style={{
-                                  background: `${stat.color}08`,
-                                  border: `1px solid ${stat.color}25`,
-                                  borderRadius: "8px",
-                                  padding: "10px 12px",
-                                  textAlign: "center",
-                                  transition: "all 0.2s ease",
+                                  fontSize: '9px',
+                                  fontWeight: 600,
+                                  color: 'var(--subtext-color)',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.5px',
+                                  display: 'block',
+                                  marginBottom: '4px',
                                 }}
                               >
-                                <span
-                                  style={{
-                                    fontSize: "9px",
-                                    fontWeight: 600,
-                                    color: "var(--subtext-color)",
-                                    textTransform: "uppercase",
-                                    letterSpacing: "0.5px",
-                                    display: "block",
-                                    marginBottom: "4px",
-                                  }}
-                                >
-                                  {stat.label}
-                                </span>
-                                <span
-                                  style={{
-                                    fontSize: "18px",
-                                    fontWeight: 800,
-                                    color: stat.color,
-                                    display: "block",
-                                  }}
-                                >
-                                  {stat.value ?? "—"}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                                {stat.label}
+                              </span>
+                              <span
+                                style={{
+                                  fontSize: '18px',
+                                  fontWeight: 800,
+                                  color: stat.color,
+                                  display: 'block',
+                                }}
+                              >
+                                {stat.value ?? '—'}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
 
                       {/* Audit Tabs */}
                       <div
                         style={{
-                          display: "grid",
-                          gridTemplateColumns: "repeat(5, 1fr)",
-                          gap: "6px",
-                          marginBottom: "16px",
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(5, 1fr)',
+                          gap: '6px',
+                          marginBottom: '16px',
                         }}
                       >
                         <button
-                          onClick={() => setActiveTab("bugs")}
-                          aria-current={activeTab === "bugs" ? "true" : undefined}
+                          onClick={() => setActiveTab('bugs')}
+                          aria-current={activeTab === 'bugs' ? 'true' : undefined}
                           style={{
-                            padding: "6px",
-                            borderRadius: "6px",
-                            fontSize: "11px",
+                            padding: '6px',
+                            borderRadius: '6px',
+                            fontSize: '11px',
                             fontWeight: 600,
-                            cursor: "pointer",
-                            border: "1px solid",
-                            background:
-                              activeTab === "bugs"
-                                ? "rgba(249,115,22,0.1)"
-                                : "transparent",
-                            borderColor:
-                              activeTab === "bugs"
-                                ? "rgba(249,115,22,0.3)"
-                                : "rgba(255,255,255,0.05)",
-                            color: activeTab === "bugs" ? "#f97316" : "#9ca3af",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            gap: "4px",
+                            cursor: 'pointer',
+                            border: '1px solid',
+                            background: activeTab === 'bugs' ? 'rgba(249,115,22,0.1)' : 'transparent',
+                            borderColor: activeTab === 'bugs' ? 'rgba(249,115,22,0.3)' : 'rgba(255,255,255,0.05)',
+                            color: activeTab === 'bugs' ? '#f97316' : '#9ca3af',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '4px',
                           }}
                         >
                           <AlertTriangle size={12} /> Bugs
                         </button>
                         <button
-                          onClick={() => setActiveTab("security")}
-                          aria-current={activeTab === "security" ? "true" : undefined}
+                          onClick={() => setActiveTab('security')}
+                          aria-current={activeTab === 'security' ? 'true' : undefined}
                           style={{
-                            padding: "6px",
-                            borderRadius: "6px",
-                            fontSize: "11px",
+                            padding: '6px',
+                            borderRadius: '6px',
+                            fontSize: '11px',
                             fontWeight: 600,
-                            cursor: "pointer",
-                            border: "1px solid",
-                            background:
-                              activeTab === "security"
-                                ? "rgba(239,68,68,0.1)"
-                                : "transparent",
-                            borderColor:
-                              activeTab === "security"
-                                ? "rgba(239,68,68,0.3)"
-                                : "rgba(255,255,255,0.05)",
-                            color:
-                              activeTab === "security" ? "#ef4444" : "#9ca3af",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            gap: "4px",
+                            cursor: 'pointer',
+                            border: '1px solid',
+                            background: activeTab === 'security' ? 'rgba(239,68,68,0.1)' : 'transparent',
+                            borderColor: activeTab === 'security' ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.05)',
+                            color: activeTab === 'security' ? '#ef4444' : '#9ca3af',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '4px',
                           }}
                         >
                           <ShieldAlert size={12} /> Security
                         </button>
                         <button
-                          onClick={() => setActiveTab("optimization")}
-                          aria-current={activeTab === "optimization" ? "true" : undefined}
+                          onClick={() => setActiveTab('optimization')}
+                          aria-current={activeTab === 'optimization' ? 'true' : undefined}
                           style={{
-                            padding: "6px",
-                            borderRadius: "6px",
-                            fontSize: "11px",
+                            padding: '6px',
+                            borderRadius: '6px',
+                            fontSize: '11px',
                             fontWeight: 600,
-                            cursor: "pointer",
-                            border: "1px solid",
-                            background:
-                              activeTab === "optimization"
-                                ? "rgba(34,197,94,0.1)"
-                                : "transparent",
+                            cursor: 'pointer',
+                            border: '1px solid',
+                            background: activeTab === 'optimization' ? 'rgba(34,197,94,0.1)' : 'transparent',
                             borderColor:
-                              activeTab === "optimization"
-                                ? "rgba(34,197,94,0.3)"
-                                : "rgba(255,255,255,0.05)",
-                            color:
-                              activeTab === "optimization"
-                                ? "#22c55e"
-                                : "#9ca3af",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            gap: "4px",
+                              activeTab === 'optimization' ? 'rgba(34,197,94,0.3)' : 'rgba(255,255,255,0.05)',
+                            color: activeTab === 'optimization' ? '#22c55e' : '#9ca3af',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '4px',
                           }}
                         >
                           <Zap size={12} /> Perf
                         </button>
                         <button
-                          onClick={() => setActiveTab("styling")}
-                          aria-current={activeTab === "styling" ? "true" : undefined}
+                          onClick={() => setActiveTab('styling')}
+                          aria-current={activeTab === 'styling' ? 'true' : undefined}
                           style={{
-                            padding: "6px",
-                            borderRadius: "6px",
-                            fontSize: "11px",
+                            padding: '6px',
+                            borderRadius: '6px',
+                            fontSize: '11px',
                             fontWeight: 600,
-                            cursor: "pointer",
-                            border: "1px solid",
-                            background:
-                              activeTab === "styling"
-                                ? "rgba(59,130,246,0.1)"
-                                : "transparent",
-                            borderColor:
-                              activeTab === "styling"
-                                ? "rgba(59,130,246,0.3)"
-                                : "rgba(255,255,255,0.05)",
-                            color:
-                              activeTab === "styling" ? "#3b82f6" : "#9ca3af",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            gap: "4px",
+                            cursor: 'pointer',
+                            border: '1px solid',
+                            background: activeTab === 'styling' ? 'rgba(59,130,246,0.1)' : 'transparent',
+                            borderColor: activeTab === 'styling' ? 'rgba(59,130,246,0.3)' : 'rgba(255,255,255,0.05)',
+                            color: activeTab === 'styling' ? '#3b82f6' : '#9ca3af',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '4px',
                           }}
                         >
                           <Terminal size={12} /> Style
                         </button>
                         <button
-                          onClick={() => setActiveTab("metrics")}
-                          aria-current={activeTab === "metrics" ? "true" : undefined}
+                          onClick={() => setActiveTab('metrics')}
+                          aria-current={activeTab === 'metrics' ? 'true' : undefined}
                           style={{
-                            padding: "6px",
-                            borderRadius: "6px",
-                            fontSize: "11px",
+                            padding: '6px',
+                            borderRadius: '6px',
+                            fontSize: '11px',
                             fontWeight: 600,
-                            cursor: "pointer",
-                            border: "1px solid",
-                            background:
-                              activeTab === "metrics"
-                                ? "rgba(168,85,247,0.1)"
-                                : "transparent",
-                            borderColor:
-                              activeTab === "metrics"
-                                ? "rgba(168,85,247,0.3)"
-                                : "rgba(255,255,255,0.05)",
-                            color:
-                              activeTab === "metrics" ? "#a855f7" : "#9ca3af",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            gap: "4px",
+                            cursor: 'pointer',
+                            border: '1px solid',
+                            background: activeTab === 'metrics' ? 'rgba(168,85,247,0.1)' : 'transparent',
+                            borderColor: activeTab === 'metrics' ? 'rgba(168,85,247,0.3)' : 'rgba(255,255,255,0.05)',
+                            color: activeTab === 'metrics' ? '#a855f7' : '#9ca3af',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '4px',
                           }}
                         >
                           <Layers size={12} /> Metrics
@@ -2186,95 +2229,77 @@ export default function Dashboard() {
                       <div
                         style={{
                           flexGrow: 1,
-                          overflowY: "auto",
-                          maxHeight: "54vh",
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: "14px",
+                          overflowY: 'auto',
+                          maxHeight: '54vh',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '14px',
                         }}
                       >
-                        {selectedFile && activeTab === "metrics" ? (
+                        {selectedFile && activeTab === 'metrics' ? (
                           (() => {
-                            const fileMetrics = analysisResult.analysis
-                              .metrics?.[selectedFile] || {
+                            const fileMetrics = analysisResult.analysis.metrics?.[selectedFile] || {
                               totalLines: 0,
                               emptyLines: 0,
                               commentLines: 0,
                               codeLines: 0,
                               functionCount: 0,
                               complexityScore: 0,
-                              grade: "A",
+                              grade: 'A',
                             };
 
                             const commentDensity =
                               fileMetrics.totalLines > 0
-                                ? Math.round(
-                                  (fileMetrics.commentLines /
-                                    fileMetrics.totalLines) *
-                                  100,
-                                )
+                                ? Math.round((fileMetrics.commentLines / fileMetrics.totalLines) * 100)
                                 : 0;
 
                             const codePct =
                               fileMetrics.totalLines > 0
-                                ? Math.round(
-                                  (fileMetrics.codeLines /
-                                    fileMetrics.totalLines) *
-                                  100,
-                                )
+                                ? Math.round((fileMetrics.codeLines / fileMetrics.totalLines) * 100)
                                 : 0;
                             const commentPct =
                               fileMetrics.totalLines > 0
-                                ? Math.round(
-                                  (fileMetrics.commentLines /
-                                    fileMetrics.totalLines) *
-                                  100,
-                                )
+                                ? Math.round((fileMetrics.commentLines / fileMetrics.totalLines) * 100)
                                 : 0;
-                            const emptyPct =
-                              fileMetrics.totalLines > 0
-                                ? Math.max(0, 100 - codePct - commentPct)
-                                : 0;
+                            const emptyPct = fileMetrics.totalLines > 0 ? Math.max(0, 100 - codePct - commentPct) : 0;
 
                             const gradeColors = {
                               A: {
-                                text: "#22c55e",
-                                bg: "rgba(34,197,94,0.05)",
-                                border: "rgba(34,197,94,0.15)",
+                                text: '#22c55e',
+                                bg: 'rgba(34,197,94,0.05)',
+                                border: 'rgba(34,197,94,0.15)',
                               },
                               B: {
-                                text: "#3b82f6",
-                                bg: "rgba(59,130,246,0.05)",
-                                border: "rgba(59,130,246,0.15)",
+                                text: '#3b82f6',
+                                bg: 'rgba(59,130,246,0.05)',
+                                border: 'rgba(59,130,246,0.15)',
                               },
                               C: {
-                                text: "#eab308",
-                                bg: "rgba(234,179,8,0.05)",
-                                border: "rgba(234,179,8,0.15)",
+                                text: '#eab308',
+                                bg: 'rgba(234,179,8,0.05)',
+                                border: 'rgba(234,179,8,0.15)',
                               },
                               D: {
-                                text: "#f97316",
-                                bg: "rgba(249,115,22,0.05)",
-                                border: "rgba(249,115,22,0.15)",
+                                text: '#f97316',
+                                bg: 'rgba(249,115,22,0.05)',
+                                border: 'rgba(249,115,22,0.15)',
                               },
                               F: {
-                                text: "#ef4444",
-                                bg: "rgba(239,68,68,0.05)",
-                                border: "rgba(239,68,68,0.15)",
+                                text: '#ef4444',
+                                bg: 'rgba(239,68,68,0.05)',
+                                border: 'rgba(239,68,68,0.15)',
                               },
                             };
 
                             const currentGrade =
-                              gradeColors[
-                              fileMetrics.grade as keyof typeof gradeColors
-                              ] || gradeColors["A"];
+                              gradeColors[fileMetrics.grade as keyof typeof gradeColors] || gradeColors['A'];
 
                             return (
                               <div
                                 style={{
-                                  display: "flex",
-                                  flexDirection: "column",
-                                  gap: "16px",
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  gap: '16px',
                                 }}
                               >
                                 {/* Complexity Card */}
@@ -2282,19 +2307,19 @@ export default function Dashboard() {
                                   style={{
                                     background: currentGrade.bg,
                                     border: `1px solid ${currentGrade.border}`,
-                                    padding: "16px",
-                                    borderRadius: "8px",
-                                    display: "flex",
-                                    justifyContent: "space-between",
-                                    alignItems: "center",
+                                    padding: '16px',
+                                    borderRadius: '8px',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
                                   }}
                                 >
                                   <div>
                                     <h4
                                       style={{
-                                        margin: "0 0 4px 0",
-                                        fontSize: "14px",
-                                        color: "var(--text-color)",
+                                        margin: '0 0 4px 0',
+                                        fontSize: '14px',
+                                        color: 'var(--text-color)',
                                         fontWeight: 700,
                                       }}
                                     >
@@ -2302,8 +2327,8 @@ export default function Dashboard() {
                                     </h4>
                                     <span
                                       style={{
-                                        fontSize: "11px",
-                                        color: "var(--subtext-color)",
+                                        fontSize: '11px',
+                                        color: 'var(--subtext-color)',
                                       }}
                                     >
                                       Based on SLOC and function densities.
@@ -2311,15 +2336,15 @@ export default function Dashboard() {
                                   </div>
                                   <div
                                     style={{
-                                      width: "48px",
-                                      height: "48px",
-                                      borderRadius: "50%",
-                                      background: "rgba(255,255,255,0.05)",
+                                      width: '48px',
+                                      height: '48px',
+                                      borderRadius: '50%',
+                                      background: 'rgba(255,255,255,0.05)',
                                       border: `2px solid ${currentGrade.text}`,
-                                      display: "flex",
-                                      alignItems: "center",
-                                      justifyContent: "center",
-                                      fontSize: "20px",
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      fontSize: '20px',
                                       fontWeight: 800,
                                       color: currentGrade.text,
                                     }}
@@ -2331,33 +2356,33 @@ export default function Dashboard() {
                                 {/* Line Composition Stacked Bar */}
                                 <div
                                   style={{
-                                    background: "rgba(255,255,255,0.02)",
-                                    border: "1px solid var(--border-color)",
-                                    padding: "14px",
-                                    borderRadius: "8px",
+                                    background: 'rgba(255,255,255,0.02)',
+                                    border: '1px solid var(--border-color)',
+                                    padding: '14px',
+                                    borderRadius: '8px',
                                   }}
                                 >
                                   <div
                                     style={{
-                                      display: "flex",
-                                      justifyContent: "space-between",
-                                      alignItems: "center",
-                                      marginBottom: "10px",
+                                      display: 'flex',
+                                      justifyContent: 'space-between',
+                                      alignItems: 'center',
+                                      marginBottom: '10px',
                                     }}
                                   >
                                     <span
                                       style={{
-                                        fontSize: "11px",
+                                        fontSize: '11px',
                                         fontWeight: 700,
-                                        color: "var(--text-color)",
+                                        color: 'var(--text-color)',
                                       }}
                                     >
                                       Line Composition
                                     </span>
                                     <span
                                       style={{
-                                        fontSize: "10px",
-                                        color: "var(--subtext-color)",
+                                        fontSize: '10px',
+                                        color: 'var(--subtext-color)',
                                       }}
                                     >
                                       {fileMetrics.totalLines} total lines
@@ -2365,67 +2390,67 @@ export default function Dashboard() {
                                   </div>
                                   <div
                                     style={{
-                                      height: "10px",
-                                      background: "rgba(255,255,255,0.05)",
-                                      borderRadius: "10px",
-                                      overflow: "hidden",
-                                      display: "flex",
+                                      height: '10px',
+                                      background: 'rgba(255,255,255,0.05)',
+                                      borderRadius: '10px',
+                                      overflow: 'hidden',
+                                      display: 'flex',
                                     }}
                                   >
                                     <div
                                       style={{
-                                        height: "100%",
+                                        height: '100%',
                                         width: `${codePct}%`,
-                                        background: "#22c55e",
-                                        transition: "width 0.5s ease-out",
+                                        background: '#22c55e',
+                                        transition: 'width 0.5s ease-out',
                                       }}
                                       title={`Code: ${codePct}%`}
                                     />
                                     <div
                                       style={{
-                                        height: "100%",
+                                        height: '100%',
                                         width: `${commentPct}%`,
-                                        background: "#a855f7",
-                                        transition: "width 0.5s ease-out",
+                                        background: '#a855f7',
+                                        transition: 'width 0.5s ease-out',
                                       }}
                                       title={`Comments: ${commentPct}%`}
                                     />
                                     <div
                                       style={{
-                                        height: "100%",
+                                        height: '100%',
                                         width: `${emptyPct}%`,
-                                        background: "#f59e0b",
-                                        transition: "width 0.5s ease-out",
+                                        background: '#f59e0b',
+                                        transition: 'width 0.5s ease-out',
                                       }}
                                       title={`Empty: ${emptyPct}%`}
                                     />
                                   </div>
                                   <div
                                     style={{
-                                      display: "flex",
-                                      gap: "16px",
-                                      marginTop: "8px",
+                                      display: 'flex',
+                                      gap: '16px',
+                                      marginTop: '8px',
                                     }}
                                   >
                                     <div
                                       style={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: "5px",
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '5px',
                                       }}
                                     >
                                       <div
                                         style={{
-                                          width: "8px",
-                                          height: "8px",
-                                          borderRadius: "2px",
-                                          background: "#22c55e",
+                                          width: '8px',
+                                          height: '8px',
+                                          borderRadius: '2px',
+                                          background: '#22c55e',
                                         }}
                                       />
                                       <span
                                         style={{
-                                          fontSize: "10px",
-                                          color: "var(--subtext-color)",
+                                          fontSize: '10px',
+                                          color: 'var(--subtext-color)',
                                           fontWeight: 600,
                                         }}
                                       >
@@ -2434,23 +2459,23 @@ export default function Dashboard() {
                                     </div>
                                     <div
                                       style={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: "5px",
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '5px',
                                       }}
                                     >
                                       <div
                                         style={{
-                                          width: "8px",
-                                          height: "8px",
-                                          borderRadius: "2px",
-                                          background: "#a855f7",
+                                          width: '8px',
+                                          height: '8px',
+                                          borderRadius: '2px',
+                                          background: '#a855f7',
                                         }}
                                       />
                                       <span
                                         style={{
-                                          fontSize: "10px",
-                                          color: "var(--subtext-color)",
+                                          fontSize: '10px',
+                                          color: 'var(--subtext-color)',
                                           fontWeight: 600,
                                         }}
                                       >
@@ -2459,23 +2484,23 @@ export default function Dashboard() {
                                     </div>
                                     <div
                                       style={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: "5px",
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '5px',
                                       }}
                                     >
                                       <div
                                         style={{
-                                          width: "8px",
-                                          height: "8px",
-                                          borderRadius: "2px",
-                                          background: "#f59e0b",
+                                          width: '8px',
+                                          height: '8px',
+                                          borderRadius: '2px',
+                                          background: '#f59e0b',
                                         }}
                                       />
                                       <span
                                         style={{
-                                          fontSize: "10px",
-                                          color: "var(--subtext-color)",
+                                          fontSize: '10px',
+                                          color: 'var(--subtext-color)',
                                           fontWeight: 600,
                                         }}
                                       >
@@ -2488,24 +2513,24 @@ export default function Dashboard() {
                                 {/* Details Grid */}
                                 <div
                                   style={{
-                                    display: "grid",
-                                    gridTemplateColumns: "repeat(3, 1fr)",
-                                    gap: "12px",
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(3, 1fr)',
+                                    gap: '12px',
                                   }}
                                 >
                                   <div
                                     style={{
-                                      background: "rgba(34,197,94,0.04)",
-                                      border: "1px solid rgba(34,197,94,0.12)",
-                                      padding: "12px",
-                                      borderRadius: "8px",
+                                      background: 'rgba(34,197,94,0.04)',
+                                      border: '1px solid rgba(34,197,94,0.12)',
+                                      padding: '12px',
+                                      borderRadius: '8px',
                                     }}
                                   >
                                     <span
                                       style={{
-                                        fontSize: "10px",
-                                        color: "#22c55e",
-                                        textTransform: "uppercase",
+                                        fontSize: '10px',
+                                        color: '#22c55e',
+                                        textTransform: 'uppercase',
                                         fontWeight: 600,
                                       }}
                                     >
@@ -2513,9 +2538,9 @@ export default function Dashboard() {
                                     </span>
                                     <h3
                                       style={{
-                                        margin: "4px 0 0 0",
-                                        fontSize: "18px",
-                                        color: "var(--text-color)",
+                                        margin: '4px 0 0 0',
+                                        fontSize: '18px',
+                                        color: 'var(--text-color)',
                                         fontWeight: 800,
                                       }}
                                     >
@@ -2524,17 +2549,17 @@ export default function Dashboard() {
                                   </div>
                                   <div
                                     style={{
-                                      background: "rgba(168,85,247,0.04)",
-                                      border: "1px solid rgba(168,85,247,0.12)",
-                                      padding: "12px",
-                                      borderRadius: "8px",
+                                      background: 'rgba(168,85,247,0.04)',
+                                      border: '1px solid rgba(168,85,247,0.12)',
+                                      padding: '12px',
+                                      borderRadius: '8px',
                                     }}
                                   >
                                     <span
                                       style={{
-                                        fontSize: "10px",
-                                        color: "#a855f7",
-                                        textTransform: "uppercase",
+                                        fontSize: '10px',
+                                        color: '#a855f7',
+                                        textTransform: 'uppercase',
                                         fontWeight: 600,
                                       }}
                                     >
@@ -2542,9 +2567,9 @@ export default function Dashboard() {
                                     </span>
                                     <h3
                                       style={{
-                                        margin: "4px 0 0 0",
-                                        fontSize: "18px",
-                                        color: "var(--text-color)",
+                                        margin: '4px 0 0 0',
+                                        fontSize: '18px',
+                                        color: 'var(--text-color)',
                                         fontWeight: 800,
                                       }}
                                     >
@@ -2553,17 +2578,17 @@ export default function Dashboard() {
                                   </div>
                                   <div
                                     style={{
-                                      background: "rgba(245,158,11,0.04)",
-                                      border: "1px solid rgba(245,158,11,0.12)",
-                                      padding: "12px",
-                                      borderRadius: "8px",
+                                      background: 'rgba(245,158,11,0.04)',
+                                      border: '1px solid rgba(245,158,11,0.12)',
+                                      padding: '12px',
+                                      borderRadius: '8px',
                                     }}
                                   >
                                     <span
                                       style={{
-                                        fontSize: "10px",
-                                        color: "#f59e0b",
-                                        textTransform: "uppercase",
+                                        fontSize: '10px',
+                                        color: '#f59e0b',
+                                        textTransform: 'uppercase',
                                         fontWeight: 600,
                                       }}
                                     >
@@ -2571,9 +2596,9 @@ export default function Dashboard() {
                                     </span>
                                     <h3
                                       style={{
-                                        margin: "4px 0 0 0",
-                                        fontSize: "18px",
-                                        color: "var(--text-color)",
+                                        margin: '4px 0 0 0',
+                                        fontSize: '18px',
+                                        color: 'var(--text-color)',
                                         fontWeight: 800,
                                       }}
                                     >
@@ -2585,24 +2610,24 @@ export default function Dashboard() {
                                 {/* Secondary Metrics Grid */}
                                 <div
                                   style={{
-                                    display: "grid",
-                                    gridTemplateColumns: "repeat(2, 1fr)",
-                                    gap: "12px",
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(2, 1fr)',
+                                    gap: '12px',
                                   }}
                                 >
                                   <div
                                     style={{
-                                      background: "rgba(255,255,255,0.02)",
-                                      border: "1px solid var(--border-color)",
-                                      padding: "12px",
-                                      borderRadius: "8px",
+                                      background: 'rgba(255,255,255,0.02)',
+                                      border: '1px solid var(--border-color)',
+                                      padding: '12px',
+                                      borderRadius: '8px',
                                     }}
                                   >
                                     <span
                                       style={{
-                                        fontSize: "10px",
-                                        color: "var(--subtext-color)",
-                                        textTransform: "uppercase",
+                                        fontSize: '10px',
+                                        color: 'var(--subtext-color)',
+                                        textTransform: 'uppercase',
                                         fontWeight: 600,
                                       }}
                                     >
@@ -2610,9 +2635,9 @@ export default function Dashboard() {
                                     </span>
                                     <h3
                                       style={{
-                                        margin: "4px 0 0 0",
-                                        fontSize: "18px",
-                                        color: "var(--text-color)",
+                                        margin: '4px 0 0 0',
+                                        fontSize: '18px',
+                                        color: 'var(--text-color)',
                                         fontWeight: 800,
                                       }}
                                     >
@@ -2621,17 +2646,17 @@ export default function Dashboard() {
                                   </div>
                                   <div
                                     style={{
-                                      background: "rgba(255,255,255,0.02)",
-                                      border: "1px solid var(--border-color)",
-                                      padding: "12px",
-                                      borderRadius: "8px",
+                                      background: 'rgba(255,255,255,0.02)',
+                                      border: '1px solid var(--border-color)',
+                                      padding: '12px',
+                                      borderRadius: '8px',
                                     }}
                                   >
                                     <span
                                       style={{
-                                        fontSize: "10px",
-                                        color: "var(--subtext-color)",
-                                        textTransform: "uppercase",
+                                        fontSize: '10px',
+                                        color: 'var(--subtext-color)',
+                                        textTransform: 'uppercase',
                                         fontWeight: 600,
                                       }}
                                     >
@@ -2639,9 +2664,9 @@ export default function Dashboard() {
                                     </span>
                                     <h3
                                       style={{
-                                        margin: "4px 0 0 0",
-                                        fontSize: "18px",
-                                        color: "var(--text-color)",
+                                        margin: '4px 0 0 0',
+                                        fontSize: '18px',
+                                        color: 'var(--text-color)',
                                         fontWeight: 800,
                                       }}
                                     >
@@ -2653,43 +2678,41 @@ export default function Dashboard() {
                                 {/* Progress Bars */}
                                 <div
                                   style={{
-                                    display: "flex",
-                                    flexDirection: "column",
-                                    gap: "10px",
-                                    marginTop: "4px",
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '10px',
+                                    marginTop: '4px',
                                   }}
                                 >
                                   <div>
                                     <div
                                       style={{
-                                        display: "flex",
-                                        justifyContent: "space-between",
-                                        fontSize: "10px",
-                                        color: "var(--subtext-color)",
-                                        marginBottom: "4px",
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        fontSize: '10px',
+                                        color: 'var(--subtext-color)',
+                                        marginBottom: '4px',
                                         fontWeight: 600,
                                       }}
                                     >
                                       <span>Complexity Index Score</span>
-                                      <span>
-                                        {fileMetrics.complexityScore} / 50
-                                      </span>
+                                      <span>{fileMetrics.complexityScore} / 50</span>
                                     </div>
                                     <div
                                       style={{
-                                        height: "6px",
-                                        background: "rgba(255,255,255,0.05)",
-                                        borderRadius: "10px",
-                                        overflow: "hidden",
+                                        height: '6px',
+                                        background: 'rgba(255,255,255,0.05)',
+                                        borderRadius: '10px',
+                                        overflow: 'hidden',
                                       }}
                                     >
                                       <div
                                         style={{
-                                          height: "100%",
+                                          height: '100%',
                                           width: `${Math.min((fileMetrics.complexityScore / 50) * 100, 100)}%`,
                                           background: currentGrade.text,
-                                          borderRadius: "10px",
-                                          transition: "width 0.5s ease-out",
+                                          borderRadius: '10px',
+                                          transition: 'width 0.5s ease-out',
                                         }}
                                       />
                                     </div>
@@ -2698,11 +2721,11 @@ export default function Dashboard() {
                                   <div>
                                     <div
                                       style={{
-                                        display: "flex",
-                                        justifyContent: "space-between",
-                                        fontSize: "10px",
-                                        color: "var(--subtext-color)",
-                                        marginBottom: "4px",
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        fontSize: '10px',
+                                        color: 'var(--subtext-color)',
+                                        marginBottom: '4px',
                                         fontWeight: 600,
                                       }}
                                     >
@@ -2711,283 +2734,279 @@ export default function Dashboard() {
                                     </div>
                                     <div
                                       style={{
-                                        height: "6px",
-                                        background: "rgba(255,255,255,0.05)",
-                                        borderRadius: "10px",
-                                        overflow: "hidden",
+                                        height: '6px',
+                                        background: 'rgba(255,255,255,0.05)',
+                                        borderRadius: '10px',
+                                        overflow: 'hidden',
                                       }}
                                     >
                                       <div
                                         style={{
-                                          height: "100%",
+                                          height: '100%',
                                           width: `${Math.min(commentDensity, 100)}%`,
-                                          background: "#10b981",
-                                          borderRadius: "10px",
-                                          transition: "width 0.5s ease-out",
+                                          background: '#10b981',
+                                          borderRadius: '10px',
+                                          transition: 'width 0.5s ease-out',
                                         }}
                                       />
                                     </div>
                                   </div>
                                 </div>
-                                <React.Suspense fallback={<div style={{ height: 350, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--subtext-color)', fontSize: '12px' }}>Loading codebase metrics...</div>}>
+                                <React.Suspense
+                                  fallback={
+                                    <div
+                                      style={{
+                                        height: 350,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        color: 'var(--subtext-color)',
+                                        fontSize: '12px',
+                                      }}
+                                    >
+                                      Loading codebase metrics...
+                                    </div>
+                                  }
+                                >
                                   <LazyMetricsChart sessionId={sessionId} />
                                 </React.Suspense>
                               </div>
                             );
                           })()
                         ) : selectedFile &&
-                          activeTab !== "metrics" &&
-                          analysisResult.analysis.fileReviews[selectedFile]?.[
-                            activeTab
-                          ]?.length > 0 ? (
-                          (
-                            analysisResult.analysis.fileReviews[selectedFile][
-                            activeTab
-                            ] as any[]
-                          ).map((item: any, index: number) => {
-                            const itemKey = `${selectedFile}-${activeTab}-${index}-${item.line || 'global'}`;
-                            return (
-                              <div
-                                key={itemKey}
-                                style={{
-                                  padding: "12px 14px",
-                                  borderRadius: "8px",
-                                  background: "rgba(15,23,42,0.4)",
-                                  borderLeft: "3px solid",
-                                  borderColor:
-                                    activeTab === "bugs"
-                                      ? "#f97316"
-                                      : activeTab === "security"
-                                        ? "#ef4444"
-                                        : activeTab === "optimization"
-                                          ? "#22c55e"
-                                          : "#3b82f6",
-                                }}
-                              >
+                          activeTab !== 'metrics' &&
+                          analysisResult.analysis.fileReviews[selectedFile]?.[activeTab]?.length > 0 ? (
+                          (analysisResult.analysis.fileReviews[selectedFile][activeTab] as any[]).map(
+                            (item: any, index: number) => {
+                              const itemKey = `${selectedFile}-${activeTab}-${index}-${item.line || 'global'}`;
+                              return (
                                 <div
+                                  key={itemKey}
                                   style={{
-                                    display: "flex",
-                                    justifyContent: "space-between",
-                                    alignItems: "center",
-                                    marginBottom: "8px",
-                                  }}
-                                >
-                                  <span
-                                    style={{
-                                      fontSize: "12px",
-                                      fontWeight: 700,
-                                      color: "#f3f4f6",
-                                    }}
-                                  >
-                                    {item.type}
-                                  </span>
-                                  <span
-                                    style={{
-                                      fontSize: "10px",
-                                      background: "rgba(255,255,255,0.08)",
-                                      color: "#9ca3af",
-                                      padding: "2px 8px",
-                                      borderRadius: "4px",
-                                      fontWeight: 600,
-                                    }}
-                                  >
-                                    Line {item.line}
-                                  </span>
-                                </div>
-                                <p
-                                  style={{
-                                    margin: "0 0 10px 0",
-                                    fontSize: "12px",
-                                    color: "#d1d5db",
-                                    lineHeight: 1.4,
-                                  }}
-                                >
-                                  {item.description}
-                                </p>
-                                <div
-                                  style={{
-                                    background: "rgba(0,0,0,0.3)",
-                                    border: "1px solid rgba(255,255,255,0.05)",
-                                    borderRadius: "6px",
-                                    padding: "8px 10px",
+                                    padding: '12px 14px',
+                                    borderRadius: '8px',
+                                    background: 'rgba(15,23,42,0.4)',
+                                    borderLeft: '3px solid',
+                                    borderColor:
+                                      activeTab === 'bugs'
+                                        ? '#f97316'
+                                        : activeTab === 'security'
+                                          ? '#ef4444'
+                                          : activeTab === 'optimization'
+                                            ? '#22c55e'
+                                            : '#3b82f6',
                                   }}
                                 >
                                   <div
-  style={{
-    marginTop: "12px",
-    padding: "12px",
-    borderRadius: "8px",
-    background: "rgba(255,255,255,0.04)",
-    border: "1px solid rgba(255,255,255,0.08)",
-  }}
->
-  <h4
-    style={{
-      color: "#60a5fa",
-      marginBottom: "8px",
-      fontSize: "13px",
-    }}
-  >
-    AI Fix Suggestion
-  </h4>
-
-  <p
-    style={{
-      color: "#e5e7eb",
-      fontSize: "12px",
-      marginBottom: "10px",
-    }}
-  >
-    <strong>Explanation:</strong>
-    <br />
-    {item.description}
-  </p>
-
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: "6px",
-    }}
-  >
-    <strong style={{ color: "#c084fc" }}>
-      Suggested Fix
-    </strong>
-
-    <CopyToClipboardButton
-      textToCopy={item.suggestion}
-      style={{ padding: "2px" }}
-    />
-  </div>
-
-  <code
-    style={{
-      display: "block",
-      whiteSpace: "pre-wrap",
-      wordBreak: "break-word",
-      fontSize: "11px",
-      color: "#d8b4fe",
-    }}
-  >
-    {item.suggestion}
-  </code>
-</div>
-                                </div>
-                                {!(analysisResult?._mock || analysisResult?.analysis?._mock) && <div
-                                  style={{
-                                    marginTop: "10px",
-                                    display: "flex",
-                                    gap: "8px",
-                                  }}
-                                >
-                                  {createdIssues[itemKey] ? (
-                                    <a
-                                      href={createdIssues[itemKey]}
-                                      target="_blank"
-                                      rel="noreferrer"
+                                    style={{
+                                      display: 'flex',
+                                      justifyContent: 'space-between',
+                                      alignItems: 'center',
+                                      marginBottom: '8px',
+                                    }}
+                                  >
+                                    <span
                                       style={{
-                                        display: "inline-flex",
-                                        alignItems: "center",
-                                        gap: "6px",
-                                        background: "rgba(34,197,94,0.1)",
-                                        border: "1px solid rgba(34,197,94,0.3)",
-                                        color: "#4ade80",
-                                        borderRadius: "6px",
-                                        padding: "6px 12px",
-                                        fontSize: "11px",
-                                        fontWeight: 600,
-                                        textDecoration: "none",
-                                        cursor: "pointer",
+                                        fontSize: '12px',
+                                        fontWeight: 700,
+                                        color: '#f3f4f6',
                                       }}
                                     >
-                                      🟢 View Issue on GitHub
-                                    </a>
-                                  ) : (
-                                    <button
-                                      onClick={() =>
-                                        handleCreateGitHubIssue(
-                                          selectedFile,
-                                          item,
-                                          activeTab,
-                                          itemKey,
-                                        )
-                                      }
-                                      disabled={creatingIssues[itemKey]}
+                                      {item.type}
+                                    </span>
+                                    <span
                                       style={{
-                                        display: "inline-flex",
-                                        alignItems: "center",
-                                        gap: "6px",
-                                        background: "rgba(168,85,247,0.1)",
-                                        border:
-                                          "1px solid rgba(168,85,247,0.3)",
-                                        color: "#c084fc",
-                                        borderRadius: "6px",
-                                        padding: "6px 12px",
-                                        fontSize: "11px",
+                                        fontSize: '10px',
+                                        background: 'rgba(255,255,255,0.08)',
+                                        color: '#9ca3af',
+                                        padding: '2px 8px',
+                                        borderRadius: '4px',
                                         fontWeight: 600,
-                                        cursor: "pointer",
-                                        opacity: creatingIssues[itemKey]
-                                          ? 0.6
-                                          : 1,
-                                        pointerEvents: creatingIssues[itemKey]
-                                          ? "none"
-                                          : "auto",
                                       }}
                                     >
-                                      {creatingIssues[itemKey] ? (
-                                        <>
-                                          <span
-                                            className="spin-slow"
-                                            style={{
-                                              display: "inline-block",
-                                              width: "12px",
-                                              height: "12px",
-                                              border: "2px solid #c084fc",
-                                              borderTopColor: "transparent",
-                                              borderRadius: "50%",
-                                            }}
-                                          ></span>
-                                          Creating...
-                                        </>
+                                      Line {item.line}
+                                    </span>
+                                  </div>
+                                  <p
+                                    style={{
+                                      margin: '0 0 10px 0',
+                                      fontSize: '12px',
+                                      color: '#d1d5db',
+                                      lineHeight: 1.4,
+                                    }}
+                                  >
+                                    {item.description}
+                                  </p>
+                                  <div
+                                    style={{
+                                      background: 'rgba(0,0,0,0.3)',
+                                      border: '1px solid rgba(255,255,255,0.05)',
+                                      borderRadius: '6px',
+                                      padding: '8px 10px',
+                                    }}
+                                  >
+                                    <div
+                                      style={{
+                                        marginTop: '12px',
+                                        padding: '12px',
+                                        borderRadius: '8px',
+                                        background: 'rgba(255,255,255,0.04)',
+                                        border: '1px solid rgba(255,255,255,0.08)',
+                                      }}
+                                    >
+                                      <h4
+                                        style={{
+                                          color: '#60a5fa',
+                                          marginBottom: '8px',
+                                          fontSize: '13px',
+                                        }}
+                                      >
+                                        AI Fix Suggestion
+                                      </h4>
+
+                                      <p
+                                        style={{
+                                          color: '#e5e7eb',
+                                          fontSize: '12px',
+                                          marginBottom: '10px',
+                                        }}
+                                      >
+                                        <strong>Explanation:</strong>
+                                        <br />
+                                        {item.description}
+                                      </p>
+
+                                      <div
+                                        style={{
+                                          display: 'flex',
+                                          justifyContent: 'space-between',
+                                          alignItems: 'center',
+                                          marginBottom: '6px',
+                                        }}
+                                      >
+                                        <strong style={{ color: '#c084fc' }}>Suggested Fix</strong>
+
+                                        <CopyToClipboardButton
+                                          textToCopy={item.suggestion}
+                                          style={{ padding: '2px' }}
+                                        />
+                                      </div>
+
+                                      <code
+                                        style={{
+                                          display: 'block',
+                                          whiteSpace: 'pre-wrap',
+                                          wordBreak: 'break-word',
+                                          fontSize: '11px',
+                                          color: '#d8b4fe',
+                                        }}
+                                      >
+                                        {item.suggestion}
+                                      </code>
+                                    </div>
+                                  </div>
+                                  {!(analysisResult?._mock || analysisResult?.analysis?._mock) && (
+                                    <div
+                                      style={{
+                                        marginTop: '10px',
+                                        display: 'flex',
+                                        gap: '8px',
+                                      }}
+                                    >
+                                      {createdIssues[itemKey] ? (
+                                        <a
+                                          href={createdIssues[itemKey]}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: '6px',
+                                            background: 'rgba(34,197,94,0.1)',
+                                            border: '1px solid rgba(34,197,94,0.3)',
+                                            color: '#4ade80',
+                                            borderRadius: '6px',
+                                            padding: '6px 12px',
+                                            fontSize: '11px',
+                                            fontWeight: 600,
+                                            textDecoration: 'none',
+                                            cursor: 'pointer',
+                                          }}
+                                        >
+                                          🟢 View Issue on GitHub
+                                        </a>
                                       ) : (
-                                        <>🚨 Create GitHub Issue</>
+                                        <button
+                                          onClick={() =>
+                                            handleCreateGitHubIssue(selectedFile, item, activeTab, itemKey)
+                                          }
+                                          disabled={creatingIssues[itemKey]}
+                                          style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: '6px',
+                                            background: 'rgba(168,85,247,0.1)',
+                                            border: '1px solid rgba(168,85,247,0.3)',
+                                            color: '#c084fc',
+                                            borderRadius: '6px',
+                                            padding: '6px 12px',
+                                            fontSize: '11px',
+                                            fontWeight: 600,
+                                            cursor: 'pointer',
+                                            opacity: creatingIssues[itemKey] ? 0.6 : 1,
+                                            pointerEvents: creatingIssues[itemKey] ? 'none' : 'auto',
+                                          }}
+                                        >
+                                          {creatingIssues[itemKey] ? (
+                                            <>
+                                              <span
+                                                className="spin-slow"
+                                                style={{
+                                                  display: 'inline-block',
+                                                  width: '12px',
+                                                  height: '12px',
+                                                  border: '2px solid #c084fc',
+                                                  borderTopColor: 'transparent',
+                                                  borderRadius: '50%',
+                                                }}
+                                              ></span>
+                                              Creating...
+                                            </>
+                                          ) : (
+                                            <>🚨 Create GitHub Issue</>
+                                          )}
+                                        </button>
                                       )}
-                                    </button>
+                                    </div>
                                   )}
-                                </div>}
-                              </div>
-                            );
-                          })
+                                </div>
+                              );
+                            },
+                          )
                         ) : (
                           <div
                             style={{
-                              textAlign: "center",
-                              padding: "40px 20px",
-                              display: "flex",
-                              flexDirection: "column",
-                              alignItems: "center",
-                              gap: "12px",
+                              textAlign: 'center',
+                              padding: '40px 20px',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              gap: '12px',
                             }}
                           >
-                            <CheckCircle
-                              size={32}
-                              style={{ color: "#22c55e" }}
-                            />
+                            <CheckCircle size={32} style={{ color: '#22c55e' }} />
                             <div>
                               <span
                                 style={{
-                                  fontSize: "13px",
+                                  fontSize: '13px',
                                   fontWeight: 600,
-                                  color: "#f3f4f6",
-                                  display: "block",
+                                  color: '#f3f4f6',
+                                  display: 'block',
                                 }}
                               >
                                 All Clean!
                               </span>
-                              <span
-                                style={{ fontSize: "11px", color: "#9ca3af" }}
-                              >
+                              <span style={{ fontSize: '11px', color: '#9ca3af' }}>
                                 No issues found in this category for this file.
                               </span>
                             </div>
@@ -3000,42 +3019,42 @@ export default function Dashboard() {
                     <div
                       className="glass-panel"
                       style={{
-                        padding: "20px",
-                        display: "flex",
-                        flexDirection: "column",
-                        boxSizing: "border-box",
+                        padding: '20px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        boxSizing: 'border-box',
                       }}
                     >
                       <div
                         style={{
-                          borderBottom: "1px solid rgba(255,255,255,0.08)",
-                          paddingBottom: "12px",
-                          marginBottom: "16px",
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
+                          borderBottom: '1px solid rgba(255,255,255,0.08)',
+                          paddingBottom: '12px',
+                          marginBottom: '16px',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
                         }}
                       >
                         <div>
                           <span
                             style={{
-                              fontSize: "10px",
-                              background: "#a855f7",
-                              color: "#fae8ff",
-                              padding: "2px 8px",
-                              borderRadius: "20px",
+                              fontSize: '10px',
+                              background: '#a855f7',
+                              color: '#fae8ff',
+                              padding: '2px 8px',
+                              borderRadius: '20px',
                               fontWeight: 600,
-                              textTransform: "uppercase",
+                              textTransform: 'uppercase',
                             }}
                           >
                             Documentation
                           </span>
                           <h3
                             style={{
-                              fontSize: "15px",
+                              fontSize: '15px',
                               fontWeight: 700,
-                              color: "#f3f4f6",
-                              margin: "4px 0 0 0",
+                              color: '#f3f4f6',
+                              margin: '4px 0 0 0',
                             }}
                           >
                             📄 GENERATED_README.md
@@ -3043,58 +3062,46 @@ export default function Dashboard() {
                         </div>
                         <div
                           style={{
-                            display: "flex",
-                            gap: "8px",
-                            alignItems: "center",
+                            display: 'flex',
+                            gap: '8px',
+                            alignItems: 'center',
                           }}
                         >
                           <div
                             style={{
-                              display: "flex",
-                              background: "rgba(255,255,255,0.03)",
-                              border: "1px solid rgba(255,255,255,0.08)",
-                              borderRadius: "6px",
-                              padding: "2px",
+                              display: 'flex',
+                              background: 'rgba(255,255,255,0.03)',
+                              border: '1px solid rgba(255,255,255,0.08)',
+                              borderRadius: '6px',
+                              padding: '2px',
                             }}
                           >
                             <button
-                              onClick={() => setReadmeViewMode("preview")}
+                              onClick={() => setReadmeViewMode('preview')}
                               style={{
-                                background:
-                                  readmeViewMode === "preview"
-                                    ? "rgba(168,85,247,0.15)"
-                                    : "transparent",
-                                border: "none",
-                                color:
-                                  readmeViewMode === "preview"
-                                    ? "#c084fc"
-                                    : "#9ca3af",
-                                borderRadius: "4px",
-                                padding: "4px 10px",
-                                fontSize: "10px",
+                                background: readmeViewMode === 'preview' ? 'rgba(168,85,247,0.15)' : 'transparent',
+                                border: 'none',
+                                color: readmeViewMode === 'preview' ? '#c084fc' : '#9ca3af',
+                                borderRadius: '4px',
+                                padding: '4px 10px',
+                                fontSize: '10px',
                                 fontWeight: 600,
-                                cursor: "pointer",
+                                cursor: 'pointer',
                               }}
                             >
                               Preview
                             </button>
                             <button
-                              onClick={() => setReadmeViewMode("raw")}
+                              onClick={() => setReadmeViewMode('raw')}
                               style={{
-                                background:
-                                  readmeViewMode === "raw"
-                                    ? "rgba(168,85,247,0.15)"
-                                    : "transparent",
-                                border: "none",
-                                color:
-                                  readmeViewMode === "raw"
-                                    ? "#c084fc"
-                                    : "#9ca3af",
-                                borderRadius: "4px",
-                                padding: "4px 10px",
-                                fontSize: "10px",
+                                background: readmeViewMode === 'raw' ? 'rgba(168,85,247,0.15)' : 'transparent',
+                                border: 'none',
+                                color: readmeViewMode === 'raw' ? '#c084fc' : '#9ca3af',
+                                borderRadius: '4px',
+                                padding: '4px 10px',
+                                fontSize: '10px',
                                 fontWeight: 600,
-                                cursor: "pointer",
+                                cursor: 'pointer',
                               }}
                             >
                               Raw
@@ -3104,28 +3111,28 @@ export default function Dashboard() {
                             textToCopy={analysisResult.analysis.generatedReadme}
                             showText={true}
                             style={{
-                              background: "rgba(168,85,247,0.1)",
-                              border: "1px solid rgba(168,85,247,0.3)",
-                              color: "#c084fc",
-                              borderRadius: "6px",
-                              padding: "6px 12px",
-                              cursor: "pointer",
+                              background: 'rgba(168,85,247,0.1)',
+                              border: '1px solid rgba(168,85,247,0.3)',
+                              color: '#c084fc',
+                              borderRadius: '6px',
+                              padding: '6px 12px',
+                              cursor: 'pointer',
                             }}
                           />
                           <button
                             onClick={downloadReadme}
                             style={{
-                              background: "rgba(168,85,247,0.1)",
-                              border: "1px solid rgba(168,85,247,0.3)",
-                              color: "#c084fc",
-                              borderRadius: "6px",
-                              padding: "6px 12px",
-                              fontSize: "11px",
+                              background: 'rgba(168,85,247,0.1)',
+                              border: '1px solid rgba(168,85,247,0.3)',
+                              color: '#c084fc',
+                              borderRadius: '6px',
+                              padding: '6px 12px',
+                              fontSize: '11px',
                               fontWeight: 600,
-                              cursor: "pointer",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "6px",
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px',
                             }}
                           >
                             <Download size={14} /> Download
@@ -3133,21 +3140,21 @@ export default function Dashboard() {
                         </div>
                       </div>
 
-                      {readmeViewMode === "raw" ? (
+                      {readmeViewMode === 'raw' ? (
                         <div
                           style={{
                             flexGrow: 1,
-                            overflowY: "auto",
-                            maxHeight: "60vh",
-                            background: "rgba(15,23,42,0.4)",
-                            padding: "16px",
-                            borderRadius: "8px",
-                            border: "1px solid rgba(255,255,255,0.05)",
-                            fontSize: "12px",
+                            overflowY: 'auto',
+                            maxHeight: '60vh',
+                            background: 'rgba(15,23,42,0.4)',
+                            padding: '16px',
+                            borderRadius: '8px',
+                            border: '1px solid rgba(255,255,255,0.05)',
+                            fontSize: '12px',
                             lineHeight: 1.5,
-                            color: "#d1d5db",
-                            fontFamily: "monospace",
-                            whiteSpace: "pre-wrap",
+                            color: '#d1d5db',
+                            fontFamily: 'monospace',
+                            whiteSpace: 'pre-wrap',
                           }}
                         >
                           {analysisResult.analysis.generatedReadme}
@@ -3156,20 +3163,18 @@ export default function Dashboard() {
                         <div
                           style={{
                             flexGrow: 1,
-                            overflowY: "auto",
-                            maxHeight: "60vh",
-                            background: "rgba(15,23,42,0.4)",
-                            padding: "16px 20px",
-                            borderRadius: "8px",
-                            border: "1px solid rgba(255,255,255,0.05)",
-                            display: "flex",
-                            flexDirection: "column",
+                            overflowY: 'auto',
+                            maxHeight: '60vh',
+                            background: 'rgba(15,23,42,0.4)',
+                            padding: '16px 20px',
+                            borderRadius: '8px',
+                            border: '1px solid rgba(255,255,255,0.05)',
+                            display: 'flex',
+                            flexDirection: 'column',
                           }}
                         >
                           <MarkdownErrorBoundary>
-                            {renderMarkdown(
-                              analysisResult.analysis.generatedReadme,
-                            )}
+                            {renderMarkdown(analysisResult.analysis.generatedReadme)}
                           </MarkdownErrorBoundary>
                         </div>
                       )}
@@ -3177,7 +3182,7 @@ export default function Dashboard() {
                   </>
                 )}
 
-                {activeDashboardView === "chat" && (
+                {activeDashboardView === 'chat' && (
                   <SectionErrorBoundary sectionName="ChatPanel">
                     <ChatPanel
                       chatHistory={chatHistory}
@@ -3195,45 +3200,45 @@ export default function Dashboard() {
                   </SectionErrorBoundary>
                 )}
 
-                {activeDashboardView === "diagram" && (
+                {activeDashboardView === 'diagram' && (
                   <SectionErrorBoundary sectionName="MermaidDiagram">
                     <div
                       className="glass-panel"
                       style={{
-                        padding: "20px",
-                        display: "flex",
-                        flexDirection: "column",
-                        boxSizing: "border-box",
-                        minHeight: "68vh",
-                        width: "100%",
+                        padding: '20px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        boxSizing: 'border-box',
+                        minHeight: '68vh',
+                        width: '100%',
                       }}
                     >
                       <div
                         style={{
-                          borderBottom: "1px solid rgba(255,255,255,0.08)",
-                          paddingBottom: "12px",
-                          marginBottom: "16px",
+                          borderBottom: '1px solid rgba(255,255,255,0.08)',
+                          paddingBottom: '12px',
+                          marginBottom: '16px',
                         }}
                       >
                         <span
                           style={{
-                            fontSize: "10px",
-                            background: "#22c55e",
-                            color: "#dcfce7",
-                            padding: "2px 8px",
-                            borderRadius: "20px",
+                            fontSize: '10px',
+                            background: '#22c55e',
+                            color: '#dcfce7',
+                            padding: '2px 8px',
+                            borderRadius: '20px',
                             fontWeight: 600,
-                            textTransform: "uppercase",
+                            textTransform: 'uppercase',
                           }}
                         >
                           Visualizer
                         </span>
                         <h3
                           style={{
-                            fontSize: "15px",
+                            fontSize: '15px',
                             fontWeight: 700,
-                            color: "#f3f4f6",
-                            margin: "4px 0 0 0",
+                            color: '#f3f4f6',
+                            margin: '4px 0 0 0',
                           }}
                         >
                           Codebase Dependency Flow
@@ -3247,14 +3252,13 @@ export default function Dashboard() {
                       ) : (
                         <div
                           style={{
-                            color: "#9ca3af",
-                            fontSize: "12px",
-                            padding: "20px",
-                            textAlign: "center",
+                            color: '#9ca3af',
+                            fontSize: '12px',
+                            padding: '20px',
+                            textAlign: 'center',
                           }}
                         >
-                          No architecture diagram was generated for this
-                          repository. Try re-running the analysis.
+                          No architecture diagram was generated for this repository. Try re-running the analysis.
                         </div>
                       )}
                     </div>
@@ -3265,9 +3269,7 @@ export default function Dashboard() {
           )}
         </section>
       </main>
-      {showSettings && (
-        <SettingsModal onClose={() => setShowSettings(false)} />
-      )}
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
       {showShortcutsHelp && <KeyboardShortcutsHelp onClose={() => setShowShortcutsHelp(false)} />}
 
       <DashboardFooter />

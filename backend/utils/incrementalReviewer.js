@@ -10,7 +10,9 @@ const CACHE_FILENAME = '.codereview-cache.json';
 function getCacheDir(repoPath) {
   const hash = crypto.createHash('sha256').update(repoPath).digest('hex').substring(0, 16);
   const cacheDir = path.join(os.tmpdir(), 'reposage-review-cache', hash);
-  try { fs.mkdirSync(cacheDir, { recursive: true }); } catch {}
+  try {
+    fs.mkdirSync(cacheDir, { recursive: true });
+  } catch {}
   return cacheDir;
 }
 
@@ -64,15 +66,15 @@ async function getChangedFiles(repoPath, baseRef = 'main') {
 
     const changedFiles = diffResult
       .split('\n')
-      .filter(line => line.trim().length > 0)
-      .map(line => {
+      .filter((line) => line.trim().length > 0)
+      .map((line) => {
         try {
           return resolveSafePath(repoPath, line);
         } catch {
           return null;
         }
       })
-      .filter(filePath => filePath !== null && fs.existsSync(filePath));
+      .filter((filePath) => filePath !== null && fs.existsSync(filePath));
 
     return changedFiles;
   } catch (err) {

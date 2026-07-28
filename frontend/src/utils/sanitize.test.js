@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { sanitizeHTML, sanitizeForStorage, sanitizeAuditEntry, sanitizeJSON, sanitizeMermaidOutput } from './sanitize.js';
+import {
+  sanitizeHTML,
+  sanitizeForStorage,
+  sanitizeAuditEntry,
+  sanitizeJSON,
+  sanitizeMermaidOutput,
+} from './sanitize.js';
 
 describe('sanitizeHTML', () => {
   it('strips all tags when ALLOWED_TAGS is empty', () => {
@@ -84,9 +90,9 @@ describe('sanitizeAuditEntry', () => {
     const entry = {
       response: {
         analysis: {
-          mermaidDiagram: '<script>bad()</script><svg><path/></svg>'
-        }
-      }
+          mermaidDiagram: '<script>bad()</script><svg><path/></svg>',
+        },
+      },
     };
     const result = sanitizeAuditEntry(entry);
     expect(result.response.analysis.mermaidDiagram).not.toContain('<script>');

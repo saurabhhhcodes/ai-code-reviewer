@@ -55,8 +55,8 @@ test('getFolderSize counts files with unicode names', async () => {
 
   fs.mkdirSync(tempDir);
   const content = 'hello';
-  fs.writeFileSync(path.join(tempDir, '\u4e2d\u6587\u6587\u4ef6.txt'), content);  // Chinese chars
-  fs.writeFileSync(path.join(tempDir, '\u65e5\u672c\u8a9e.txt'), content);           // Japanese chars
+  fs.writeFileSync(path.join(tempDir, '\u4e2d\u6587\u6587\u4ef6.txt'), content); // Chinese chars
+  fs.writeFileSync(path.join(tempDir, '\u65e5\u672c\u8a9e.txt'), content); // Japanese chars
 
   try {
     const expectedSize = Buffer.byteLength(content, 'utf8') * 2;

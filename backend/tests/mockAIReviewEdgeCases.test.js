@@ -7,7 +7,7 @@ test('mockAIReview handles null files gracefully', () => {
   assert.deepEqual(result, {
     fileReviews: {},
     generatedReadme: '',
-    mermaidDiagram: ''
+    mermaidDiagram: '',
   });
 });
 
@@ -16,7 +16,7 @@ test('mockAIReview handles undefined files gracefully', () => {
   assert.deepEqual(result, {
     fileReviews: {},
     generatedReadme: '',
-    mermaidDiagram: ''
+    mermaidDiagram: '',
   });
 });
 
@@ -25,7 +25,7 @@ test('mockAIReview handles non-array files gracefully', () => {
   assert.deepEqual(result, {
     fileReviews: {},
     generatedReadme: '',
-    mermaidDiagram: ''
+    mermaidDiagram: '',
   });
 });
 
@@ -34,7 +34,7 @@ test('mockAIReview handles empty array', () => {
   assert.deepEqual(result, {
     fileReviews: {},
     generatedReadme: '',
-    mermaidDiagram: ''
+    mermaidDiagram: '',
   });
 });
 

@@ -75,4 +75,4 @@ const replacement = `const handleAnalyze = async (e: React.FormEvent) => {
 
 content = content.replace(regex, replacement);
 fs.writeFileSync(file, content);
-console.log("Dashboard.tsx fixed");
+console.log('Dashboard.tsx fixed');

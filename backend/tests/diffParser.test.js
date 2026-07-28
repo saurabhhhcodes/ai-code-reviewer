@@ -60,14 +60,29 @@ test('countLinesInDiff returns 0 for empty array', () => {
 });
 
 test('countLinesInDiff returns correct count for single file', () => {
-  const files = [{ path: 'a.js', changes: [{ line: 1, content: 'a' }, { line: 2, content: 'b' }, { line: 3, content: 'c' }] }];
+  const files = [
+    {
+      path: 'a.js',
+      changes: [
+        { line: 1, content: 'a' },
+        { line: 2, content: 'b' },
+        { line: 3, content: 'c' },
+      ],
+    },
+  ];
   assert.equal(countLinesInDiff(files), 3);
 });
 
 test('countLinesInDiff returns correct count for multiple files', () => {
   const files = [
     { path: 'a.js', changes: [{ line: 1, content: 'a' }] },
-    { path: 'b.js', changes: [{ line: 5, content: 'b' }, { line: 6, content: 'c' }] },
+    {
+      path: 'b.js',
+      changes: [
+        { line: 5, content: 'b' },
+        { line: 6, content: 'c' },
+      ],
+    },
     { path: 'c.js', changes: [] },
   ];
   assert.equal(countLinesInDiff(files), 3);
@@ -191,7 +206,7 @@ test('countLinesInDiff handles files with null changes', () => {
     { path: 'b.js', changes: undefined },
     { path: 'c.js', changes: [null, { line: 1, content: 'x' }] },
   ];
-  assert.equal(countLinesInDiff(files), 2);  // reduce skips non-arrays  // only one valid change
+  assert.equal(countLinesInDiff(files), 2); // reduce skips non-arrays  // only one valid change
 });
 
 test('parseDiff handles diff with no trailing newline', () => {
@@ -223,12 +238,14 @@ diff --git "a/space b/quoted.js" "b/space b/quoted.js"
 });
 
 test('parseDiff handles quoted filenames and paths containing b/', () => {
-  const diffQuoted = 'diff --git "a/my file.js" "b/my file.js"\n--- "a/my file.js"\n+++ "b/my file.js"\n@@ -1 +1 @@\n+x';
+  const diffQuoted =
+    'diff --git "a/my file.js" "b/my file.js"\n--- "a/my file.js"\n+++ "b/my file.js"\n@@ -1 +1 @@\n+x';
   const resQuoted = parseDiff(diffQuoted).files;
   assert.equal(resQuoted.length, 1);
   assert.equal(resQuoted[0].path, 'my file.js');
 
-  const diffContainingB = 'diff --git a/src/b/index.js b/src/b/index.js\n--- a/src/b/index.js\n+++ b/src/b/index.js\n@@ -1 +1 @@\n+y';
+  const diffContainingB =
+    'diff --git a/src/b/index.js b/src/b/index.js\n--- a/src/b/index.js\n+++ b/src/b/index.js\n@@ -1 +1 @@\n+y';
   const resContainingB = parseDiff(diffContainingB).files;
   assert.equal(resContainingB.length, 1);
   assert.equal(resContainingB[0].path, 'src/b/index.js');

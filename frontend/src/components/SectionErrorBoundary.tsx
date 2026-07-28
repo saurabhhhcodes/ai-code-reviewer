@@ -37,32 +37,30 @@ export default class SectionErrorBoundary extends Component<SectionErrorBoundary
       return (
         <div
           style={{
-            padding: "20px",
-            background: "rgba(239, 68, 68, 0.1)",
-            border: "1px solid rgba(239, 68, 68, 0.3)",
-            borderRadius: "8px",
-            color: "#fca5a5",
-            fontSize: "13px",
-            textAlign: "center",
+            padding: '20px',
+            background: 'rgba(239, 68, 68, 0.1)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            borderRadius: '8px',
+            color: '#fca5a5',
+            fontSize: '13px',
+            textAlign: 'center',
           }}
         >
-          <p style={{ fontWeight: 700, margin: "0 0 8px 0" }}>
-            Something went wrong
-          </p>
-          <p style={{ margin: "0 0 12px 0", fontSize: "11px", color: "#9ca3af" }}>
-            {this.state.error?.message || "An unexpected error occurred."}
+          <p style={{ fontWeight: 700, margin: '0 0 8px 0' }}>Something went wrong</p>
+          <p style={{ margin: '0 0 12px 0', fontSize: '11px', color: '#9ca3af' }}>
+            {this.state.error?.message || 'An unexpected error occurred.'}
           </p>
           <button
             onClick={this.handleRetry}
             style={{
-              background: "rgba(59, 130, 246, 0.1)",
-              border: "1px solid rgba(59, 130, 246, 0.3)",
-              color: "#60a5fa",
-              borderRadius: "6px",
-              padding: "6px 16px",
-              fontSize: "12px",
+              background: 'rgba(59, 130, 246, 0.1)',
+              border: '1px solid rgba(59, 130, 246, 0.3)',
+              color: '#60a5fa',
+              borderRadius: '6px',
+              padding: '6px 16px',
+              fontSize: '12px',
               fontWeight: 600,
-              cursor: "pointer",
+              cursor: 'pointer',
             }}
           >
             Try Again

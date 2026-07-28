@@ -33,7 +33,14 @@ export async function getPriorReviewIds(redisClient, owner, repo, pullNumber) {
  * Persists the review IDs just posted for this PR, replacing whatever was
  * stored before.
  */
-export async function storeReviewIds(redisClient, owner, repo, pullNumber, reviewIds, ttlSeconds = DEFAULT_TTL_SECONDS) {
+export async function storeReviewIds(
+  redisClient,
+  owner,
+  repo,
+  pullNumber,
+  reviewIds,
+  ttlSeconds = DEFAULT_TTL_SECONDS,
+) {
   const key = reviewTrackerKey(owner, repo, pullNumber);
   try {
     await redisClient.set(key, JSON.stringify(reviewIds), 'EX', ttlSeconds);
@@ -50,7 +57,8 @@ export async function clearReviewIds(redisClient, owner, repo, pullNumber) {
   await redisClient.del(reviewTrackerKey(owner, repo, pullNumber));
 }
 
-const SUPERSEDED_NOTE = '\n\n---\n⚠️ **Superseded** — a newer commit was pushed to this PR. See the latest review below for up-to-date findings.';
+const SUPERSEDED_NOTE =
+  '\n\n---\n⚠️ **Superseded** — a newer commit was pushed to this PR. See the latest review below for up-to-date findings.';
 
 /**
  * Marks each prior review as superseded: deletes its individual inline
@@ -79,7 +87,12 @@ export async function supersedePriorReviews(octokit, owner, repo, pullNumber, pr
         }
       }
 
-      const { data: review } = await octokit.rest.pulls.getReview({ owner, repo, pull_number: pullNumber, review_id: reviewId });
+      const { data: review } = await octokit.rest.pulls.getReview({
+        owner,
+        repo,
+        pull_number: pullNumber,
+        review_id: reviewId,
+      });
       await octokit.rest.pulls.updateReview({
         owner,
         repo,

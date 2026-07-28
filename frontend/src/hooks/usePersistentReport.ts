@@ -6,7 +6,7 @@ import { useStore } from '../store/useStore';
 export function usePersistentReport(
   setRepoUrl: (url: string) => void,
   setSessionId: (id: string | null) => void,
-  storageKey = 'reposage_latest_audit'
+  storageKey = 'reposage_latest_audit',
 ) {
   const { analysisResult: report, setAnalysisResult: setReport } = useStore();
   const [isHydrating, setIsHydrating] = useState(true);
@@ -16,17 +16,17 @@ export function usePersistentReport(
 
     const hydrate = async () => {
       try {
-        const cached = await localforage.getItem<{ 
-          data: BackendResponse; 
-          repoUrl?: string; 
-          sessionId?: string | null; 
-          timestamp: number 
+        const cached = await localforage.getItem<{
+          data: BackendResponse;
+          repoUrl?: string;
+          sessionId?: string | null;
+          timestamp: number;
         }>(storageKey);
-        
+
         if (cached && cached.timestamp) {
           const now = Date.now();
           const oneDay = 24 * 60 * 60 * 1000;
-          
+
           if (now - cached.timestamp < oneDay) {
             if (isMounted) {
               setReport(cached.data);
@@ -52,19 +52,22 @@ export function usePersistentReport(
     };
   }, [storageKey, setReport, setRepoUrl, setSessionId]);
 
-  const saveReport = useCallback(async (data: BackendResponse, currentRepoUrl: string, currentSessionId: string | null) => {
-    setReport(data);
-    try {
-      await localforage.setItem(storageKey, {
-        data,
-        repoUrl: currentRepoUrl,
-        sessionId: currentSessionId,
-        timestamp: Date.now()
-      });
-    } catch (error) {
-      console.error('Error saving report to localforage:', error);
-    }
-  }, [storageKey, setReport]);
+  const saveReport = useCallback(
+    async (data: BackendResponse, currentRepoUrl: string, currentSessionId: string | null) => {
+      setReport(data);
+      try {
+        await localforage.setItem(storageKey, {
+          data,
+          repoUrl: currentRepoUrl,
+          sessionId: currentSessionId,
+          timestamp: Date.now(),
+        });
+      } catch (error) {
+        console.error('Error saving report to localforage:', error);
+      }
+    },
+    [storageKey, setReport],
+  );
 
   const clearReport = useCallback(async () => {
     setReport(null);

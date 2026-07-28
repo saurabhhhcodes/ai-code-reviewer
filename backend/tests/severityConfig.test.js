@@ -1,11 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {
-  categorizeFinding,
-  filterByMinimumSeverity,
-  validateConfig,
-  DEFAULT_CONFIG,
-} from '../utils/severityConfig.js';
+import { categorizeFinding, filterByMinimumSeverity, validateConfig, DEFAULT_CONFIG } from '../utils/severityConfig.js';
 
 test('categorizeFinding returns security for security-related keywords in message', () => {
   assert.equal(categorizeFinding({ message: 'SQL injection vulnerability found' }), 'security');
@@ -51,11 +46,7 @@ test('categorizeFinding handles missing message and rule_id fields', () => {
 });
 
 test('filterByMinimumSeverity returns findings equal to or more severe than error', () => {
-  const findings = [
-    { severity: 'error' },
-    { severity: 'warning' },
-    { severity: 'info' },
-  ];
+  const findings = [{ severity: 'error' }, { severity: 'warning' }, { severity: 'info' }];
 
   const result = filterByMinimumSeverity(findings, 'error');
   assert.equal(result.length, 1);
@@ -63,11 +54,7 @@ test('filterByMinimumSeverity returns findings equal to or more severe than erro
 });
 
 test('filterByMinimumSeverity with warning returns error and warning', () => {
-  const findings = [
-    { severity: 'error' },
-    { severity: 'warning' },
-    { severity: 'info' },
-  ];
+  const findings = [{ severity: 'error' }, { severity: 'warning' }, { severity: 'info' }];
 
   const result = filterByMinimumSeverity(findings, 'warning');
   assert.equal(result.length, 2);
@@ -76,22 +63,14 @@ test('filterByMinimumSeverity with warning returns error and warning', () => {
 });
 
 test('filterByMinimumSeverity with info returns all three severities', () => {
-  const findings = [
-    { severity: 'error' },
-    { severity: 'warning' },
-    { severity: 'info' },
-  ];
+  const findings = [{ severity: 'error' }, { severity: 'warning' }, { severity: 'info' }];
 
   const result = filterByMinimumSeverity(findings, 'info');
   assert.equal(result.length, 3);
 });
 
 test('filterByMinimumSeverity with unknown minimum severity falls back to error', () => {
-  const findings = [
-    { severity: 'error' },
-    { severity: 'warning' },
-    { severity: 'info' },
-  ];
+  const findings = [{ severity: 'error' }, { severity: 'warning' }, { severity: 'info' }];
 
   const result = filterByMinimumSeverity(findings, 'unknown');
   assert.equal(result.length, 1);
@@ -99,11 +78,7 @@ test('filterByMinimumSeverity with unknown minimum severity falls back to error'
 });
 
 test('filterByMinimumSeverity handles findings with unknown severity values (treated as highest severity)', () => {
-  const findings = [
-    { severity: 'error' },
-    { severity: 'unknown-severity' },
-    { severity: 'info' },
-  ];
+  const findings = [{ severity: 'error' }, { severity: 'unknown-severity' }, { severity: 'info' }];
 
   const result = filterByMinimumSeverity(findings, 'warning');
   assert.equal(result.length, 2);
@@ -142,7 +117,7 @@ test('validateConfig returns invalid when suppress is not an array', () => {
   };
   const result = validateConfig(config);
   assert.equal(result.valid, false);
-  assert.ok(result.errors.some(e => e.includes('suppress must be an array')));
+  assert.ok(result.errors.some((e) => e.includes('suppress must be an array')));
 });
 
 test('validateConfig handles missing severity object gracefully', () => {

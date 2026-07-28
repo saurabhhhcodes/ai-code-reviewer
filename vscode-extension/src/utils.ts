@@ -30,10 +30,10 @@ export interface BackendResponse {
 
 export function buildRequestHeaders(apiKey?: string): Record<string, string> {
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
   };
   if (apiKey) {
-    headers["x-api-key"] = apiKey;
+    headers['x-api-key'] = apiKey;
   }
   return headers;
 }
@@ -41,9 +41,9 @@ export function buildRequestHeaders(apiKey?: string): Record<string, string> {
 export function buildRequestBody(fileName: string, content: string) {
   return {
     files: [{ name: fileName, content }],
-    company: "General",
-    language: "English",
-    model: "llama-3.3-70b-versatile",
+    company: 'General',
+    language: 'English',
+    model: 'llama-3.3-70b-versatile',
   };
 }
 
@@ -56,13 +56,13 @@ export function formatNetworkError(apiUrl: string, message: string): string {
 }
 
 export function clampLine(line: number): number {
-  if (typeof line !== "number" || !Number.isFinite(line)) return 0;
+  if (typeof line !== 'number' || !Number.isFinite(line)) return 0;
   return Math.max(0, line - 1);
 }
 
 export function debounce<Args extends unknown[]>(
   fn: (...args: Args) => void,
-  delayMs: number
+  delayMs: number,
 ): (...args: Args) => void {
   let timer: ReturnType<typeof setTimeout> | undefined;
   return (...args: Args) => {
@@ -83,7 +83,7 @@ export function formatDiagnosticMessage(category: string, description: string, s
 }
 
 export function formatReviewToMarkdown(data: BackendResponse): string {
-  if (!data?.analysis?.fileReviews) return "No review data available.";
+  if (!data?.analysis?.fileReviews) return 'No review data available.';
   const reviews = data.analysis.fileReviews;
   const files = Object.keys(reviews);
   let md = `# RepoSage Review\n\nFound issues in **${files.length} file(s)**.\n\n`;
@@ -92,7 +92,12 @@ export function formatReviewToMarkdown(data: BackendResponse): string {
     const total = countIssues(review);
     if (total === 0) continue;
     md += `## ${file}\n\n`;
-    for (const [category, items] of Object.entries({ security: review.security, bugs: review.bugs, optimization: review.optimization, styling: review.styling })) {
+    for (const [category, items] of Object.entries({
+      security: review.security,
+      bugs: review.bugs,
+      optimization: review.optimization,
+      styling: review.styling,
+    })) {
       if (!items || items.length === 0) continue;
       md += `### ${category.charAt(0).toUpperCase() + category.slice(1)}\n\n`;
       for (const item of items) {
@@ -102,7 +107,7 @@ export function formatReviewToMarkdown(data: BackendResponse): string {
       }
     }
   }
-  return md || "No issues found.";
+  return md || 'No issues found.';
 }
 
 export function countIssues(fileReview: FileReview): number {

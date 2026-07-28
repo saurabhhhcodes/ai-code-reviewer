@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { scanSecrets } from '../utils/secretsScanner.js';
 
 test('scanSecrets detects standard JWT token format', () => {
-  const content = 'const jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";';
+  const content =
+    'const jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";';
   const findings = scanSecrets(content);
   assert.equal(findings.length, 1);
   assert.equal(findings[0].type, 'JWT Token Check');
@@ -14,10 +15,10 @@ test('scanSecrets detects generic api keys and tokens', () => {
   const content2 = 'auth_token: "mysecretstring123"';
 
   assert.ok(scanSecrets(content1).length >= 1);
-  assert.ok(scanSecrets(content1).some(f => f.type === 'Generic API Key / Token'));
+  assert.ok(scanSecrets(content1).some((f) => f.type === 'Generic API Key / Token'));
 
   assert.ok(scanSecrets(content2).length >= 1);
-  assert.ok(scanSecrets(content2).some(f => f.type === 'Generic API Key / Token'));
+  assert.ok(scanSecrets(content2).some((f) => f.type === 'Generic API Key / Token'));
 });
 
 test('scanSecrets does not flag standard normal strings', () => {
@@ -49,7 +50,7 @@ test('scanSecrets detects multiple different secrets in same content', () => {
   ].join('\n');
   const findings = scanSecrets(content);
   assert.ok(findings.length >= 3, 'at least 3 secrets should be detected');
-  const types = findings.map(f => f.type);
+  const types = findings.map((f) => f.type);
   assert.ok(types.includes('AWS Access Key Check'));
   assert.ok(types.includes('GitHub Personal Access Token'));
   assert.ok(types.includes('Google Cloud API Key'));
@@ -57,12 +58,7 @@ test('scanSecrets detects multiple different secrets in same content', () => {
 });
 
 test('scanSecrets returns empty array when content has no secrets', () => {
-  const content = [
-    'function hello() {',
-    '  console.log("Hello, World!");',
-    '  return 42;',
-    '}',
-  ].join('\n');
+  const content = ['function hello() {', '  console.log("Hello, World!");', '  return 42;', '}'].join('\n');
   const findings = scanSecrets(content);
   assert.equal(findings.length, 0);
 });
@@ -71,7 +67,7 @@ test('scanSecrets findings always include suggestion and description fields', ()
   const content = 'password = "hunter2"';
   const findings = scanSecrets(content);
   assert.ok(findings.length >= 1);
-  findings.forEach(f => {
+  findings.forEach((f) => {
     assert.ok('suggestion' in f, 'finding must have suggestion field');
     assert.ok('description' in f, 'finding must have description field');
     assert.ok(typeof f.suggestion === 'string' && f.suggestion.length > 0);
@@ -96,12 +92,12 @@ test('scanSecrets detects secrets mixed with normal code across many lines', () 
   ].join('\n');
   const findings = scanSecrets(content);
   assert.ok(findings.length >= 2, 'at least 2 secrets should be detected');
-  const types = findings.map(f => f.type);
+  const types = findings.map((f) => f.type);
   assert.ok(types.includes('AWS Access Key Check'), 'AWS key should be detected');
   assert.ok(types.includes('Database Connection Credentials'), 'DB URL should be detected');
   // Verify line numbers
-  const awsFinding = findings.find(f => f.type === 'AWS Access Key Check');
-  const dbFinding = findings.find(f => f.type === 'Database Connection Credentials');
+  const awsFinding = findings.find((f) => f.type === 'AWS Access Key Check');
+  const dbFinding = findings.find((f) => f.type === 'Database Connection Credentials');
   assert.equal(awsFinding?.line, 4, 'AWS key on line 4');
   assert.equal(dbFinding?.line, 9, 'DB URL on line 9');
 });

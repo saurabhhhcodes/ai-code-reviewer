@@ -8,7 +8,7 @@ export function sanitizeFileContent(content) {
     sanitized = sanitized.replace(regex, `[INSTRUCTION_${i}_NEUTRALIZED]`);
   });
   const lines = sanitized.split('\n');
-  const truncatedLines = lines.map(line => line.slice(0, 500));
+  const truncatedLines = lines.map((line) => line.slice(0, 500));
   const wrapped = truncatedLines.join('\n');
   return '--- BEGIN FILE CONTENT (read-only code context) ---\n' + wrapped + '\n--- END FILE CONTENT ---';
 }

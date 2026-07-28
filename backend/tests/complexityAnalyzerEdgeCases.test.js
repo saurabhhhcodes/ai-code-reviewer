@@ -9,7 +9,7 @@ test('analyzeComplexity should return grade A for very simple files', () => {
   assert.equal(result.grade, 'A');
   assert.equal(result.codeLines, 2);
   assert.equal(result.functionCount, 0);
-  assert.equal(result.complexityScore, Math.round((4 / 25) + 0));
+  assert.equal(result.complexityScore, Math.round(4 / 25 + 0));
 });
 
 test('analyzeComplexity should return grade B for moderate complexity', () => {
@@ -158,13 +158,7 @@ test('analyzeComplexity handles non-string content', () => {
 });
 
 test('analyzeComplexity counts multi-line C-style block comments in JS', () => {
-  const code = [
-    '/*',
-    ' * This is a multi-line',
-    ' * block comment',
-    ' */',
-    'const x = 1;',
-  ].join('\n');
+  const code = ['/*', ' * This is a multi-line', ' * block comment', ' */', 'const x = 1;'].join('\n');
   const result = analyzeComplexity(code, 'index.js');
   assert.equal(result.commentLines, 4);
   assert.equal(result.codeLines, 1);
@@ -216,13 +210,7 @@ test('analyzeComplexity detects Java methods', () => {
 });
 
 test('analyzeComplexity detects C++ methods', () => {
-  const code = [
-    'class Foo {',
-    'public:',
-    '  void bar() { }',
-    '  int baz() { return 0; }',
-    '};',
-  ].join('\n');
+  const code = ['class Foo {', 'public:', '  void bar() { }', '  int baz() { return 0; }', '};'].join('\n');
   const result = analyzeComplexity(code, 'foo.cpp');
   assert.equal(result.functionCount, 2);
 });
@@ -323,22 +311,14 @@ test('analyzeComplexity SQL file with only block comment returns correct counts'
 });
 
 test('analyzeComplexity mixed Ruby and Python style in non-Ruby file ignores Ruby comments', () => {
-  const code = [
-    '# this looks like a Ruby comment but is Python',
-    'print("hello")',
-  ].join('\n');
+  const code = ['# this looks like a Ruby comment but is Python', 'print("hello")'].join('\n');
   const result = analyzeComplexity(code, 'script.py');
   assert.equal(result.commentLines, 1);
   assert.equal(result.codeLines, 1);
 });
 
 test('analyzeComplexity closes SQL block comment correctly mid-file', () => {
-  const code = [
-    'SELECT a FROM t1;',
-    '/* unclosed until here',
-    '   still inside */',
-    'SELECT b FROM t2;',
-  ].join('\n');
+  const code = ['SELECT a FROM t1;', '/* unclosed until here', '   still inside */', 'SELECT b FROM t2;'].join('\n');
   const result = analyzeComplexity(code, 'query.sql');
   assert.equal(result.codeLines, 2);
   assert.equal(result.commentLines, 2);

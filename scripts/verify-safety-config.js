@@ -24,18 +24,19 @@ for (const [name, filePath] of Object.entries(implementations)) {
   const content = readFileSync(filePath, 'utf-8');
   const phraseMatches = content.match(/['"]([^'"]+)['"]/g) || [];
   const filePhrases = phraseMatches
-    .map(p => p.slice(1, -1))
-    .filter(p =>
-      p.length > 3 &&
-      !p.startsWith('__NEUTRALIZED_') &&
-      !p.startsWith('http') &&
-      !p.includes('/') &&
-      !p.includes('\\')
+    .map((p) => p.slice(1, -1))
+    .filter(
+      (p) =>
+        p.length > 3 &&
+        !p.startsWith('__NEUTRALIZED_') &&
+        !p.startsWith('http') &&
+        !p.includes('/') &&
+        !p.includes('\\'),
     )
     .sort();
 
-  const onlyInFile = filePhrases.filter(p => !configPhrases.includes(p));
-  const onlyInConfig = configPhrases.filter(p => !filePhrases.includes(p));
+  const onlyInFile = filePhrases.filter((p) => !configPhrases.includes(p));
+  const onlyInConfig = configPhrases.filter((p) => !filePhrases.includes(p));
 
   if (onlyInFile.length > 0 || onlyInConfig.length > 0) {
     allSynced = false;

@@ -12,17 +12,20 @@ function createMockAnalytics(findResult, findByIdMap) {
   return class MockAnalytics {
     static find(query = {}) {
       if (findResult instanceof Error) throw findResult;
-      const records = Object.keys(query).length === 0
-        ? findResult
-        : findResult.filter(r => r.repoName === query.repoName);
+      const records =
+        Object.keys(query).length === 0 ? findResult : findResult.filter((r) => r.repoName === query.repoName);
       return {
-        sort() { return this; },
-        limit() { return records; },
+        sort() {
+          return this;
+        },
+        limit() {
+          return records;
+        },
       };
     }
     static findById(id) {
       if (findByIdMap instanceof Error) throw findByIdMap;
-      const result = findByIdMap ? (findByIdMap[id] || null) : null;
+      const result = findByIdMap ? findByIdMap[id] || null : null;
       return Promise.resolve(result);
     }
   };
@@ -92,10 +95,7 @@ test('reviewHistoryListHandler throws when find() errors', () => {
   const dbError = new Error('Database connection failed');
   const MockAnalytics = createMockAnalytics(dbError);
 
-  assert.throws(
-    () => reviewHistoryListHandler(MockAnalytics),
-    /Database connection failed/
-  );
+  assert.throws(() => reviewHistoryListHandler(MockAnalytics), /Database connection failed/);
 });
 
 // ---------------------------------------------------------------------------
@@ -129,10 +129,7 @@ test('reviewHistoryRepoHandler throws when find() errors', () => {
   const dbError = new Error('Database connection failed');
   const MockAnalytics = createMockAnalytics(dbError);
 
-  assert.throws(
-    () => reviewHistoryRepoHandler(MockAnalytics, 'some-repo'),
-    /Database connection failed/
-  );
+  assert.throws(() => reviewHistoryRepoHandler(MockAnalytics, 'some-repo'), /Database connection failed/);
 });
 
 // ---------------------------------------------------------------------------
@@ -160,39 +157,27 @@ test('reviewHistoryCompareHandler returns previous, current, and computed differ
 test('reviewHistoryCompareHandler returns 404 when first review not found', async () => {
   const MockAnalytics = createMockAnalytics([], {});
 
-  await assert.rejects(
-    reviewHistoryCompareHandler(MockAnalytics, 'missing-id', 'some-id'),
-    /not found/i
-  );
+  await assert.rejects(reviewHistoryCompareHandler(MockAnalytics, 'missing-id', 'some-id'), /not found/i);
 });
 
 test('reviewHistoryCompareHandler returns 404 when second review not found', async () => {
   const findByIdMap = { 'existing-id': { healthScore: 50 } };
   const MockAnalytics = createMockAnalytics([], findByIdMap);
 
-  await assert.rejects(
-    reviewHistoryCompareHandler(MockAnalytics, 'existing-id', 'missing-id'),
-    /not found/i
-  );
+  await assert.rejects(reviewHistoryCompareHandler(MockAnalytics, 'existing-id', 'missing-id'), /not found/i);
 });
 
 test('reviewHistoryCompareHandler returns 404 when both reviews not found', async () => {
   const MockAnalytics = createMockAnalytics([], {});
 
-  await assert.rejects(
-    reviewHistoryCompareHandler(MockAnalytics, 'missing-id-1', 'missing-id-2'),
-    /not found/i
-  );
+  await assert.rejects(reviewHistoryCompareHandler(MockAnalytics, 'missing-id-1', 'missing-id-2'), /not found/i);
 });
 
 test('reviewHistoryCompareHandler throws when findById errors', async () => {
   const dbError = new Error('Database connection failed');
   const MockAnalytics = createMockAnalytics([], dbError);
 
-  await assert.rejects(
-    reviewHistoryCompareHandler(MockAnalytics, 'id1', 'id2'),
-    /Database connection failed/
-  );
+  await assert.rejects(reviewHistoryCompareHandler(MockAnalytics, 'id1', 'id2'), /Database connection failed/);
 });
 
 test('reviewHistoryCompareHandler computes zero difference when scores are equal', async () => {

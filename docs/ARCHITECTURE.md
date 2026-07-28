@@ -47,9 +47,9 @@ graph TD
 
 ### Key Files
 
-| File | Role |
-|------|------|
-| `ai-engine/rag.py` | Core RAG functions: `upsert_chunks`, `query_chunks`, `cleanup_stale_chunks`, `delete_chunks_for_file` |
-| `ai-engine/embeddings.py` | Embedding generation with SentenceTransformer; fallback zero-vector mode |
-| `ai-engine/text_splitter.py` | Language-aware text chunking |
-| `ai-engine/app.py` | FastAPI routes for `/api/rag/split`, `/api/rag/ingest`, `/api/rag/query`, `/api/rag/cleanup` |
+| File                         | Role                                                                                                  |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `ai-engine/rag.py`           | Core RAG functions: `upsert_chunks`, `query_chunks`, `cleanup_stale_chunks`, `delete_chunks_for_file` |
+| `ai-engine/embeddings.py`    | Embedding generation with SentenceTransformer; fallback zero-vector mode                              |
+| `ai-engine/text_splitter.py` | Language-aware text chunking                                                                          |
+| `ai-engine/app.py`           | FastAPI routes for `/api/rag/split`, `/api/rag/ingest`, `/api/rag/query`, `/api/rag/cleanup`          |

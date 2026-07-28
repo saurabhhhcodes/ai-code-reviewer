@@ -5,11 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import crypto from 'crypto';
 
-import {
-  loadCacheFile,
-  saveCacheFile,
-  CACHE_FILENAME,
-} from '../utils/incrementalReviewer.js';
+import { loadCacheFile, saveCacheFile, CACHE_FILENAME } from '../utils/incrementalReviewer.js';
 
 async function withTempDir(fn) {
   const tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'cache-test-'));
@@ -69,18 +65,10 @@ test('loadCacheFile returns empty object when file content is invalid JSON', asy
   await withTempDir(async (tmpDir) => {
     const cachePath = path.join(tmpDir, 'corrupt-repo');
     // Pre-create the cache directory and file with invalid JSON
-    const hash = crypto
-      .createHash('sha256')
-      .update(cachePath)
-      .digest('hex')
-      .substring(0, 16);
+    const hash = crypto.createHash('sha256').update(cachePath).digest('hex').substring(0, 16);
     const cacheDir = path.join(os.tmpdir(), 'reposage-review-cache', hash);
     await fs.promises.mkdir(cacheDir, { recursive: true });
-    await fs.promises.writeFile(
-      path.join(cacheDir, CACHE_FILENAME),
-      'not valid json {',
-      'utf-8'
-    );
+    await fs.promises.writeFile(path.join(cacheDir, CACHE_FILENAME), 'not valid json {', 'utf-8');
 
     const result = loadCacheFile(cachePath);
     assert.deepEqual(result, {}, 'should return {} for invalid JSON');

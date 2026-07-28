@@ -5,14 +5,9 @@ import { analyzeComplexity } from '../utils/complexityAnalyzer.js';
 // ---------- PHP block comment detection ----------
 
 test('analyzeComplexity detects PHP C-style block comments', () => {
-  const code = [
-    '<?php',
-    '/* This is a',
-    '   multi-line comment */',
-    'function test() {',
-    '    return true;',
-    '}',
-  ].join('\n');
+  const code = ['<?php', '/* This is a', '   multi-line comment */', 'function test() {', '    return true;', '}'].join(
+    '\n',
+  );
   const result = analyzeComplexity(code, 'main.php');
   // .php is in cStyleExts so C-style block comments are detected
   assert.equal(result.commentLines, 2);
@@ -29,8 +24,8 @@ test('analyzeComplexity PHP // single-line comments are detected', () => {
   ].join('\n');
   const result = analyzeComplexity(code, 'main.php');
   // PHP is in cStyleExts so // single-line comments ARE detected
-  assert.equal(result.commentLines, 2);  // the // comment is detected
-  assert.equal(result.functionCount, 0);  // PHP function detection not implemented
+  assert.equal(result.commentLines, 2); // the // comment is detected
+  assert.equal(result.functionCount, 0); // PHP function detection not implemented
   assert.equal(result.codeLines, 4);
 });
 
@@ -59,28 +54,16 @@ test('analyzeComplexity detects Ruby hash comments', () => {
 
 test('analyzeComplexity Ruby does not detect C-style block comments', () => {
   // .rb is not in cStyleExts, so C-style /* */ block comments are not detected
-  const code = [
-    '/* This should not be detected */',
-    'def hello',
-    '  puts "Hi"',
-    'end',
-  ].join('\n');
+  const code = ['/* This should not be detected */', 'def hello', '  puts "Hi"', 'end'].join('\n');
   const result = analyzeComplexity(code, 'greeter.rb');
-  assert.equal(result.commentLines, 0);  // C-style not detected for Ruby
-  assert.equal(result.functionCount, 0);  // Ruby def detection not implemented
-
+  assert.equal(result.commentLines, 0); // C-style not detected for Ruby
+  assert.equal(result.functionCount, 0); // Ruby def detection not implemented
 });
 
 // ---------- Rust block comment detection ----------
 
 test('analyzeComplexity detects Rust C-style block comments', () => {
-  const code = [
-    '/* Multi-line',
-    '   Rust block comment */',
-    'fn main() {',
-    '    println!("Hello");',
-    '}',
-  ].join('\n');
+  const code = ['/* Multi-line', '   Rust block comment */', 'fn main() {', '    println!("Hello");', '}'].join('\n');
   const result = analyzeComplexity(code, 'main.rs');
   // .rs is in cStyleExts so C-style block comments are detected
   assert.equal(result.commentLines, 2);
@@ -171,15 +154,7 @@ test('analyzeComplexity counts empty lines correctly', () => {
 });
 
 test('analyzeComplexity codeLines equals total minus empty minus comment', () => {
-  const code = [
-    '// comment',
-    '',
-    'def foo():',
-    '    pass',
-    '',
-    '# another comment',
-    'x = 1',
-  ].join('\n');
+  const code = ['// comment', '', 'def foo():', '    pass', '', '# another comment', 'x = 1'].join('\n');
   const result = analyzeComplexity(code, 'test.py');
   assert.equal(result.codeLines, result.totalLines - result.emptyLines - result.commentLines);
 });
@@ -214,13 +189,7 @@ test('analyzeComplexity handles SQL multi-line block comment', () => {
 // ---------- CSS block comment detection ----------
 
 test('analyzeComplexity detects CSS block comments', () => {
-  const code = [
-    '/* This is a',
-    '   CSS comment */',
-    '.foo {',
-    '  color: red;',
-    '}',
-  ].join('\n');
+  const code = ['/* This is a', '   CSS comment */', '.foo {', '  color: red;', '}'].join('\n');
   const result = analyzeComplexity(code, 'style.css');
   assert.equal(result.commentLines >= 2, true);
 });

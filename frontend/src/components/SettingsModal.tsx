@@ -1,9 +1,9 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 const DEFAULT_SETTINGS = {
   temperature: 0.7,
   maxTokens: 2048,
-  systemPrompt: "",
+  systemPrompt: '',
   batchSize: 5,
 };
 
@@ -20,7 +20,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
   const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
   const trapFocus = useCallback((e: KeyboardEvent) => {
-    if (e.key !== "Tab") return;
+    if (e.key !== 'Tab') return;
     const modal = modalRef.current;
     if (!modal) return;
     const focusable = modal.querySelectorAll<HTMLElement>(focusableSelector);
@@ -42,45 +42,42 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
 
   useEffect(() => {
     previousFocusRef.current = document.activeElement as HTMLElement;
-    const saved = localStorage.getItem("reposage_ai_settings");
+    const saved = localStorage.getItem('reposage_ai_settings');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (parsed && typeof parsed === "object") {
+        if (parsed && typeof parsed === 'object') {
           setSettings({ ...DEFAULT_SETTINGS, ...parsed });
         }
       } catch (error) {
-        console.warn("Invalid saved AI settings; using defaults.", error);
+        console.warn('Invalid saved AI settings; using defaults.', error);
         setSettings(DEFAULT_SETTINGS);
       }
     }
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if (e.key === 'Escape') {
         onClose();
         return;
       }
-      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
         handleSaveRef.current();
         return;
       }
       trapFocus(e);
     };
-    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown);
     return () => {
-      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener('keydown', handleKeyDown);
       previousFocusRef.current?.focus();
     };
   }, [onClose, trapFocus]);
 
   const handleSave = () => {
     if (settings.maxTokens < 1 || settings.maxTokens > 2048) {
-      alert("Max Tokens must be between 1 and 2048.");
+      alert('Max Tokens must be between 1 and 2048.');
       return;
     }
-    localStorage.setItem(
-      "reposage_ai_settings",
-      JSON.stringify(settings)
-    );
+    localStorage.setItem('reposage_ai_settings', JSON.stringify(settings));
     onClose();
   };
   handleSaveRef.current = handleSave;
@@ -92,10 +89,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
 
   const handleReset = () => {
     setSettings(DEFAULT_SETTINGS);
-    localStorage.setItem(
-      "reposage_ai_settings",
-      JSON.stringify(DEFAULT_SETTINGS)
-    );
+    localStorage.setItem('reposage_ai_settings', JSON.stringify(DEFAULT_SETTINGS));
   };
 
   const handleBackdropClick = (e: React.MouseEvent) => {
@@ -111,289 +105,292 @@ const SettingsModal: React.FC<SettingsModalProps> = ({ onClose }) => {
       aria-modal="true"
       aria-label="AI Settings"
       style={{
-        position: "fixed",
+        position: 'fixed',
         inset: 0,
-        background: "rgba(0,0,0,0.55)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
+        background: 'rgba(0,0,0,0.55)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
         zIndex: 9999,
-        transition: "background 0.3s ease",
+        transition: 'background 0.3s ease',
       }}
     >
       <div
         ref={modalRef}
         className="glass-panel"
         style={{
-          width: "550px",
-          maxWidth: "90%",
-          padding: "24px",
-          borderRadius: "12px",
-          background: "var(--panel-bg)",
-          color: "var(--text-color)",
-        border: "1px solid var(--border-color)",
+          width: '550px',
+          maxWidth: '90%',
+          padding: '24px',
+          borderRadius: '12px',
+          background: 'var(--panel-bg)',
+          color: 'var(--text-color)',
+          border: '1px solid var(--border-color)',
         }}
       >
         <form onSubmit={handleFormSubmit}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: "24px",
-          }}
-        >
-          <h2 style={{ margin: 0, color: "var(--text-color)" }}>
-            ⚙️ AI Settings
-          </h2>
-          <button
-            onClick={onClose}
-            aria-label="Close settings"
-            title="Close"
-            style={{
-              background: "none",
-              border: "none",
-              color: "var(--text-color)",
-              cursor: "pointer",
-              fontSize: "20px",
-              padding: "4px 8px",
-              borderRadius: "6px",
-              lineHeight: 1,
-              opacity: 0.7,
-            }}
-            onMouseOver={(e) => (e.currentTarget.style.opacity = "1")}
-            onMouseOut={(e) => (e.currentTarget.style.opacity = "0.7")}
-          >
-            ✕
-          </button>
-        </div>
-
-        {/* Temperature */}
-        <div style={{ marginBottom: "24px" }}>
-          <label
-            style={{
-              display: "block",
-              marginBottom: "8px",
-              color: "var(--text-color)",
-              fontWeight: 600,
-            }}
-          >
-            Temperature: {settings.temperature}
-          </label>
-          <p style={{ margin: "0 0 8px 0", fontSize: "11px", color: "#9ca3af", lineHeight: 1.4 }}>Controls randomness in output. Lower values (0.1) produce focused results, higher values (0.9) are more creative.</p>
-
-          <input
-            type="range"
-            min="0"
-            max="2"
-            step="0.05"
-            value={settings.temperature}
-            onChange={(e) =>
-              setSettings({
-                ...settings,
-                temperature: Number(e.target.value),
-              })
-            }
-            style={{
-              width: "100%",
-              cursor: "pointer",
-            }}
-          />
-        </div>
-
-        {/* Max Tokens */}
-        <div style={{ marginBottom: "24px" }}>
-          <label
-            style={{
-              display: "block",
-              marginBottom: "8px",
-              color: "var(--text-color)",
-              fontWeight: 600,
-            }}
-          >
-            Max Tokens
-          </label>
-
-          <input
-            type="number"
-            min="1"
-            max="2048"
-            value={settings.maxTokens}
-            onChange={(e) =>
-              setSettings({
-                ...settings,
-                maxTokens: Number(e.target.value),
-              })
-            }
-            style={{
-              width: "100%",
-              padding: "10px",
-              borderRadius: "8px",
-              background: "rgba(15, 23, 42, 0.6)",
-              color: "var(--text-color)",
-              border: "1px solid var(--border-color)",
-              outline: "none",
-            }}
-          />
           <div
             style={{
-              marginTop: "4px",
-              fontSize: "11px",
-              color: "#9ca3af",
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '24px',
             }}
           >
-            Recommended range: 128 – 2048
+            <h2 style={{ margin: 0, color: 'var(--text-color)' }}>⚙️ AI Settings</h2>
+            <button
+              onClick={onClose}
+              aria-label="Close settings"
+              title="Close"
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--text-color)',
+                cursor: 'pointer',
+                fontSize: '20px',
+                padding: '4px 8px',
+                borderRadius: '6px',
+                lineHeight: 1,
+                opacity: 0.7,
+              }}
+              onMouseOver={(e) => (e.currentTarget.style.opacity = '1')}
+              onMouseOut={(e) => (e.currentTarget.style.opacity = '0.7')}
+            >
+              ✕
+            </button>
           </div>
-        </div>
 
-        {/* Batch Size */}
-        <div style={{ marginBottom: "24px" }}>
-          <label
-            style={{
-              display: "block",
-              marginBottom: "8px",
-              color: "var(--text-color)",
-              fontWeight: 600,
-            }}
-          >
-            Batch Size (Files per API call)
-          </label>
+          {/* Temperature */}
+          <div style={{ marginBottom: '24px' }}>
+            <label
+              style={{
+                display: 'block',
+                marginBottom: '8px',
+                color: 'var(--text-color)',
+                fontWeight: 600,
+              }}
+            >
+              Temperature: {settings.temperature}
+            </label>
+            <p style={{ margin: '0 0 8px 0', fontSize: '11px', color: '#9ca3af', lineHeight: 1.4 }}>
+              Controls randomness in output. Lower values (0.1) produce focused results, higher values (0.9) are more
+              creative.
+            </p>
 
-          <input
-            type="number"
-            min="1"
-            max="20"
-            value={settings.batchSize}
-            onChange={(e) =>
-              setSettings({
-                ...settings,
-                batchSize: Number(e.target.value),
-              })
-            }
-            style={{
-              width: "100%",
-              padding: "10px",
-              borderRadius: "8px",
-              background: "rgba(15, 23, 42, 0.6)",
-              color: "var(--text-color)",
-              border: "1px solid var(--border-color)",
-              outline: "none",
-            }}
-          />
-        </div>
-
-        {/* System Prompt */}
-        <div style={{ marginBottom: "24px" }}>
-          <label
-            style={{
-              display: "block",
-              marginBottom: "8px",
-              color: "var(--text-color)",
-              fontWeight: 600,
-            }}
-          >
-            Custom System Prompt
-          </label>
-
-          <textarea
-            rows={6}
-            maxLength={2000}
-            value={settings.systemPrompt}
-            onChange={(e) =>
-              setSettings({
-                ...settings,
-                systemPrompt: e.target.value,
-              })
-            }
-            placeholder="Override default AI review instructions..."
-            aria-describedby="system-prompt-warning"
-            style={{
-              width: "100%",
-              padding: "12px",
-              borderRadius: "8px",
-              resize: "vertical",
-              background: "rgba(15, 23, 42, 0.6)",
-              color: "var(--text-color)",
-              border: "1px solid var(--border-color)",
-              outline: "none",
-            }}
-          />
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              marginTop: "4px",
-              fontSize: "11px",
-              color: "#9ca3af",
-            }}
-          >
-            <span id="system-prompt-warning">⚠️ Malicious prompts may override AI behavior. Use only trusted instructions.</span>
-            <span>{settings.systemPrompt.length}/2000</span>
+            <input
+              type="range"
+              min="0"
+              max="2"
+              step="0.05"
+              value={settings.temperature}
+              onChange={(e) =>
+                setSettings({
+                  ...settings,
+                  temperature: Number(e.target.value),
+                })
+              }
+              style={{
+                width: '100%',
+                cursor: 'pointer',
+              }}
+            />
           </div>
-        </div>
 
-        {/* Buttons */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            gap: "12px",
-          }}
-        >
-          <button
-            type="button"
-            onClick={handleReset}
-            style={{
-              background: "rgba(15, 23, 42, 0.6)",
-              color: "var(--text-color)",
-              border: "1px solid var(--border-color)",
-              padding: "10px 16px",
-              borderRadius: "8px",
-              cursor: "pointer",
-              fontWeight: 500,
-            }}
-          >
-            Reset to Defaults
-          </button>
+          {/* Max Tokens */}
+          <div style={{ marginBottom: '24px' }}>
+            <label
+              style={{
+                display: 'block',
+                marginBottom: '8px',
+                color: 'var(--text-color)',
+                fontWeight: 600,
+              }}
+            >
+              Max Tokens
+            </label>
 
+            <input
+              type="number"
+              min="1"
+              max="2048"
+              value={settings.maxTokens}
+              onChange={(e) =>
+                setSettings({
+                  ...settings,
+                  maxTokens: Number(e.target.value),
+                })
+              }
+              style={{
+                width: '100%',
+                padding: '10px',
+                borderRadius: '8px',
+                background: 'rgba(15, 23, 42, 0.6)',
+                color: 'var(--text-color)',
+                border: '1px solid var(--border-color)',
+                outline: 'none',
+              }}
+            />
+            <div
+              style={{
+                marginTop: '4px',
+                fontSize: '11px',
+                color: '#9ca3af',
+              }}
+            >
+              Recommended range: 128 – 2048
+            </div>
+          </div>
+
+          {/* Batch Size */}
+          <div style={{ marginBottom: '24px' }}>
+            <label
+              style={{
+                display: 'block',
+                marginBottom: '8px',
+                color: 'var(--text-color)',
+                fontWeight: 600,
+              }}
+            >
+              Batch Size (Files per API call)
+            </label>
+
+            <input
+              type="number"
+              min="1"
+              max="20"
+              value={settings.batchSize}
+              onChange={(e) =>
+                setSettings({
+                  ...settings,
+                  batchSize: Number(e.target.value),
+                })
+              }
+              style={{
+                width: '100%',
+                padding: '10px',
+                borderRadius: '8px',
+                background: 'rgba(15, 23, 42, 0.6)',
+                color: 'var(--text-color)',
+                border: '1px solid var(--border-color)',
+                outline: 'none',
+              }}
+            />
+          </div>
+
+          {/* System Prompt */}
+          <div style={{ marginBottom: '24px' }}>
+            <label
+              style={{
+                display: 'block',
+                marginBottom: '8px',
+                color: 'var(--text-color)',
+                fontWeight: 600,
+              }}
+            >
+              Custom System Prompt
+            </label>
+
+            <textarea
+              rows={6}
+              maxLength={2000}
+              value={settings.systemPrompt}
+              onChange={(e) =>
+                setSettings({
+                  ...settings,
+                  systemPrompt: e.target.value,
+                })
+              }
+              placeholder="Override default AI review instructions..."
+              aria-describedby="system-prompt-warning"
+              style={{
+                width: '100%',
+                padding: '12px',
+                borderRadius: '8px',
+                resize: 'vertical',
+                background: 'rgba(15, 23, 42, 0.6)',
+                color: 'var(--text-color)',
+                border: '1px solid var(--border-color)',
+                outline: 'none',
+              }}
+            />
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                marginTop: '4px',
+                fontSize: '11px',
+                color: '#9ca3af',
+              }}
+            >
+              <span id="system-prompt-warning">
+                ⚠️ Malicious prompts may override AI behavior. Use only trusted instructions.
+              </span>
+              <span>{settings.systemPrompt.length}/2000</span>
+            </div>
+          </div>
+
+          {/* Buttons */}
           <div
             style={{
-              display: "flex",
-              gap: "10px",
+              display: 'flex',
+              justifyContent: 'space-between',
+              gap: '12px',
             }}
           >
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleReset}
               style={{
-                background: "rgba(15, 23, 42, 0.6)",
-                color: "var(--text-color)",
-                border: "1px solid var(--border-color)",
-                padding: "10px 16px",
-                borderRadius: "8px",
-                cursor: "pointer",
+                background: 'rgba(15, 23, 42, 0.6)',
+                color: 'var(--text-color)',
+                border: '1px solid var(--border-color)',
+                padding: '10px 16px',
+                borderRadius: '8px',
+                cursor: 'pointer',
                 fontWeight: 500,
               }}
             >
-              Cancel
+              Reset to Defaults
             </button>
 
-            <button
-              type="submit"
+            <div
               style={{
-                background: "#2563eb",
-                color: "#ffffff",
-                border: "none",
-                padding: "10px 16px",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontWeight: 600,
+                display: 'flex',
+                gap: '10px',
               }}
             >
-              Save
-            </button>
+              <button
+                type="button"
+                onClick={onClose}
+                style={{
+                  background: 'rgba(15, 23, 42, 0.6)',
+                  color: 'var(--text-color)',
+                  border: '1px solid var(--border-color)',
+                  padding: '10px 16px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: 500,
+                }}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="submit"
+                style={{
+                  background: '#2563eb',
+                  color: '#ffffff',
+                  border: 'none',
+                  padding: '10px 16px',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                }}
+              >
+                Save
+              </button>
+            </div>
           </div>
-        </div>
         </form>
       </div>
     </div>

@@ -19,102 +19,106 @@ let storeLock = Promise.resolve();
 async function acquireLock() {
   const prev = storeLock;
   let release;
-  const next = new Promise(resolve => { release = resolve; });
+  const next = new Promise((resolve) => {
+    release = resolve;
+  });
   storeLock = next;
   await prev;
   return release;
 }
 
 function readStore() {
-    try {
-        if (!fs.existsSync(STORE_PATH)) return [];
-        const raw = fs.readFileSync(STORE_PATH, 'utf-8');
-        const parsed = JSON.parse(raw);
-        if (!Array.isArray(parsed)) {
-          console.warn('⚠️ Analytics store is not an array, attempting backup recovery');
-          return recoverFromBackup();
-        }
-        return parsed;
-    } catch (err) {
-        console.warn('⚠️ Failed to read analytics store, attempting backup recovery:', err.message);
-        return recoverFromBackup();
+  try {
+    if (!fs.existsSync(STORE_PATH)) return [];
+    const raw = fs.readFileSync(STORE_PATH, 'utf-8');
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) {
+      console.warn('⚠️ Analytics store is not an array, attempting backup recovery');
+      return recoverFromBackup();
     }
+    return parsed;
+  } catch (err) {
+    console.warn('⚠️ Failed to read analytics store, attempting backup recovery:', err.message);
+    return recoverFromBackup();
+  }
 }
 
 function recoverFromBackup() {
-    try {
-        if (fs.existsSync(BACKUP_PATH)) {
-            const raw = fs.readFileSync(BACKUP_PATH, 'utf-8');
-            const parsed = JSON.parse(raw);
-            if (Array.isArray(parsed)) {
-                console.warn('✅ Recovered analytics store from backup');
-                fs.writeFileSync(STORE_PATH, JSON.stringify(parsed, null, 2));
-                return parsed;
-            }
-        }
-    } catch (backupErr) {
-        console.warn('⚠️ Backup recovery also failed:', backupErr.message);
+  try {
+    if (fs.existsSync(BACKUP_PATH)) {
+      const raw = fs.readFileSync(BACKUP_PATH, 'utf-8');
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        console.warn('✅ Recovered analytics store from backup');
+        fs.writeFileSync(STORE_PATH, JSON.stringify(parsed, null, 2));
+        return parsed;
+      }
     }
-    console.warn('⚠️ Starting fresh analytics store');
-    return [];
+  } catch (backupErr) {
+    console.warn('⚠️ Backup recovery also failed:', backupErr.message);
+  }
+  console.warn('⚠️ Starting fresh analytics store');
+  return [];
 }
 
 function writeStoreAtomic(records) {
+  try {
+    const data = JSON.stringify(records, null, 2);
+    fs.writeFileSync(TMP_PATH, data);
     try {
-        const data = JSON.stringify(records, null, 2);
-        fs.writeFileSync(TMP_PATH, data);
-        try {
-            fs.renameSync(TMP_PATH, STORE_PATH);
-        } catch (renameErr) {
-            console.warn('⚠️ renameSync failed, falling back to writeFileSync:', renameErr.message);
-            fs.writeFileSync(STORE_PATH, data);
-            try { fs.unlinkSync(TMP_PATH); } catch (e) {}
-        }
-        try {
-            fs.writeFileSync(BACKUP_PATH, data);
-        } catch (backupErr) {
-            console.warn('⚠️ Failed to write analytics backup:', backupErr.message);
-        }
-    } catch (err) {
-        console.warn('Failed to write analytics store:', err.message);
+      fs.renameSync(TMP_PATH, STORE_PATH);
+    } catch (renameErr) {
+      console.warn('⚠️ renameSync failed, falling back to writeFileSync:', renameErr.message);
+      fs.writeFileSync(STORE_PATH, data);
+      try {
+        fs.unlinkSync(TMP_PATH);
+      } catch (e) {}
     }
+    try {
+      fs.writeFileSync(BACKUP_PATH, data);
+    } catch (backupErr) {
+      console.warn('⚠️ Failed to write analytics backup:', backupErr.message);
+    }
+  } catch (err) {
+    console.warn('Failed to write analytics store:', err.message);
+  }
 }
 
 export async function recordAnalysis(record) {
-    const release = await acquireLock();
-    try {
-        const records = readStore();
-        records.push({
-            timestamp: new Date().toISOString(),
-            repoName: record.repoName || 'unknown',
-            totalLines: record.totalLines || 0,
-            bugs: record.bugs || 0,
-            security: record.security || 0,
-            optimization: record.optimization || 0,
-            styling: record.styling || 0,
-            filesCount: record.filesCount || 0,
-            cyclomaticComplexity: record.cyclomaticComplexity || 0,
-            halsteadComplexity: record.halsteadComplexity || 0,
-            complexityScore: record.complexityScore || 0,
-        });
+  const release = await acquireLock();
+  try {
+    const records = readStore();
+    records.push({
+      timestamp: new Date().toISOString(),
+      repoName: record.repoName || 'unknown',
+      totalLines: record.totalLines || 0,
+      bugs: record.bugs || 0,
+      security: record.security || 0,
+      optimization: record.optimization || 0,
+      styling: record.styling || 0,
+      filesCount: record.filesCount || 0,
+      cyclomaticComplexity: record.cyclomaticComplexity || 0,
+      halsteadComplexity: record.halsteadComplexity || 0,
+      complexityScore: record.complexityScore || 0,
+    });
 
-        const trimmed = records.slice(-MAX_RECORDS);
-        writeStoreAtomic(trimmed);
-    } finally {
-        release();
-    }
+    const trimmed = records.slice(-MAX_RECORDS);
+    writeStoreAtomic(trimmed);
+  } finally {
+    release();
+  }
 }
 
 export function getTrends() {
-    return readStore();
+  return readStore();
 }
 
 export function getPreviousMetrics(repoName) {
-    const records = readStore();
-    for (let i = records.length - 1; i >= 0; i--) {
-        if (records[i].repoName === repoName) {
-            return records[i];
-        }
+  const records = readStore();
+  for (let i = records.length - 1; i >= 0; i--) {
+    if (records[i].repoName === repoName) {
+      return records[i];
     }
-    return null;
+  }
+  return null;
 }

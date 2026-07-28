@@ -18,8 +18,11 @@ export function detectNPlusOne(content, fileName = '') {
       braceDepth += (line.match(/\{/g) || []).length;
       braceDepth -= (line.match(/\}/g) || []).length;
 
-      const isOrmCall = /(?:\.find(?:Many|One|All)?|\.query|\.execute|\.select|\.insert|\.update|prisma\.[a-zA-Z]+\.[a-zA-Z]+)\s*\(/.test(line);
-      
+      const isOrmCall =
+        /(?:\.find(?:Many|One|All)?|\.query|\.execute|\.select|\.insert|\.update|prisma\.[a-zA-Z]+\.[a-zA-Z]+)\s*\(/.test(
+          line,
+        );
+
       if (isOrmCall) {
         return true;
       }

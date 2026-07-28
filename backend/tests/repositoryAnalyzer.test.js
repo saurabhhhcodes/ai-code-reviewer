@@ -10,11 +10,11 @@ async function runTests() {
 
   // Test 2: React + Express repo
   const files = [
-    { name: 'package.json', content: JSON.stringify({ dependencies: { 'react': '^18', 'express': '^4' } }) },
+    { name: 'package.json', content: JSON.stringify({ dependencies: { react: '^18', express: '^4' } }) },
     { name: '.eslintrc', content: '{}' },
     { name: 'docker-compose.yml', content: '' },
     { name: 'src/components/Button.jsx', content: '' },
-    { name: 'backend/controllers/auth.js', content: '' }
+    { name: 'backend/controllers/auth.js', content: '' },
   ];
 
   const ctx = buildRepositoryContext(files);
@@ -30,7 +30,7 @@ async function runTests() {
   console.log('✅ All repositoryAnalyzer tests passed!');
 }
 
-runTests().catch(err => {
+runTests().catch((err) => {
   console.error('❌ Test failed:', err);
   process.exit(1);
 });

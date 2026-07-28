@@ -24,7 +24,7 @@ if (fs.existsSync('roadmap/created-issues.json')) {
       // Migrate from old array format
       for (const url of existing.issues) {
         if (url.includes('/issues/605')) {
-          progress["25"] = url;
+          progress['25'] = url;
         }
       }
     }
@@ -36,7 +36,7 @@ if (fs.existsSync('roadmap/created-issues.json')) {
 async function createIssueWithRetry(phase, retries = 5, delay = 2000) {
   const bodyData = {
     title: phase.title,
-    body: `## Phase ${phase.id}\n${phase.description}\n\n### Acceptance Criteria\n${phase.acceptance.map(a => `- ${a}`).join('\n')}`
+    body: `## Phase ${phase.id}\n${phase.description}\n\n### Acceptance Criteria\n${phase.acceptance.map((a) => `- ${a}`).join('\n')}`,
   };
 
   for (let attempt = 1; attempt <= retries; attempt++) {
@@ -47,9 +47,9 @@ async function createIssueWithRetry(phase, retries = 5, delay = 2000) {
           Authorization: `token ${token}`,
           Accept: 'application/vnd.github+json',
           'Content-Type': 'application/json',
-          'User-Agent': 'Node-Fetch'
+          'User-Agent': 'Node-Fetch',
         },
-        body: JSON.stringify(bodyData)
+        body: JSON.stringify(bodyData),
       });
 
       if (!response.ok) {
@@ -57,7 +57,7 @@ async function createIssueWithRetry(phase, retries = 5, delay = 2000) {
         console.error(`Attempt ${attempt} failed for Phase ${phase.id}: status ${response.status}`, err);
         if (response.status >= 500 || response.status === 408 || response.status === 429) {
           // Retryable status codes
-          await new Promise(resolve => setTimeout(resolve, delay * attempt));
+          await new Promise((resolve) => setTimeout(resolve, delay * attempt));
           continue;
         }
         return null;
@@ -69,7 +69,7 @@ async function createIssueWithRetry(phase, retries = 5, delay = 2000) {
     } catch (error) {
       console.error(`Attempt ${attempt} error for Phase ${phase.id}:`, error.message || error);
       if (attempt < retries) {
-        await new Promise(resolve => setTimeout(resolve, delay * attempt));
+        await new Promise((resolve) => setTimeout(resolve, delay * attempt));
       }
     }
   }
@@ -84,7 +84,7 @@ async function createIssueWithRetry(phase, retries = 5, delay = 2000) {
     }
 
     // Small baseline delay between success calls to avoid spam/rate limit
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
     const url = await createIssueWithRetry(phase);
     if (url) {
       progress[phase.id] = url;
@@ -92,6 +92,6 @@ async function createIssueWithRetry(phase, retries = 5, delay = 2000) {
       fs.writeFileSync('roadmap/created-issues.json', JSON.stringify(progress, null, 2));
     }
   }
-  
+
   console.log(`Finished creating issues. Progress saved to roadmap/created-issues.json`);
 })();

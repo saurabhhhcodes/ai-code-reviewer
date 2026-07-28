@@ -40,7 +40,6 @@ function renderInlineCode(text) {
 // Suite
 // ---------------------------------------------------------------------------
 suite('webviewProvider.ts - escapeHtmlPreserveBackticks', function () {
-
   test('escapes ampersand', function () {
     assert.strictEqual(escapeHtmlPreserveBackticks('a & b'), 'a &amp; b');
   });
@@ -72,7 +71,7 @@ suite('webviewProvider.ts - escapeHtmlPreserveBackticks', function () {
   test('escapes all special chars including backtick together', function () {
     assert.strictEqual(
       escapeHtmlPreserveBackticks('<script>alert(`xss`)</script>'),
-      '&lt;script&gt;alert(&#96;xss&#96;)&lt;&#47;script&gt;'
+      '&lt;script&gt;alert(&#96;xss&#96;)&lt;&#47;script&gt;',
     );
   });
 
@@ -86,7 +85,6 @@ suite('webviewProvider.ts - escapeHtmlPreserveBackticks', function () {
 });
 
 suite('webviewProvider.ts - inline code rendering', function () {
-
   test('converts backtick-wrapped text to code tag', function () {
     const result = renderInlineCode('use `console.log` for debugging');
     assert.strictEqual(result, 'use <code>console.log</code> for debugging');
@@ -119,7 +117,6 @@ suite('webviewProvider.ts - inline code rendering', function () {
 });
 
 suite('webviewProvider.ts - escapeHtml vs escapeHtmlPreserveBackticks difference', function () {
-
   test('escapeHtml converts backtick to &#96;', function () {
     assert.strictEqual(escapeHtml('`code`'), '&#96;code&#96;');
   });
@@ -130,9 +127,12 @@ suite('webviewProvider.ts - escapeHtml vs escapeHtmlPreserveBackticks difference
 
   test('both escapeHtml and escapeHtmlPreserveBackticks are identical for non-backtick chars', function () {
     const inputs = ['<script>', '&test&', '"quoted"', "'single'", 'a < b > c'];
-    inputs.forEach(input => {
-      assert.strictEqual(escapeHtml(input), escapeHtmlPreserveBackticks(input),
-        'Both should escape the same for: ' + input);
+    inputs.forEach((input) => {
+      assert.strictEqual(
+        escapeHtml(input),
+        escapeHtmlPreserveBackticks(input),
+        'Both should escape the same for: ' + input,
+      );
     });
   });
 });

@@ -32,9 +32,9 @@ function setupFetchMock(response, error) {
     }
     return Promise.resolve({
       ok: mockFetchResponse ? (mockFetchResponse.ok !== undefined ? mockFetchResponse.ok : true) : true,
-      status: mockFetchResponse ? (mockFetchResponse.status || 200) : 200,
+      status: mockFetchResponse ? mockFetchResponse.status || 200 : 200,
       json: () => Promise.resolve(mockFetchResponse ? mockFetchResponse.body : {}),
-      text: () => Promise.resolve(mockFetchResponse ? (mockFetchResponse.bodyText || '') : ''),
+      text: () => Promise.resolve(mockFetchResponse ? mockFetchResponse.bodyText || '' : ''),
     });
   };
 }
@@ -66,7 +66,6 @@ function setApiUrl(url) {
 // Suite
 // ---------------------------------------------------------------------------
 suite('api.ts - reviewFileContent', function () {
-
   teardown(function () {
     resetFetchMock();
     if (vscodeStub) vscodeStub.reset();
@@ -79,8 +78,10 @@ suite('api.ts - reviewFileContent', function () {
     await api.reviewFileContent('test.js', 'const x = 1;', 'test-key');
 
     assert.strictEqual(mockFetchCalled, true, 'fetch should have been called');
-    assert.ok(mockFetchUrl.includes('/api/analyze-file'),
-      'Expected URL to contain /api/analyze-file, got: ' + mockFetchUrl);
+    assert.ok(
+      mockFetchUrl.includes('/api/analyze-file'),
+      'Expected URL to contain /api/analyze-file, got: ' + mockFetchUrl,
+    );
   });
 
   test('sets Content-Type application/json header', async function () {
@@ -89,8 +90,11 @@ suite('api.ts - reviewFileContent', function () {
 
     await api.reviewFileContent('test.js', 'const x = 1;', '');
 
-    assert.strictEqual(mockFetchOptions.headers['Content-Type'], 'application/json',
-      'Content-Type should be application/json');
+    assert.strictEqual(
+      mockFetchOptions.headers['Content-Type'],
+      'application/json',
+      'Content-Type should be application/json',
+    );
   });
 
   test('sets x-api-key header when apiKey is provided', async function () {
@@ -99,8 +103,11 @@ suite('api.ts - reviewFileContent', function () {
 
     await api.reviewFileContent('test.js', 'const x = 1;', 'my-secret-key');
 
-    assert.strictEqual(mockFetchOptions.headers['x-api-key'], 'my-secret-key',
-      'x-api-key header should match the provided apiKey');
+    assert.strictEqual(
+      mockFetchOptions.headers['x-api-key'],
+      'my-secret-key',
+      'x-api-key header should match the provided apiKey',
+    );
   });
 
   test('does not set x-api-key header when apiKey is empty string', async function () {
@@ -109,8 +116,11 @@ suite('api.ts - reviewFileContent', function () {
 
     await api.reviewFileContent('test.js', 'const x = 1;', '');
 
-    assert.strictEqual(mockFetchOptions.headers['x-api-key'], undefined,
-      'x-api-key should not be set when apiKey is empty');
+    assert.strictEqual(
+      mockFetchOptions.headers['x-api-key'],
+      undefined,
+      'x-api-key should not be set when apiKey is empty',
+    );
   });
 
   test('returns success=true on 200 OK response', async function () {
@@ -132,8 +142,10 @@ suite('api.ts - reviewFileContent', function () {
 
     assert.strictEqual(result.success, false, 'success should be false');
     assert.ok(result.error !== undefined, 'error should be present');
-    assert.ok(result.error.includes('400') || result.error.includes('API error'),
-      'error should mention status code, got: ' + result.error);
+    assert.ok(
+      result.error.includes('400') || result.error.includes('API error'),
+      'error should mention status code, got: ' + result.error,
+    );
   });
 
   test('returns success=false when fetch throws network error', async function () {
@@ -144,8 +156,7 @@ suite('api.ts - reviewFileContent', function () {
 
     assert.strictEqual(result.success, false, 'success should be false on network error');
     assert.ok(result.error !== undefined, 'error should be present on network error');
-    assert.ok(result.error.includes('ENOTFOUND'),
-      'error should mention network failure, got: ' + result.error);
+    assert.ok(result.error.includes('ENOTFOUND'), 'error should mention network failure, got: ' + result.error);
   });
 
   test('sends correct request body with files array, company, language, model', async function () {
@@ -171,8 +182,10 @@ suite('api.ts - reviewFileContent', function () {
 
     await api.reviewFileContent('test.js', 'code', '');
 
-    assert.ok(mockFetchUrl.startsWith('https://custom-backend.example.com:9000'),
-      'Expected URL to start with configured apiUrl, got: ' + mockFetchUrl);
+    assert.ok(
+      mockFetchUrl.startsWith('https://custom-backend.example.com:9000'),
+      'Expected URL to start with configured apiUrl, got: ' + mockFetchUrl,
+    );
   });
 
   test('defaults to the local HTTP backend URL', async function () {
@@ -180,8 +193,10 @@ suite('api.ts - reviewFileContent', function () {
 
     await api.reviewFileContent('test.js', 'code', '');
 
-    assert.ok(mockFetchUrl.startsWith('http://localhost:5000'),
-      'Expected default URL to use local HTTP backend, got: ' + mockFetchUrl);
+    assert.ok(
+      mockFetchUrl.startsWith('http://localhost:5000'),
+      'Expected default URL to use local HTTP backend, got: ' + mockFetchUrl,
+    );
   });
 
   test('returns response as stringified JSON', async function () {

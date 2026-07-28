@@ -48,40 +48,40 @@ test('verifyHost returns default hostname for invalid inputs', () => {
 // --- Additional edge-case tests for verifyPort ---
 test('verifyPort rejects port -1', () => {
   // String '-1' fails the /^\d+$/ regex check first
-  assert.throws(() => verifyPort('-1'), /non-numeric/)
+  assert.throws(() => verifyPort('-1'), /non-numeric/);
   // Number -1 passes type check, but fails integer range
-  assert.throws(() => verifyPort(-1), /between 0 and 65535/)
-})
+  assert.throws(() => verifyPort(-1), /between 0 and 65535/);
+});
 
 test('verifyPort accepts port 65535 at upper boundary', () => {
-  assert.equal(verifyPort(65535), 65535)
-  assert.equal(verifyPort('65535'), 65535)
-})
+  assert.equal(verifyPort(65535), 65535);
+  assert.equal(verifyPort('65535'), 65535);
+});
 
 test('verifyPort accepts port 0 at lower boundary', () => {
-  assert.equal(verifyPort(0), 0)
-  assert.equal(verifyPort('0'), 0)
-})
+  assert.equal(verifyPort(0), 0);
+  assert.equal(verifyPort('0'), 0);
+});
 
 test('verifyPort accepts whitespace-padded string ports by trimming them', () => {
-  assert.equal(verifyPort(' 8080'), 8080)
-  assert.equal(verifyPort('8080 '), 8080)
-  assert.equal(verifyPort(' 8080 '), 8080)
-})
+  assert.equal(verifyPort(' 8080'), 8080);
+  assert.equal(verifyPort('8080 '), 8080);
+  assert.equal(verifyPort(' 8080 '), 8080);
+});
 
 test('verifyPort rejects very large integer strings', () => {
-  assert.throws(() => verifyPort('999999'), /between 0 and 65535/)
-  assert.throws(() => verifyPort('100000'), /between 0 and 65535/)
-})
+  assert.throws(() => verifyPort('999999'), /between 0 and 65535/);
+  assert.throws(() => verifyPort('100000'), /between 0 and 65535/);
+});
 
 test('verifyPort handles leading zeros', () => {
-  assert.equal(verifyPort('0080'), 80)
-  assert.equal(verifyPort('03000'), 3000)
-})
+  assert.equal(verifyPort('0080'), 80);
+  assert.equal(verifyPort('03000'), 3000);
+});
 
 test('verifyPort rejects NaN and Infinity', () => {
   // NaN is typeof 'number' so passes type check, but Number.isInteger(NaN) is false
-  assert.throws(() => verifyPort(NaN), /between 0 and 65535/)
+  assert.throws(() => verifyPort(NaN), /between 0 and 65535/);
   // Infinity is a number, but is not a finite integer
-  assert.throws(() => verifyPort(Infinity), /between 0 and 65535/)
-})
+  assert.throws(() => verifyPort(Infinity), /between 0 and 65535/);
+});

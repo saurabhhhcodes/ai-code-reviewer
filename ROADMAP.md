@@ -12,7 +12,7 @@ Our vision is to build the **ultimate open-source AI platform** that helps devel
 
 This roadmap outlines our journey — from MVP to enterprise-grade tooling. We welcome community input on priorities! Open a [GitHub Discussion](https://github.com/kalyan-1845/ai-code-reviewer/discussions) to share your ideas.
 
-> **📌 Legend:**  ✅ Completed &nbsp;|&nbsp; 🔄 In Progress &nbsp;|&nbsp; 📋 Planned
+> **📌 Legend:** ✅ Completed &nbsp;|&nbsp; 🔄 In Progress &nbsp;|&nbsp; 📋 Planned
 
 ---
 
@@ -50,7 +50,7 @@ Multi-language support, security scanning, and model flexibility are now in plac
 
 Conversational AI, architecture visualization, and PR automation — all shipped!
 
-- [x] 💬 AI Chat With Repository — *"Explain the authentication flow"*
+- [x] 💬 AI Chat With Repository — _"Explain the authentication flow"_
 - [x] 📊 Auto Architecture Diagram Generation (Mermaid.js / Flowcharts)
 - [x] 🤖 PR Review Bot (GitHub App Integration)
 - [ ] 🔖 Automated Issue Generator
@@ -63,19 +63,19 @@ Conversational AI, architecture visualization, and PR automation — all shipped
 
 Scaling RepoSage for power users and teams — dashboards, exports, and configurability.
 
-| # | Feature | Status | Description |
-|---|---------|--------|-------------|
-| 1 | 📋 Dashboard Audit History | 📋 Planned | View past reviews, diffs, and AI feedback in a timeline |
-| 2 | 📄 PDF Report Export | 📋 Planned | Export comprehensive code review reports as PDF |
-| 3 | 🚫 `.reposageignore` Config Support | 📋 Planned | Let users exclude files/folders from AI analysis |
-| 4 | ⚙️ AI Settings Modal | 📋 Planned | In-app UI to configure AI model, temperature, and prompts |
-| 5 | 📊 File Composition Charts | 📋 Planned | Visual breakdown of language usage and file distribution |
-| 6 | 🔁 Multi-repo Batch Analysis | 📋 Planned | Analyze multiple repositories in a single session |
-| 7 | 🔗 CI/CD Pipeline Integration | 📋 Planned | Native support for GitHub Actions, GitLab CI, and Jenkins |
-| 8 | 🧩 Plugin Architecture | 📋 Planned | Extensible plugin system for custom review rules and integrations |
-| 9 | 🪄 Auto-Remediation (One-Click Fixes) | 📋 Planned | AI generates actionable code fixes directly via GitHub "Suggested Changes" |
-| 10 | 🧪 Automated Unit Test Generator | 📋 Planned | Automatically generate PyTest, Jest, and JUnit suites for files |
-| 11 | 🔍 Semantic Code Search | 📋 Planned | Ask natural language questions to search the codebase architecture |
+| #   | Feature                               | Status     | Description                                                                |
+| --- | ------------------------------------- | ---------- | -------------------------------------------------------------------------- |
+| 1   | 📋 Dashboard Audit History            | 📋 Planned | View past reviews, diffs, and AI feedback in a timeline                    |
+| 2   | 📄 PDF Report Export                  | 📋 Planned | Export comprehensive code review reports as PDF                            |
+| 3   | 🚫 `.reposageignore` Config Support   | 📋 Planned | Let users exclude files/folders from AI analysis                           |
+| 4   | ⚙️ AI Settings Modal                  | 📋 Planned | In-app UI to configure AI model, temperature, and prompts                  |
+| 5   | 📊 File Composition Charts            | 📋 Planned | Visual breakdown of language usage and file distribution                   |
+| 6   | 🔁 Multi-repo Batch Analysis          | 📋 Planned | Analyze multiple repositories in a single session                          |
+| 7   | 🔗 CI/CD Pipeline Integration         | 📋 Planned | Native support for GitHub Actions, GitLab CI, and Jenkins                  |
+| 8   | 🧩 Plugin Architecture                | 📋 Planned | Extensible plugin system for custom review rules and integrations          |
+| 9   | 🪄 Auto-Remediation (One-Click Fixes) | 📋 Planned | AI generates actionable code fixes directly via GitHub "Suggested Changes" |
+| 10  | 🧪 Automated Unit Test Generator      | 📋 Planned | Automatically generate PyTest, Jest, and JUnit suites for files            |
+| 11  | 🔍 Semantic Code Search               | 📋 Planned | Ask natural language questions to search the codebase architecture         |
 
 > [!TIP]
 > **Want to work on Phase 4?** Check our [issues](https://github.com/kalyan-1845/ai-code-reviewer/issues) tagged with `gssoc26` — many of these features are open for community contribution!
@@ -86,15 +86,15 @@ Scaling RepoSage for power users and teams — dashboards, exports, and configur
 
 We have opened 45 new granular issues across 3 major architectural epics for our GSSoC contributors!
 
-| # | Feature Epic | Status | Description |
-|---|--------------|--------|-------------|
-| 1 | 🔌 **Native VS Code Extension** | 🚀 Active | Review code directly inside Visual Studio Code |
-| 2 | 🧠 **AI RAG (Vector DB) System** | 🚀 Active | Upgrade chat with ChromaDB to query entire repositories using embeddings |
-| 3 | 📊 **Multi-Repo Analytics Dashboard** | 🚀 Active | Track code quality trends over time across repos for Engineering Managers |
-| 4 | 👥 Team Collaboration Workspace | 📋 Planned | Shared workspaces for team-based code review |
-| 5 | 🔐 RBAC Access Controls | 📋 Planned | Role-based access control (Admin, Reviewer, Viewer) |
-| 6 | 📤 SARIF / SAST Format Export | 📋 Planned | Industry-standard security report formats for tool integration |
-| 7 | 🔄 Automated Refactoring Bots | 📋 Planned | Standalone agents that constantly submit PRs to clear tech-debt |
+| #   | Feature Epic                          | Status     | Description                                                               |
+| --- | ------------------------------------- | ---------- | ------------------------------------------------------------------------- |
+| 1   | 🔌 **Native VS Code Extension**       | 🚀 Active  | Review code directly inside Visual Studio Code                            |
+| 2   | 🧠 **AI RAG (Vector DB) System**      | 🚀 Active  | Upgrade chat with ChromaDB to query entire repositories using embeddings  |
+| 3   | 📊 **Multi-Repo Analytics Dashboard** | 🚀 Active  | Track code quality trends over time across repos for Engineering Managers |
+| 4   | 👥 Team Collaboration Workspace       | 📋 Planned | Shared workspaces for team-based code review                              |
+| 5   | 🔐 RBAC Access Controls               | 📋 Planned | Role-based access control (Admin, Reviewer, Viewer)                       |
+| 6   | 📤 SARIF / SAST Format Export         | 📋 Planned | Industry-standard security report formats for tool integration            |
+| 7   | 🔄 Automated Refactoring Bots         | 📋 Planned | Standalone agents that constantly submit PRs to clear tech-debt           |
 
 ---
 

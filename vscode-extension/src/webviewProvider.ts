@@ -1,67 +1,67 @@
-import * as vscode from "vscode";
+import * as vscode from 'vscode';
 
 export function escapeHtml(text: string): string {
   return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 function sanitizeHtml(html: string): string {
   return html
-    .replace(/javascript\s*:/gi, "blocked:")
-    .replace(/on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "data-blocked")
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
-    .replace(/<iframe\b[^>]*>/gi, "")
-    .replace(/<\/iframe>/gi, "")
-    .replace(/<embed\b[^>]*>/gi, "")
-    .replace(/<\/embed>/gi, "")
-    .replace(/<object\b[^>]*>/gi, "")
-    .replace(/<\/object>/gi, "");
+    .replace(/javascript\s*:/gi, 'blocked:')
+    .replace(/on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, 'data-blocked')
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<iframe\b[^>]*>/gi, '')
+    .replace(/<\/iframe>/gi, '')
+    .replace(/<embed\b[^>]*>/gi, '')
+    .replace(/<\/embed>/gi, '')
+    .replace(/<object\b[^>]*>/gi, '')
+    .replace(/<\/object>/gi, '');
 }
 
 function escapeHtmlPreserveBackticks(text: string): string {
   return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;")
-    .replace(/`/g, "&#96;");
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+    .replace(/`/g, '&#96;');
 }
 
 function formatInline(text: string): string {
   let escaped = escapeHtmlPreserveBackticks(text);
-  
+
   // bold
-  escaped = escaped.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-  
+  escaped = escaped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
   // italic
-  escaped = escaped.replace(/(?<!\*)\*(?!\*)(.*?)(?<!\*)\*(?!\*)/g, "<em>$1</em>");
-  
+  escaped = escaped.replace(/(?<!\*)\*(?!\*)(.*?)(?<!\*)\*(?!\*)/g, '<em>$1</em>');
+
   // links
-  escaped = escaped.replace(/\[(.*?)\]\((.*?)\)/g, "<a href=\"$2\">$1</a>");
-  
+  escaped = escaped.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>');
+
   // code
-  escaped = escaped.replace(/&#96;([^&#96;]+)&#96;/g, "<code>$1</code>");
-  
+  escaped = escaped.replace(/&#96;([^&#96;]+)&#96;/g, '<code>$1</code>');
+
   return escaped;
 }
 
 export function renderMarkdown(md: string): string {
-  const lines = md.split("\n");
-  let html = "";
+  const lines = md.split('\n');
+  let html = '';
   let inCodeBlock = false;
   let codeBuffer: string[] = [];
-  let codeLang = "";
+  let codeLang = '';
   let inTable = false;
 
   for (const line of lines) {
-    if (line.trimStart().startsWith("```")) {
+    if (line.trimStart().startsWith('```')) {
       if (inCodeBlock) {
-        const code = escapeHtml(codeBuffer.join("\n"));
+        const code = escapeHtml(codeBuffer.join('\n'));
         html += `<pre><code>${code}</code></pre>`;
         codeBuffer = [];
         inCodeBlock = false;
@@ -79,33 +79,36 @@ export function renderMarkdown(md: string): string {
 
     const trimmed = line.trim();
 
-    if (inTable && !trimmed.startsWith("|")) {
-      html += "</table>";
+    if (inTable && !trimmed.startsWith('|')) {
+      html += '</table>';
       inTable = false;
     }
 
-    if (line.startsWith("# ")) {
+    if (line.startsWith('# ')) {
       html += `<h1>${formatInline(line.slice(2))}</h1>`;
-    } else if (line.startsWith("## ")) {
+    } else if (line.startsWith('## ')) {
       html += `<h2>${formatInline(line.slice(3))}</h2>`;
-    } else if (line.startsWith("### ")) {
+    } else if (line.startsWith('### ')) {
       html += `<h3>${formatInline(line.slice(4))}</h3>`;
-    } else if (trimmed.startsWith("- ")) {
+    } else if (trimmed.startsWith('- ')) {
       html += `<li>${formatInline(trimmed.slice(2))}</li>`;
     } else if (/^\d+\.\s+/.test(trimmed)) {
       const match = trimmed.match(/^\d+\.\s+(.*)/);
-      html += `<li>${formatInline(match ? match[1] : "")}</li>`;
-    } else if (trimmed.startsWith("|")) {
+      html += `<li>${formatInline(match ? match[1] : '')}</li>`;
+    } else if (trimmed.startsWith('|')) {
       if (!inTable) {
         html += `<table>`;
         inTable = true;
       }
-      if (trimmed.includes("---")) {
+      if (trimmed.includes('---')) {
         continue;
       }
-      const cells = trimmed.split("|").map(c => c.trim()).filter((c, i, arr) => !(c === "" && (i === 0 || i === arr.length - 1)));
-      html += `<tr>${cells.map(c => `<td>${formatInline(c)}</td>`).join("")}</tr>`;
-    } else if (trimmed === "") {
+      const cells = trimmed
+        .split('|')
+        .map((c) => c.trim())
+        .filter((c, i, arr) => !(c === '' && (i === 0 || i === arr.length - 1)));
+      html += `<tr>${cells.map((c) => `<td>${formatInline(c)}</td>`).join('')}</tr>`;
+    } else if (trimmed === '') {
       html += `<div class="spacer"></div>`;
     } else {
       html += `<p>${formatInline(line)}</p>`;
@@ -113,11 +116,11 @@ export function renderMarkdown(md: string): string {
   }
 
   if (inTable) {
-    html += "</table>";
+    html += '</table>';
   }
 
   if (codeBuffer.length > 0) {
-    const code = escapeHtml(codeBuffer.join("\n"));
+    const code = escapeHtml(codeBuffer.join('\n'));
     html += `<pre><code>${code}</code></pre>`;
   }
 
@@ -125,13 +128,15 @@ export function renderMarkdown(md: string): string {
 }
 
 function getWebviewContent(markdown: string, isLoading: boolean, error: string | null): string {
-  const bodyContent = sanitizeHtml(error
-    ? `<div class="error-message">${escapeHtml(error)}</div>`
-    : isLoading
-    ? `<div class="loading"><div class="spinner"></div><span>Reviewing your code...</span></div>`
-    : markdown
-    ? renderMarkdown(markdown)
-    : `<div class="empty-state"><span class="empty-icon">🔍</span><p>Open a file and run <strong>RepoSage: Review Current File</strong> to see results here.</p></div>`);
+  const bodyContent = sanitizeHtml(
+    error
+      ? `<div class="error-message">${escapeHtml(error)}</div>`
+      : isLoading
+        ? `<div class="loading"><div class="spinner"></div><span>Reviewing your code...</span></div>`
+        : markdown
+          ? renderMarkdown(markdown)
+          : `<div class="empty-state"><span class="empty-icon">🔍</span><p>Open a file and run <strong>RepoSage: Review Current File</strong> to see results here.</p></div>`,
+  );
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -226,10 +231,10 @@ a:hover { text-decoration: underline; }
 }
 
 export class RepoSageWebviewProvider implements vscode.WebviewViewProvider {
-  public static readonly viewType = "reposage.sidebarView";
+  public static readonly viewType = 'reposage.sidebarView';
 
   private _view?: vscode.WebviewView;
-  private _markdown: string = "";
+  private _markdown: string = '';
   private _isLoading: boolean = false;
   private _error: string | null = null;
 
@@ -238,7 +243,7 @@ export class RepoSageWebviewProvider implements vscode.WebviewViewProvider {
   public resolveWebviewView(
     webviewView: vscode.WebviewView,
     _context: vscode.WebviewViewResolveContext,
-    _token: vscode.CancellationToken
+    _token: vscode.CancellationToken,
   ) {
     this._view = webviewView;
 
@@ -247,19 +252,11 @@ export class RepoSageWebviewProvider implements vscode.WebviewViewProvider {
       localResourceRoots: [this._extensionUri],
     };
 
-    webviewView.webview.html = getWebviewContent(
-      this._markdown,
-      this._isLoading,
-      this._error
-    );
+    webviewView.webview.html = getWebviewContent(this._markdown, this._isLoading, this._error);
 
     webviewView.onDidChangeVisibility(() => {
       if (webviewView.visible) {
-        webviewView.webview.html = getWebviewContent(
-          this._markdown,
-          this._isLoading,
-          this._error
-        );
+        webviewView.webview.html = getWebviewContent(this._markdown, this._isLoading, this._error);
       }
     });
   }
@@ -268,35 +265,27 @@ export class RepoSageWebviewProvider implements vscode.WebviewViewProvider {
     this._markdown = markdown;
     this._error = null;
     if (this._view) {
-      this._view.webview.html = getWebviewContent(
-        this._markdown,
-        this._isLoading,
-        null
-      );
+      this._view.webview.html = getWebviewContent(this._markdown, this._isLoading, null);
     }
   }
 
   public setLoading(loading: boolean) {
     this._isLoading = loading;
     if (loading) {
-      this._markdown = "";
+      this._markdown = '';
       this._error = null;
     }
     if (this._view) {
-      this._view.webview.html = getWebviewContent(
-        this._markdown,
-        this._isLoading,
-        this._error
-      );
+      this._view.webview.html = getWebviewContent(this._markdown, this._isLoading, this._error);
     }
   }
 
   public setError(error: string) {
     this._error = error;
-    this._markdown = "";
+    this._markdown = '';
     this._isLoading = false;
     if (this._view) {
-      this._view.webview.html = getWebviewContent("", false, error);
+      this._view.webview.html = getWebviewContent('', false, error);
     }
   }
 }

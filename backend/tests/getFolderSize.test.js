@@ -169,10 +169,7 @@ test('getFolderSize handles deeply nested directories', async () => {
     fs.writeFileSync(path.join(current, `file_l${i}.txt`), `content level ${i}`);
   }
 
-  const expectedSize = [1, 2, 3, 4, 5].reduce(
-    (sum, i) => sum + Buffer.byteLength(`content level ${i}`, 'utf8'),
-    0
-  );
+  const expectedSize = [1, 2, 3, 4, 5].reduce((sum, i) => sum + Buffer.byteLength(`content level ${i}`, 'utf8'), 0);
   const size = await getFolderSize(tempDir);
 
   assert.equal(size, expectedSize, 'Deep nesting should return sum of all file sizes');

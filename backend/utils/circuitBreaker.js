@@ -36,14 +36,14 @@ export class CircuitBreaker {
         this._halfOpenRequests = 0;
       } else {
         throw new CircuitBreakerOpenError(
-          `Circuit breaker is OPEN. Cooldown remaining: ${Math.ceil((this._cooldownMs - (now - this._lastFailureTime)) / 1000)}s`
+          `Circuit breaker is OPEN. Cooldown remaining: ${Math.ceil((this._cooldownMs - (now - this._lastFailureTime)) / 1000)}s`,
         );
       }
     }
 
     if (this._state === STATES.HALF_OPEN && this._halfOpenRequests >= this._halfOpenMaxRequests) {
       throw new CircuitBreakerOpenError(
-        `Circuit breaker is HALF_OPEN and max test requests (${this._halfOpenMaxRequests}) reached`
+        `Circuit breaker is HALF_OPEN and max test requests (${this._halfOpenMaxRequests}) reached`,
       );
     }
 

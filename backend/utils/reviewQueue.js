@@ -16,12 +16,15 @@ class ReviewQueue {
 
   _getCircuitBreaker(key) {
     if (!this._circuitBreakers.has(key)) {
-      this._circuitBreakers.set(key, new CircuitBreaker({
-        failureThreshold: 5,
-        cooldownMs: 30000,
-        halfOpenMaxRequests: 3,
-        timeoutMs: 10000,
-      }));
+      this._circuitBreakers.set(
+        key,
+        new CircuitBreaker({
+          failureThreshold: 5,
+          cooldownMs: 30000,
+          halfOpenMaxRequests: 3,
+          timeoutMs: 10000,
+        }),
+      );
       this._circuitBreakerTimestamps.set(key, Date.now());
     }
     this._circuitBreakerTimestamps.set(key, Date.now());
@@ -66,10 +69,13 @@ class ReviewQueue {
       }
       queue.push(item);
     });
-    this._queueLocks.set(key, next.catch(err => {
-      console.error(`ReviewQueue enqueue error for "${key}":`, err);
-    }));
-    return next.then(() => dropped ? false : this._processNext(key, processor));
+    this._queueLocks.set(
+      key,
+      next.catch((err) => {
+        console.error(`ReviewQueue enqueue error for "${key}":`, err);
+      }),
+    );
+    return next.then(() => (dropped ? false : this._processNext(key, processor)));
   }
 
   async _processNext(key, processor) {
@@ -95,11 +101,11 @@ class ReviewQueue {
               if (err.name === 'CircuitBreakerOpenError') {
                 const cooldownRemaining = Math.max(
                   (circuitBreaker._cooldownMs || 30000) - (Date.now() - circuitBreaker._lastFailureTime),
-                  0
+                  0,
                 );
                 console.error(
                   `ReviewQueue: circuit breaker OPEN for "${key}", ` +
-                  `waiting ${Math.ceil(cooldownRemaining / 1000)}s before retry`
+                    `waiting ${Math.ceil(cooldownRemaining / 1000)}s before retry`,
                 );
 
                 if (queue.length > 0) {
@@ -107,16 +113,22 @@ class ReviewQueue {
                   break;
                 }
 
-                await new Promise(r => setTimeout(r, cooldownRemaining + 1000));
+                await new Promise((r) => setTimeout(r, cooldownRemaining + 1000));
                 queue.unshift(item);
                 break;
               }
               if (attempt < this._maxRetries) {
                 const delay = Math.pow(2, attempt) * 1000;
-                console.warn(`ReviewQueue: retry ${attempt + 1}/${this._maxRetries} for "${key}" in ${delay}ms:`, err.message);
-                await new Promise(r => setTimeout(r, delay));
+                console.warn(
+                  `ReviewQueue: retry ${attempt + 1}/${this._maxRetries} for "${key}" in ${delay}ms:`,
+                  err.message,
+                );
+                await new Promise((r) => setTimeout(r, delay));
               } else {
-                console.error(`ReviewQueue: item permanently failed for "${key}" after ${this._maxRetries + 1} attempts:`, err);
+                console.error(
+                  `ReviewQueue: item permanently failed for "${key}" after ${this._maxRetries + 1} attempts:`,
+                  err,
+                );
                 circuitBreaker.onFailure();
                 permanentlyFailed = true;
               }
@@ -136,9 +148,12 @@ class ReviewQueue {
           this._queues.delete(key);
         }
       });
-    this._queueLocks.set(key, next.catch(err => {
-      console.error(`ReviewQueue processing error for "${key}":`, err);
-    }));
+    this._queueLocks.set(
+      key,
+      next.catch((err) => {
+        console.error(`ReviewQueue processing error for "${key}":`, err);
+      }),
+    );
     return next;
   }
 

@@ -7,6 +7,6 @@ export const llmAnalysisLimiter = rateLimit({
   legacyHeaders: false,
   message: {
     success: false,
-    error: "Too many analysis requests from this IP, please try again after 15 minutes."
-  }
+    error: 'Too many analysis requests from this IP, please try again after 15 minutes.',
+  },
 });

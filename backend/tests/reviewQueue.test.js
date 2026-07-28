@@ -21,7 +21,9 @@ test('enqueue creates a queue for a new key and stores the item', async () => {
 test('enqueue returns a promise that resolves after processing', async () => {
   const queue = new ReviewQueue();
   let resolved = false;
-  const processor = async () => { resolved = true; };
+  const processor = async () => {
+    resolved = true;
+  };
 
   const p = queue.enqueue('key1', 'item', processor);
   assert.ok(p instanceof Promise, 'enqueue should return a promise');
@@ -178,12 +180,14 @@ test('enqueue with empty item list does not crash', async () => {
 test('items are processed in FIFO order', async () => {
   const queue = new ReviewQueue();
   const results = [];
-  const processor = async (item) => { results.push(item); };
+  const processor = async (item) => {
+    results.push(item);
+  };
 
   for (let i = 0; i < 5; i++) {
     queue.enqueue('key1', i, processor);
   }
 
-  await new Promise(r => setTimeout(r, 100));
+  await new Promise((r) => setTimeout(r, 100));
   assert.deepEqual(results, [0, 1, 2, 3, 4], 'items should be processed in FIFO order');
 });

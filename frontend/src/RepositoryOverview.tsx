@@ -13,17 +13,17 @@ interface Props {
 }
 
 const LANG_COLORS: Record<string, string> = {
-  ts:    '#3178c6',
-  tsx:   '#3178c6',
-  js:    '#f7df1e',
-  jsx:   '#f7df1e',
-  py:    '#3776ab',
-  css:   '#264de4',
-  html:  '#e34c26',
-  json:  '#6b7280',
-  md:    '#10b981',
-  yml:   '#a855f7',
-  yaml:  '#a855f7',
+  ts: '#3178c6',
+  tsx: '#3178c6',
+  js: '#f7df1e',
+  jsx: '#f7df1e',
+  py: '#3776ab',
+  css: '#264de4',
+  html: '#e34c26',
+  json: '#6b7280',
+  md: '#10b981',
+  yml: '#a855f7',
+  yaml: '#a855f7',
   other: '#9ca3af',
 };
 
@@ -32,15 +32,14 @@ function getLangColor(ext: string, index: number): string {
 }
 
 const RepositoryOverview: React.FC<Props> = ({ files }) => {
-
   const totalStats = files.reduce(
     (acc, file) => ({
-      totalLines:   acc.totalLines   + file.totalLines,
-      codeLines:    acc.codeLines    + file.codeLines,
+      totalLines: acc.totalLines + file.totalLines,
+      codeLines: acc.codeLines + file.codeLines,
       commentLines: acc.commentLines + file.commentLines,
-      emptyLines:   acc.emptyLines   + file.emptyLines,
+      emptyLines: acc.emptyLines + file.emptyLines,
     }),
-    { totalLines: 0, codeLines: 0, commentLines: 0, emptyLines: 0 }
+    { totalLines: 0, codeLines: 0, commentLines: 0, emptyLines: 0 },
   );
 
   const langMap: Record<string, number> = {};
@@ -50,7 +49,7 @@ const RepositoryOverview: React.FC<Props> = ({ files }) => {
   });
 
   const totalFiles = files.length || 1;
-  const safeTotal  = totalStats.totalLines || 1;
+  const safeTotal = totalStats.totalLines || 1;
 
   const langStats = Object.entries(langMap)
     .map(([ext, count], i) => ({
@@ -61,9 +60,9 @@ const RepositoryOverview: React.FC<Props> = ({ files }) => {
     }))
     .sort((a, b) => b.count - a.count);
 
-  const codePct    = Math.round((totalStats.codeLines    / safeTotal) * 100);
+  const codePct = Math.round((totalStats.codeLines / safeTotal) * 100);
   const commentPct = Math.round((totalStats.commentLines / safeTotal) * 100);
-  const emptyPct   = Math.max(0, 100 - codePct - commentPct);
+  const emptyPct = Math.max(0, 100 - codePct - commentPct);
 
   return (
     <div
@@ -123,9 +122,9 @@ const RepositoryOverview: React.FC<Props> = ({ files }) => {
         {/* Summary stat pills */}
         <div className="summary-pills">
           {[
-            { label: 'Files',       value: files.length,                          color: '#60a5fa' },
+            { label: 'Files', value: files.length, color: '#60a5fa' },
             { label: 'Total Lines', value: totalStats.totalLines.toLocaleString(), color: '#22c55e' },
-            { label: 'Code Lines',  value: totalStats.codeLines.toLocaleString(),  color: '#a855f7' },
+            { label: 'Code Lines', value: totalStats.codeLines.toLocaleString(), color: '#a855f7' },
           ].map((s) => (
             <div
               key={s.label}
@@ -138,10 +137,15 @@ const RepositoryOverview: React.FC<Props> = ({ files }) => {
                 minWidth: '70px',
               }}
             >
-              <span style={{ fontSize: '16px', fontWeight: 800, color: s.color, display: 'block' }}>
-                {s.value}
-              </span>
-              <span style={{ fontSize: '9px', color: 'var(--subtext-color, #9ca3af)', fontWeight: 600, textTransform: 'uppercase' }}>
+              <span style={{ fontSize: '16px', fontWeight: 800, color: s.color, display: 'block' }}>{s.value}</span>
+              <span
+                style={{
+                  fontSize: '9px',
+                  color: 'var(--subtext-color, #9ca3af)',
+                  fontWeight: 600,
+                  textTransform: 'uppercase',
+                }}
+              >
                 {s.label}
               </span>
             </div>
@@ -151,7 +155,6 @@ const RepositoryOverview: React.FC<Props> = ({ files }) => {
 
       {/* ── Two Column Grid (responsive → 1 col on mobile) ──────────────────────── */}
       <div className="repo-overview-grid">
-
         {/* LEFT: File Type Distribution */}
         <div className="chart-sub-panel">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
@@ -210,9 +213,7 @@ const RepositoryOverview: React.FC<Props> = ({ files }) => {
                   }}
                 />
                 <span style={{ fontSize: '10px', color: 'var(--subtext-color, #9ca3af)', fontWeight: 600 }}>
-                  {lang.ext.toUpperCase()}{' '}
-                  <span style={{ color: 'var(--text-color, #f3f4f6)' }}>{lang.pct}%</span>
-                  {' '}
+                  {lang.ext.toUpperCase()} <span style={{ color: 'var(--text-color, #f3f4f6)' }}>{lang.pct}%</span>{' '}
                   <span style={{ fontWeight: 400 }}>({lang.count})</span>
                 </span>
               </div>
@@ -249,17 +250,36 @@ const RepositoryOverview: React.FC<Props> = ({ files }) => {
               marginBottom: '10px',
             }}
           >
-            <div style={{ height: '100%', width: `${codePct}%`,    background: '#3b82f6', transition: 'width 0.6s ease-out' }} title={`Code: ${codePct}%`} />
-            <div style={{ height: '100%', width: `${commentPct}%`, background: '#22c55e', transition: 'width 0.6s ease-out' }} title={`Comments: ${commentPct}%`} />
-            <div style={{ height: '100%', width: `${emptyPct}%`,   background: '#94a3b8', transition: 'width 0.6s ease-out' }} title={`Empty: ${emptyPct}%`} />
+            <div
+              style={{ height: '100%', width: `${codePct}%`, background: '#3b82f6', transition: 'width 0.6s ease-out' }}
+              title={`Code: ${codePct}%`}
+            />
+            <div
+              style={{
+                height: '100%',
+                width: `${commentPct}%`,
+                background: '#22c55e',
+                transition: 'width 0.6s ease-out',
+              }}
+              title={`Comments: ${commentPct}%`}
+            />
+            <div
+              style={{
+                height: '100%',
+                width: `${emptyPct}%`,
+                background: '#94a3b8',
+                transition: 'width 0.6s ease-out',
+              }}
+              title={`Empty: ${emptyPct}%`}
+            />
           </div>
 
           {/* 3 Stat Boxes */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '10px' }}>
             {[
-              { label: 'Code',     value: totalStats.codeLines,   pct: codePct,    color: '#3b82f6' },
+              { label: 'Code', value: totalStats.codeLines, pct: codePct, color: '#3b82f6' },
               { label: 'Comments', value: totalStats.commentLines, pct: commentPct, color: '#22c55e' },
-              { label: 'Empty',    value: totalStats.emptyLines,   pct: emptyPct,   color: '#94a3b8' },
+              { label: 'Empty', value: totalStats.emptyLines, pct: emptyPct, color: '#94a3b8' },
             ].map((s) => (
               <div
                 key={s.label}
@@ -272,10 +292,16 @@ const RepositoryOverview: React.FC<Props> = ({ files }) => {
                   minWidth: 0,
                 }}
               >
-                <span style={{ fontSize: '16px', fontWeight: 800, color: s.color, display: 'block' }}>
-                  {s.pct}%
-                </span>
-                <span style={{ fontSize: '9px', fontWeight: 700, color: 'var(--subtext-color, #9ca3af)', textTransform: 'uppercase', display: 'block' }}>
+                <span style={{ fontSize: '16px', fontWeight: 800, color: s.color, display: 'block' }}>{s.pct}%</span>
+                <span
+                  style={{
+                    fontSize: '9px',
+                    fontWeight: 700,
+                    color: 'var(--subtext-color, #9ca3af)',
+                    textTransform: 'uppercase',
+                    display: 'block',
+                  }}
+                >
                   {s.label}
                 </span>
                 <span style={{ fontSize: '9px', color: 'var(--subtext-color, #9ca3af)' }}>
@@ -288,9 +314,9 @@ const RepositoryOverview: React.FC<Props> = ({ files }) => {
           {/* Legend Row */}
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
             {[
-              { label: 'Code',     color: '#3b82f6' },
+              { label: 'Code', color: '#3b82f6' },
               { label: 'Comments', color: '#22c55e' },
-              { label: 'Empty',    color: '#94a3b8' },
+              { label: 'Empty', color: '#94a3b8' },
             ].map((s) => (
               <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <div style={{ width: '8px', height: '8px', borderRadius: '2px', background: s.color }} />
@@ -301,7 +327,6 @@ const RepositoryOverview: React.FC<Props> = ({ files }) => {
             ))}
           </div>
         </div>
-
       </div>
     </div>
   );

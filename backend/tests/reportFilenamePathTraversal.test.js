@@ -12,7 +12,11 @@ import assert from 'node:assert/strict';
 // Helper function that mirrors the sanitization logic in backend/index.js
 function sanitizeFilename(repoName) {
   let str = String(repoName);
-  try { str = decodeURIComponent(str); } catch { /* keep original */ }
+  try {
+    str = decodeURIComponent(str);
+  } catch {
+    /* keep original */
+  }
   str = str.normalize('NFKC');
   str = str.replace(/\0/g, '');
   str = str.replace(/[/\\]+/g, '/').replace(/\.\.\/|\.\\/g, '');
@@ -77,7 +81,7 @@ test('sanitizeFilename: prevents header injection via carriage return and newlin
   const sanitized = sanitizeFilename(crlfPayload);
   assert.ok(
     !sanitized.includes(String.fromCharCode(13)) && !sanitized.includes(String.fromCharCode(10)),
-    'Should remove CR/LF characters'
+    'Should remove CR/LF characters',
   );
 });
 

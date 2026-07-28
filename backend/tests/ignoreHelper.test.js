@@ -42,11 +42,11 @@ test('readFilesRecursively should list valid files and respect ignore list', () 
   if (!fs.existsSync(tempDir)) {
     fs.mkdirSync(tempDir);
   }
-  
+
   // Create directories
   fs.mkdirSync(path.join(tempDir, 'src'));
   fs.mkdirSync(path.join(tempDir, 'node_modules'));
-  
+
   // Create files
   fs.writeFileSync(path.join(tempDir, 'src', 'main.js'), 'console.log("hello");');
   fs.writeFileSync(path.join(tempDir, 'src', 'style.css'), 'body {}');
@@ -54,7 +54,7 @@ test('readFilesRecursively should list valid files and respect ignore list', () 
   fs.writeFileSync(path.join(tempDir, 'ignored.log'), 'logs');
 
   const files = readFilesRecursively(tempDir, [], tempDir, ['*.log']);
-  const fileNames = files.map(f => f.name);
+  const fileNames = files.map((f) => f.name);
 
   // Should include src/main.js and src/style.css
   assert.ok(fileNames.includes('src/main.js'));
@@ -91,7 +91,7 @@ test('readFilesRecursively should skip files exceeding 100KB limit', () => {
 
   const skippedFiles = [];
   const files = readFilesRecursively(tempDir, [], tempDir, [], 0, skippedFiles);
-  const fileNames = files.map(f => f.name);
+  const fileNames = files.map((f) => f.name);
 
   // Should include small.js
   assert.ok(fileNames.includes('small.js'));
@@ -109,4 +109,3 @@ test('readFilesRecursively should skip files exceeding 100KB limit', () => {
   fs.unlinkSync(largeFilePath);
   fs.rmdirSync(tempDir);
 });
-

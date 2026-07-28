@@ -19,11 +19,11 @@ test('readFilesRecursively should include .json files', () => {
   fs.writeFileSync(path.join(tempDir, 'package.json'), '{"name": "test"}');
 
   const files = readFilesRecursively(tempDir, [], tempDir, []);
-  const fileNames = files.map(f => f.name);
+  const fileNames = files.map((f) => f.name);
 
   assert.ok(fileNames.includes('config.json'), 'config.json should be included');
   assert.ok(fileNames.includes('package.json'), 'package.json should be included');
-  const jsonFiles = files.filter(f => f.name.endsWith('.json'));
+  const jsonFiles = files.filter((f) => f.name.endsWith('.json'));
   assert.equal(jsonFiles.length, 2, 'Should include exactly 2 .json files');
 
   // Clean up
@@ -43,11 +43,11 @@ test('readFilesRecursively should include .yaml and .yml files', () => {
   fs.writeFileSync(path.join(tempDir, 'settings.yml'), 'debug: true');
 
   const files = readFilesRecursively(tempDir, [], tempDir, []);
-  const fileNames = files.map(f => f.name);
+  const fileNames = files.map((f) => f.name);
 
   assert.ok(fileNames.includes('config.yaml'), 'config.yaml should be included');
   assert.ok(fileNames.includes('settings.yml'), 'settings.yml should be included');
-  const yamlFiles = files.filter(f => f.name.endsWith('.yaml') || f.name.endsWith('.yml'));
+  const yamlFiles = files.filter((f) => f.name.endsWith('.yaml') || f.name.endsWith('.yml'));
   assert.equal(yamlFiles.length, 2, 'Should include exactly 2 yaml/yml files');
 
   // Clean up
@@ -71,11 +71,23 @@ test('readFilesRecursively should not include unsupported file extensions', () =
 
   // We expect these NOT to be in validExtensions, so they won't be included
   const files = readFilesRecursively(tempDir, [], tempDir, []);
-  const fileNames = files.map(f => f.name);
+  const fileNames = files.map((f) => f.name);
 
-  assert.equal(fileNames.some(f => f.endsWith('.md')), false, '.md files should not be included');
-  assert.equal(fileNames.some(f => f.endsWith('.xml')), false, '.xml files should not be included');
-  assert.equal(fileNames.some(f => f.endsWith('.txt')), false, '.txt files should not be included');
+  assert.equal(
+    fileNames.some((f) => f.endsWith('.md')),
+    false,
+    '.md files should not be included',
+  );
+  assert.equal(
+    fileNames.some((f) => f.endsWith('.xml')),
+    false,
+    '.xml files should not be included',
+  );
+  assert.equal(
+    fileNames.some((f) => f.endsWith('.txt')),
+    false,
+    '.txt files should not be included',
+  );
 
   // Clean up
   fs.unlinkSync(path.join(tempDir, 'readme.md'));

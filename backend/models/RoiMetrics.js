@@ -1,28 +1,31 @@
 import mongoose from 'mongoose';
 
-const roiMetricsSchema = new mongoose.Schema({
-  repoName: {
-    type: String,
-    required: true,
-    index: true,
+const roiMetricsSchema = new mongoose.Schema(
+  {
+    repoName: {
+      type: String,
+      required: true,
+      index: true,
+    },
+    totalPrsReviewed: {
+      type: Number,
+      default: 0,
+    },
+    totalAiComments: {
+      type: Number,
+      default: 0,
+    },
+    acceptedSuggestions: {
+      type: Number,
+      default: 0,
+    },
+    timeSavedMinutes: {
+      type: Number,
+      default: 0,
+    },
   },
-  totalPrsReviewed: {
-    type: Number,
-    default: 0,
-  },
-  totalAiComments: {
-    type: Number,
-    default: 0,
-  },
-  acceptedSuggestions: {
-    type: Number,
-    default: 0,
-  },
-  timeSavedMinutes: {
-    type: Number,
-    default: 0,
-  },
-}, { timestamps: true });
+  { timestamps: true },
+);
 
 // Static method to upsert metrics for a repository
 roiMetricsSchema.statics.recordPrReview = async function (repoName, commentsCount) {
@@ -31,10 +34,10 @@ roiMetricsSchema.statics.recordPrReview = async function (repoName, commentsCoun
     {
       $inc: {
         totalPrsReviewed: 1,
-        totalAiComments: commentsCount
-      }
+        totalAiComments: commentsCount,
+      },
     },
-    { new: true, upsert: true }
+    { new: true, upsert: true },
   );
 };
 
@@ -45,10 +48,10 @@ roiMetricsSchema.statics.recordAcceptedSuggestion = async function (repoName) {
     {
       $inc: {
         acceptedSuggestions: 1,
-        timeSavedMinutes: 15
-      }
+        timeSavedMinutes: 15,
+      },
     },
-    { new: true, upsert: true }
+    { new: true, upsert: true },
   );
 };
 

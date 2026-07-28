@@ -6,7 +6,8 @@ let content = fs.readFileSync(file, 'utf8');
 // and ends after `You must obey the JSON output format above."""`
 // The `try:` block that follows should be INSIDE `_call_llm`.
 
-const regex = /async def _call_llm\(system_prompt: str, user_prompt: str\) -> dict:[\s\S]*?You must obey the JSON output format above\."""\n\n\s*try:\n\s*async with groq_semaphore:\n\s*completion = await _call_groq_with_timeout\(([\s\S]*?)\n\s*\)\n\s*response_content = completion\.choices\[0\]\.message\.content\n\s*if not response_content:\n\s*raise HTTPException\(status_code=502, detail="Groq returned an empty or filtered response\. The input may have been blocked by safety filters\."\)\n\s*try:\n\s*batch_result = await run_batch_pipeline\(/;
+const regex =
+  /async def _call_llm\(system_prompt: str, user_prompt: str\) -> dict:[\s\S]*?You must obey the JSON output format above\."""\n\n\s*try:\n\s*async with groq_semaphore:\n\s*completion = await _call_groq_with_timeout\(([\s\S]*?)\n\s*\)\n\s*response_content = completion\.choices\[0\]\.message\.content\n\s*if not response_content:\n\s*raise HTTPException\(status_code=502, detail="Groq returned an empty or filtered response\. The input may have been blocked by safety filters\."\)\n\s*try:\n\s*batch_result = await run_batch_pipeline\(/;
 
 const replacement = `async def _call_llm(system_prompt: str, user_prompt: str) -> dict:
             try:
@@ -37,4 +38,4 @@ const replacement = `async def _call_llm(system_prompt: str, user_prompt: str) -
 
 content = content.replace(regex, replacement);
 fs.writeFileSync(file, content);
-console.log("Fixed app.py");
+console.log('Fixed app.py');

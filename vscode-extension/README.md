@@ -31,10 +31,10 @@ AI-powered code review assistant that analyzes your code for bugs, security vuln
 
 ## Extension Settings
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `reposage.apiUrl` | `http://localhost:5000` | RepoSage backend API base URL |
-| `reposage.apiKey` | `""` | API key for RepoSage backend authentication |
+| Setting           | Default                 | Description                                 |
+| ----------------- | ----------------------- | ------------------------------------------- |
+| `reposage.apiUrl` | `http://localhost:5000` | RepoSage backend API base URL               |
+| `reposage.apiKey` | `""`                    | API key for RepoSage backend authentication |
 
 ## Development
 

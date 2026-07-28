@@ -1,10 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {
-  severityToGitHubLevel,
-  formatAnnotations,
-  batchAnnotations,
-} from '../utils/githubChecksIntegration.js';
+import { severityToGitHubLevel, formatAnnotations, batchAnnotations } from '../utils/githubChecksIntegration.js';
 
 test('severityToGitHubLevel maps known severities correctly', () => {
   assert.equal(severityToGitHubLevel('error'), 'failure');

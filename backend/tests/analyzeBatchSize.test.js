@@ -52,8 +52,8 @@ test('parseInt parses leading digits from mixed strings', () => {
   // parseInt extracts the leading integer from mixed alphanumeric strings
   assert.equal(normalizeBatchSize('10abc'), 10);
   assert.equal(normalizeBatchSize('7xyz'), 7);
-  assert.equal(normalizeBatchSize('50abc'), 20);  // 50 clamped to 20
-  assert.equal(normalizeBatchSize('2.9'), 2);      // decimal truncated to 2
+  assert.equal(normalizeBatchSize('50abc'), 20); // 50 clamped to 20
+  assert.equal(normalizeBatchSize('2.9'), 2); // decimal truncated to 2
 });
 
 test('NaN and Infinity fall back to 5 via || 5', () => {
@@ -71,12 +71,12 @@ test('null and undefined fall back to 5', () => {
 });
 
 test('floating-point numbers are truncated by parseInt then clamped', () => {
-  assert.equal(normalizeBatchSize(3.7), 3);    // parseInt truncates to 3
+  assert.equal(normalizeBatchSize(3.7), 3); // parseInt truncates to 3
   assert.equal(normalizeBatchSize(3.1), 3);
-  assert.equal(normalizeBatchSize(0.9), 5);    // parseInt(0.9) = 0, falsy → || 5
-  assert.equal(normalizeBatchSize(19.9), 19);  // within range
-  assert.equal(normalizeBatchSize(20.5), 20);  // within range
-  assert.equal(normalizeBatchSize(21.1), 20);  // parsed as 21, clamped to 20
+  assert.equal(normalizeBatchSize(0.9), 5); // parseInt(0.9) = 0, falsy → || 5
+  assert.equal(normalizeBatchSize(19.9), 19); // within range
+  assert.equal(normalizeBatchSize(20.5), 20); // within range
+  assert.equal(normalizeBatchSize(21.1), 20); // parsed as 21, clamped to 20
 });
 
 test('leading zeros are handled correctly', () => {

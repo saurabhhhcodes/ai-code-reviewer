@@ -20,7 +20,7 @@ const IPYTHON_MAGIC_PATTERNS = [
 function stripMagicCommands(code) {
   if (typeof code !== 'string') return '';
   const lines = code.split('\n');
-  const cleanedLines = lines.map(line => {
+  const cleanedLines = lines.map((line) => {
     const trimmed = line.trim();
     // Exclude single-char formats like %s by requiring at least 2 chars after % for magics
     const isMagic = /^(?:%{1,2}[a-zA-Z_][a-zA-Z0-9_]+|!).*$/.test(trimmed);
@@ -68,7 +68,7 @@ function extractCodeCells(notebookPath) {
 
 function hasCodeContent(cleanedCode) {
   const lines = cleanedCode.split('\n');
-  return lines.some(line => {
+  return lines.some((line) => {
     const trimmed = line.trim();
     return trimmed.length > 0 && !trimmed.startsWith('#');
   });
@@ -124,16 +124,10 @@ function isNotebookFile(filePath) {
 }
 
 function formatNotebookFindings(findings, cellIndex) {
-  return findings.map(finding => ({
+  return findings.map((finding) => ({
     ...finding,
     cellContext: `Cell ${cellIndex}`,
   }));
 }
 
-export {
-  stripMagicCommands,
-  extractCodeCells,
-  parseCellsWithMetadata,
-  isNotebookFile,
-  formatNotebookFindings,
-};
+export { stripMagicCommands, extractCodeCells, parseCellsWithMetadata, isNotebookFile, formatNotebookFindings };

@@ -35,10 +35,7 @@ function makeFakeRedis() {
 }
 
 test('reviewTrackerKey builds a stable, namespaced key', () => {
-  assert.equal(
-    reviewTrackerKey('acme', 'widgets', 42),
-    'webhook:lastReview:acme/widgets/#42'
-  );
+  assert.equal(reviewTrackerKey('acme', 'widgets', 42), 'webhook:lastReview:acme/widgets/#42');
 });
 
 test('getPriorReviewIds returns [] when nothing stored', async () => {

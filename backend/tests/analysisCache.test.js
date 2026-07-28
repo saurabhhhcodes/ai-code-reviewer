@@ -26,7 +26,7 @@ test('AnalysisCache: generates consistent cache keys for identical inputs', () =
   const repoUrl = 'https://github.com/user/repo';
   const files = [
     { name: 'file1.js', content: 'console.log("test");' },
-    { name: 'file2.js', content: 'const x = 1;' }
+    { name: 'file2.js', content: 'const x = 1;' },
   ];
   const params = { model: 'llama-3.3-70b-versatile', language: 'English' };
 
@@ -134,9 +134,9 @@ test('AnalysisCache: getStats() returns cache metrics', () => {
   const result = { fileReviews: {} };
 
   cache.set(key, result);
-  cache.get(key);  // Hit
-  cache.get(key);  // Hit
-  cache.get('other-key');  // Miss
+  cache.get(key); // Hit
+  cache.get(key); // Hit
+  cache.get('other-key'); // Miss
 
   const stats = cache.getStats();
 
@@ -184,7 +184,7 @@ test('AnalysisCache: realistic workflow - cache prevents redundant LLM calls', (
   const repoUrl = 'https://github.com/example/project';
   const files = [
     { name: 'index.js', content: 'const app = require("express")();' },
-    { name: 'server.js', content: 'app.listen(3000);' }
+    { name: 'server.js', content: 'app.listen(3000);' },
   ];
   const params = { model: 'llama-3.3-70b-versatile', language: 'English' };
 
@@ -198,8 +198,8 @@ test('AnalysisCache: realistic workflow - cache prevents redundant LLM calls', (
     result = {
       fileReviews: {
         'index.js': { bugs: ['missing error handling'] },
-        'server.js': { security: ['no HTTPS'] }
-      }
+        'server.js': { security: ['no HTTPS'] },
+      },
     };
     cache.set(cacheKey, result);
   }
@@ -209,7 +209,7 @@ test('AnalysisCache: realistic workflow - cache prevents redundant LLM calls', (
   result = cache.get(cacheKey);
   if (!result) {
     llmCallCount++;
-    result = { /* would be LLM result */ };
+    result = {/* would be LLM result */};
     cache.set(cacheKey, result);
   }
   assert.equal(llmCallCount, 1, 'Should not call LLM for cached analysis');
@@ -306,18 +306,18 @@ test('AnalysisCache: setMaxEntries does nothing if cache is already below new li
 test('AnalysisCache: sliding TTL for mock entries uses mockTtlMs', () => {
   const cache = new AnalysisCache(3600000, 2, 5000); // ttlMs = 1 hour, mockTtlMs = 5 seconds
   const key = 'mock-key';
-  
+
   cache.set(key, { data: 'mock' }, { isMock: true });
-  
+
   const entryBefore = cache.cache.get(key);
   const originalExpiresAt = entryBefore.expiresAt;
-  
+
   // Trigger cache hit
   cache.get(key);
-  
+
   const entryAfter = cache.cache.get(key);
   const diff = entryAfter.expiresAt - originalExpiresAt;
-  
+
   // Since we did cache get immediately, the new expiresAt should be approximately
   // now + mockTtlMs. The difference from originalExpiresAt should be minimal (close to 0)
   // rather than ~3600000ms (which would happen if it used ttlMs).
@@ -328,7 +328,7 @@ test('AnalysisCache: sweeper evicts expired keys from _repoUrlIndex and cleans e
   const cache = new AnalysisCache(20); // 20ms TTL
   const repo = 'https://github.com/owner/repo-sweeper';
   const key = cache.generateKey(repo, [{ name: 'file.js', content: 'content' }]);
-  
+
   // Set entry
   cache.set(key, { data: 123 }, { repoUrl: repo });
   assert.equal(cache._repoUrlIndex.has(repo), true);
@@ -339,10 +339,10 @@ test('AnalysisCache: sweeper evicts expired keys from _repoUrlIndex and cleans e
   cache._startSweeper(10);
 
   // Wait for eviction
-  await new Promise(resolve => setTimeout(resolve, 50));
+  await new Promise((resolve) => setTimeout(resolve, 50));
 
   assert.equal(cache.cache.has(key), false, 'Cache key should be deleted');
   assert.equal(cache._repoUrlIndex.has(repo), false, 'Empty Set should be deleted from index map');
-  
+
   cache._stopSweeper();
 });

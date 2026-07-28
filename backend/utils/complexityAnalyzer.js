@@ -10,7 +10,7 @@ export function analyzeComplexity(fileContent, filePath) {
       codeLines: 0,
       functionCount: 0,
       complexityScore: 0,
-      grade: 'A'
+      grade: 'A',
     };
   }
 
@@ -30,12 +30,12 @@ export function analyzeComplexity(fileContent, filePath) {
   // Languages that use C-style block comments /* ... */
   const cStyleExts = ['.js', '.jsx', '.ts', '.tsx', '.java', '.cpp', '.h', '.cs', '.go', '.rs', '.php', '.css'];
   const usesCStyleBlocks = cStyleExts.includes(ext);
-  const usesHtmlBlocks = (ext === '.html');
+  const usesHtmlBlocks = ext === '.html';
   let inBlockComment = false;
   let inPyBlockComment = false;
   let pyBlockQuoteChar = null;
 
-  lines.forEach(line => {
+  lines.forEach((line) => {
     const trimmed = line.trim();
 
     // Empty line detection
@@ -139,10 +139,14 @@ export function analyzeComplexity(fileContent, filePath) {
     codeWithoutStrings = codeWithoutStrings
       .replace(/"[^"\\]*(?:\\.[^"\\]*)*"/g, '""')
       .replace(/'[^'\\]*(?:\\.[^'\\]*)*'/g, "''")
-      .replace(/`[^`\\]*(?:\\.[^`\\]*)*`/g, "``");
+      .replace(/`[^`\\]*(?:\\.[^`\\]*)*`/g, '``');
 
     if (['.js', '.jsx', '.ts', '.tsx'].includes(ext)) {
-      if (codeWithoutStrings.includes('function ') || codeWithoutStrings.includes('=>') || /^\s*(?:async\s+)?(?!(?:if|for|while|switch|catch)\b)\w+\s*\([^)]*\)\s*\{/.test(codeWithoutStrings)) {
+      if (
+        codeWithoutStrings.includes('function ') ||
+        codeWithoutStrings.includes('=>') ||
+        /^\s*(?:async\s+)?(?!(?:if|for|while|switch|catch)\b)\w+\s*\([^)]*\)\s*\{/.test(codeWithoutStrings)
+      ) {
         functionCount++;
       }
     } else if (ext === '.py') {
@@ -154,7 +158,11 @@ export function analyzeComplexity(fileContent, filePath) {
         functionCount++;
       }
     } else if (['.java', '.cpp', '.cs'].includes(ext)) {
-      if (/(?:public|private|protected|static|(?!(?:if|else|for|while|switch|catch)\b)\w+)\s+(?!(?:if|else|for|while|switch|catch)\b)\w+\s*\([^)]*\)\s*(?:\{|const)?/.test(codeWithoutStrings)) {
+      if (
+        /(?:public|private|protected|static|(?!(?:if|else|for|while|switch|catch)\b)\w+)\s+(?!(?:if|else|for|while|switch|catch)\b)\w+\s*\([^)]*\)\s*(?:\{|const)?/.test(
+          codeWithoutStrings,
+        )
+      ) {
         functionCount++;
       }
     }
@@ -173,7 +181,29 @@ export function analyzeComplexity(fileContent, filePath) {
 
     const operandRegex = /\b([a-zA-Z0-9_]+)\b/g;
     const matchOperands = codeWithoutStrings.match(operandRegex);
-    const keywords = new Set(['if', 'else', 'for', 'while', 'case', 'catch', 'switch', 'return', 'function', 'class', 'const', 'let', 'var', 'import', 'export', 'default', 'true', 'false', 'null', 'undefined', 'new']);
+    const keywords = new Set([
+      'if',
+      'else',
+      'for',
+      'while',
+      'case',
+      'catch',
+      'switch',
+      'return',
+      'function',
+      'class',
+      'const',
+      'let',
+      'var',
+      'import',
+      'export',
+      'default',
+      'true',
+      'false',
+      'null',
+      'undefined',
+      'new',
+    ]);
     if (matchOperands) {
       for (const op of matchOperands) {
         if (!keywords.has(op)) {
@@ -185,8 +215,8 @@ export function analyzeComplexity(fileContent, filePath) {
   });
 
   const codeLines = totalLines - emptyLines - commentLines;
-  const complexityScore = Math.round((totalLines / 25) + (functionCount * 3));
-  
+  const complexityScore = Math.round(totalLines / 25 + functionCount * 3);
+
   const N = operatorsCount + operandsCount;
   const n = (uniqueOperators.size || 1) + (uniqueOperands.size || 1);
   const halsteadComplexity = Math.round(N * Math.log2(n) * 0.1) || 0; // scaled down to fit standard score ranges
@@ -206,6 +236,6 @@ export function analyzeComplexity(fileContent, filePath) {
     complexityScore,
     cyclomaticComplexity,
     halsteadComplexity,
-    grade
+    grade,
   };
 }

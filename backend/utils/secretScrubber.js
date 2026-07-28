@@ -15,7 +15,7 @@ const SECRET_DETECTION_RULES = [
   /(?:api[_\-]?key|secret[_\-]?key|auth[_\-]?token|access[_\-]?token)['"]?\s*[:=]\s*['"]?([a-zA-Z0-9\-_]{20,})['"]?/gi,
 
   // Generic Bearer Authorization Tokens (require Authorization header context)
-  /(?:Authorization|authorization|auth)\s*:\s*Bearer\s+([a-zA-Z0-9\-_.=~+]{20,})\b/gi
+  /(?:Authorization|authorization|auth)\s*:\s*Bearer\s+([a-zA-Z0-9\-_.=~+]{20,})\b/gi,
 ];
 
 function hasSecretContext(line) {
@@ -41,7 +41,9 @@ function scrubRepositoryPayload(codebaseString) {
       }
       // Context check: only redact 40-char base64 strings on lines with secret keywords
       if (!capturedGroup && match.length === 40 && /^[A-Za-z0-9\/+=]{40}$/.test(match)) {
-        const lineMatch = sanitizedPayload.match(new RegExp('^.*' + match.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '.*$', 'm'));
+        const lineMatch = sanitizedPayload.match(
+          new RegExp('^.*' + match.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '.*$', 'm'),
+        );
         const line = lineMatch ? lineMatch[0] : '';
         if (!hasSecretContext(line)) {
           return match;

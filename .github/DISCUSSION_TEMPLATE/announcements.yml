@@ -1,5 +1,5 @@
-title: "[Announcement] "
-labels: ["announcement"]
+title: '[Announcement] '
+labels: ['announcement']
 body:
   - type: markdown
     attributes:

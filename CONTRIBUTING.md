@@ -1,4 +1,3 @@
-
 # Contributing Guidelines
 
 Thank you for considering contributing to this project! We welcome contributions from everyone.
@@ -15,9 +14,10 @@ docker compose up
 - **Backend**: http://localhost:5000
 - **AI Engine**: http://localhost:8000
 
-*Any changes you make to the source code will automatically trigger a reload.*
+_Any changes you make to the source code will automatically trigger a reload._
 
 ## How to Contribute
+
 1. Fork the repository
 2. Create a new branch
 3. Make your changes

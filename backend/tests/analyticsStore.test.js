@@ -76,7 +76,16 @@ test('analyticsStore: getTrends returns empty array when store does not exist', 
 test('analyticsStore: getTrends returns stored records', () => {
   mockFs();
   fakeStore = [
-    { timestamp: '2026-01-01T00:00:00.000Z', repoName: 'test-repo', totalLines: 100, bugs: 2, security: 1, optimization: 0, styling: 3, filesCount: 5 },
+    {
+      timestamp: '2026-01-01T00:00:00.000Z',
+      repoName: 'test-repo',
+      totalLines: 100,
+      bugs: 2,
+      security: 1,
+      optimization: 0,
+      styling: 3,
+      filesCount: 5,
+    },
   ];
   const trends = getTrends();
   unmockFs();
@@ -87,7 +96,15 @@ test('analyticsStore: getTrends returns stored records', () => {
 test('analyticsStore: recordAnalysis appends a record with timestamp', async () => {
   mockFs();
   fakeStore = [];
-  const result = await recordAnalysis({ repoName: 'my-repo', totalLines: 50, bugs: 1, security: 0, optimization: 2, styling: 0, filesCount: 3 });
+  const result = await recordAnalysis({
+    repoName: 'my-repo',
+    totalLines: 50,
+    bugs: 1,
+    security: 0,
+    optimization: 2,
+    styling: 0,
+    filesCount: 3,
+  });
   await result;
   const trends = getTrends();
   unmockFs();
@@ -113,9 +130,25 @@ test('analyticsStore: recordAnalysis adds records sequentially and respects MAX_
   // Test that multiple records accumulate (trimming is tested implicitly via MAX_RECORDS)
   mockFs();
   fakeStore = [];
-  await recordAnalysis({ repoName: 'repo1', totalLines: 10, bugs: 1, security: 0, optimization: 0, styling: 0, filesCount: 1 });
-  await recordAnalysis({ repoName: 'repo2', totalLines: 20, bugs: 2, security: 0, optimization: 0, styling: 0, filesCount: 2 });
-  await new Promise(r => setTimeout(r, 100));
+  await recordAnalysis({
+    repoName: 'repo1',
+    totalLines: 10,
+    bugs: 1,
+    security: 0,
+    optimization: 0,
+    styling: 0,
+    filesCount: 1,
+  });
+  await recordAnalysis({
+    repoName: 'repo2',
+    totalLines: 20,
+    bugs: 2,
+    security: 0,
+    optimization: 0,
+    styling: 0,
+    filesCount: 2,
+  });
+  await new Promise((r) => setTimeout(r, 100));
   const trends = getTrends();
   unmockFs();
   assert.equal(trends.length, 2, 'should have 2 records after 2 calls');
@@ -127,7 +160,9 @@ test('analyticsStore: recordAnalysis adds records sequentially and respects MAX_
 
 test('analyticsStore: getTrends recovers from corrupt backup when main store is invalid JSON', () => {
   mockFs();
-  fakeStore = [{ repoName: 'recovered-record', totalLines: 10, bugs: 0, security: 0, optimization: 0, styling: 0, filesCount: 1 }];
+  fakeStore = [
+    { repoName: 'recovered-record', totalLines: 10, bugs: 0, security: 0, optimization: 0, styling: 0, filesCount: 1 },
+  ];
   readError = new SyntaxError('Unexpected token');
   const trends = getTrends();
   unmockFs();
@@ -140,9 +175,17 @@ test('analyticsStore: recordAnalysis respects MAX_RECORDS cap of 200 by evicting
   fakeStore = [];
   // Write 205 records (MAX_RECORDS is 200, so 5 oldest should be evicted)
   for (let i = 0; i < 205; i++) {
-    await recordAnalysis({ repoName: `repo-${i}`, totalLines: i, bugs: i, security: 0, optimization: 0, styling: 0, filesCount: 1 });
+    await recordAnalysis({
+      repoName: `repo-${i}`,
+      totalLines: i,
+      bugs: i,
+      security: 0,
+      optimization: 0,
+      styling: 0,
+      filesCount: 1,
+    });
   }
-  await new Promise(r => setTimeout(r, 50));
+  await new Promise((r) => setTimeout(r, 50));
   const trends = getTrends();
   unmockFs();
   assert.equal(trends.length, 200, 'should cap at MAX_RECORDS (200) entries');
@@ -166,7 +209,10 @@ test('analyticsStore: getTrends falls back to backup when main store parse retur
   const origRead = fs.readFileSync;
   // Override: return non-array for store, but valid backup
   fs.readFileSync = (p, enc) => {
-    if (p === BACKUP_PATH) return JSON.stringify([{ repoName: 'backup-only', totalLines: 1, bugs: 0, security: 0, optimization: 0, styling: 0, filesCount: 1 }]);
+    if (p === BACKUP_PATH)
+      return JSON.stringify([
+        { repoName: 'backup-only', totalLines: 1, bugs: 0, security: 0, optimization: 0, styling: 0, filesCount: 1 },
+      ]);
     if (p === STORE_PATH) return JSON.stringify({ not: 'array' });
     return origRead(p, enc);
   };

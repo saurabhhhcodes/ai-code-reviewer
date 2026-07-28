@@ -1,5 +1,4 @@
-
-import { FolderGit, Sparkles } from "lucide-react";
+import { FolderGit, Sparkles } from 'lucide-react';
 
 interface AnalysisFormProps {
   repoUrl: string;
@@ -15,38 +14,43 @@ interface AnalysisFormProps {
 }
 
 export default function AnalysisForm({
-  repoUrl, setRepoUrl, company, setCompany, language, setLanguage,
-  selectedModel, setSelectedModel, isLoading, handleAnalyze,
+  repoUrl,
+  setRepoUrl,
+  company,
+  setCompany,
+  language,
+  setLanguage,
+  selectedModel,
+  setSelectedModel,
+  isLoading,
+  handleAnalyze,
 }: AnalysisFormProps) {
   return (
-    <div className="glass-panel" style={{ padding: "20px" }}>
+    <div className="glass-panel" style={{ padding: '20px' }}>
       <h2
         style={{
-          fontSize: "16px",
+          fontSize: '16px',
           fontWeight: 700,
-          color: "#f3f4f6",
-          margin: "0 0 16px 0",
-          display: "flex",
-          alignItems: "center",
-          gap: "8px",
+          color: '#f3f4f6',
+          margin: '0 0 16px 0',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
         }}
       >
-        <FolderGit size={18} style={{ color: "#3b82f6" }} /> Import Repository
+        <FolderGit size={18} style={{ color: '#3b82f6' }} /> Import Repository
       </h2>
 
-      <form
-        onSubmit={handleAnalyze}
-        style={{ display: "flex", flexDirection: "column", gap: "14px" }}
-      >
+      <form onSubmit={handleAnalyze} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
         <div>
           <label
             style={{
-              display: "block",
-              fontSize: "11px",
+              display: 'block',
+              fontSize: '11px',
               fontWeight: 600,
-              color: "#9ca3af",
-              marginBottom: "6px",
-              textTransform: "uppercase",
+              color: '#9ca3af',
+              marginBottom: '6px',
+              textTransform: 'uppercase',
             }}
           >
             GitHub Repository URL
@@ -60,35 +64,35 @@ export default function AnalysisForm({
             readOnly={isLoading}
             onChange={(e) => setRepoUrl(e.target.value)}
             style={{
-              width: "100%",
-              padding: "10px 12px",
-              background: "rgba(15, 23, 42, 0.6)",
-              border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: "6px",
-              color: "#fff",
-              fontSize: "13px",
-              outline: "none",
-              boxSizing: "border-box",
+              width: '100%',
+              padding: '10px 12px',
+              background: 'rgba(15, 23, 42, 0.6)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: '6px',
+              color: '#fff',
+              fontSize: '13px',
+              outline: 'none',
+              boxSizing: 'border-box',
             }}
           />
         </div>
 
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr 1fr",
-            gap: "10px",
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr 1fr',
+            gap: '10px',
           }}
         >
           <div>
             <label
               style={{
-                display: "block",
-                fontSize: "11px",
+                display: 'block',
+                fontSize: '11px',
                 fontWeight: 600,
-                color: "#9ca3af",
-                marginBottom: "6px",
-                textTransform: "uppercase",
+                color: '#9ca3af',
+                marginBottom: '6px',
+                textTransform: 'uppercase',
               }}
             >
               Target Company
@@ -97,14 +101,14 @@ export default function AnalysisForm({
               value={company}
               onChange={(e) => setCompany(e.target.value)}
               style={{
-                width: "100%",
-                padding: "10px 12px",
-                background: "rgba(15, 23, 42, 0.6)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: "6px",
-                color: "#fff",
-                fontSize: "13px",
-                outline: "none",
+                width: '100%',
+                padding: '10px 12px',
+                background: 'rgba(15, 23, 42, 0.6)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: '6px',
+                color: '#fff',
+                fontSize: '13px',
+                outline: 'none',
               }}
             >
               <option value="General">General</option>
@@ -117,12 +121,12 @@ export default function AnalysisForm({
           <div>
             <label
               style={{
-                display: "block",
-                fontSize: "11px",
+                display: 'block',
+                fontSize: '11px',
                 fontWeight: 600,
-                color: "#9ca3af",
-                marginBottom: "6px",
-                textTransform: "uppercase",
+                color: '#9ca3af',
+                marginBottom: '6px',
+                textTransform: 'uppercase',
               }}
             >
               Language
@@ -131,14 +135,14 @@ export default function AnalysisForm({
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
               style={{
-                width: "100%",
-                padding: "10px 12px",
-                background: "rgba(15, 23, 42, 0.6)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: "6px",
-                color: "#fff",
-                fontSize: "13px",
-                outline: "none",
+                width: '100%',
+                padding: '10px 12px',
+                background: 'rgba(15, 23, 42, 0.6)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: '6px',
+                color: '#fff',
+                fontSize: '13px',
+                outline: 'none',
               }}
             >
               <option value="English">English</option>
@@ -150,12 +154,12 @@ export default function AnalysisForm({
           <div>
             <label
               style={{
-                display: "block",
-                fontSize: "11px",
+                display: 'block',
+                fontSize: '11px',
                 fontWeight: 600,
-                color: "#9ca3af",
-                marginBottom: "6px",
-                textTransform: "uppercase",
+                color: '#9ca3af',
+                marginBottom: '6px',
+                textTransform: 'uppercase',
               }}
             >
               AI Model
@@ -164,14 +168,14 @@ export default function AnalysisForm({
               value={selectedModel}
               onChange={(e) => setSelectedModel(e.target.value)}
               style={{
-                width: "100%",
-                padding: "10px 12px",
-                background: "rgba(15, 23, 42, 0.6)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: "6px",
-                color: "#fff",
-                fontSize: "13px",
-                outline: "none",
+                width: '100%',
+                padding: '10px 12px',
+                background: 'rgba(15, 23, 42, 0.6)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: '6px',
+                color: '#fff',
+                fontSize: '13px',
+                outline: 'none',
               }}
             >
               <option value="llama-3.3-70b-versatile">Llama 3.3 (70B)</option>
@@ -187,17 +191,17 @@ export default function AnalysisForm({
           disabled={isLoading}
           className="glow-btn"
           style={{
-            width: "100%",
-            padding: "12px",
-            borderRadius: "6px",
-            cursor: isLoading ? "not-allowed" : "pointer",
+            width: '100%',
+            padding: '12px',
+            borderRadius: '6px',
+            cursor: isLoading ? 'not-allowed' : 'pointer',
             opacity: isLoading ? 0.65 : 1,
-            fontSize: "13px",
-            marginTop: "6px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "8px",
+            fontSize: '13px',
+            marginTop: '6px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
           }}
         >
           {isLoading ? (
@@ -205,12 +209,12 @@ export default function AnalysisForm({
               <span
                 className="spin-slow"
                 style={{
-                  display: "inline-block",
-                  width: "14px",
-                  height: "14px",
-                  border: "2px solid white",
-                  borderTopColor: "transparent",
-                  borderRadius: "50%",
+                  display: 'inline-block',
+                  width: '14px',
+                  height: '14px',
+                  border: '2px solid white',
+                  borderTopColor: 'transparent',
+                  borderRadius: '50%',
                 }}
               ></span>
               Analyzing...

@@ -2,18 +2,21 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { isValidRepoUrl, parseRepoUrl, isSafeUrl } from '../utils/urlValidator.js';
 
-
 test('urlValidator: isSafeUrl rejects private and link-local IPv4 subnets', async () => {
   // Test loopback
   assert.equal((await isSafeUrl('https://127.0.0.1')).valid, false);
-  
+
   // Test class A private
   assert.equal((await isSafeUrl('https://10.0.0.1')).valid, false);
 
   // Test class B private boundary values
   assert.equal((await isSafeUrl('https://172.16.0.1')).valid, false);
   assert.equal((await isSafeUrl('https://172.17.25.1')).valid, false, 'SSRF bypass range 172.17.x.x should be blocked');
-  assert.equal((await isSafeUrl('https://172.31.255.254')).valid, false, 'SSRF bypass range 172.31.x.x should be blocked');
+  assert.equal(
+    (await isSafeUrl('https://172.31.255.254')).valid,
+    false,
+    'SSRF bypass range 172.31.x.x should be blocked',
+  );
   assert.equal((await isSafeUrl('https://172.32.0.1')).valid, true, 'Public range 172.32.x.x should be allowed');
 
   // Test shared address space 100.64.0.0/10 boundary values
@@ -48,14 +51,14 @@ test('isSafeUrl validates basic URL safety', async () => {
 
 test('isSafeUrl rejects domains resolving to at least one private IP (DNS round-robin / multi-IP)', async (t) => {
   const dns = await import('node:dns');
-  
+
   t.mock.method(dns.default, 'lookup', (hostname, options, callback) => {
     const cb = typeof options === 'function' ? options : callback;
     const opts = typeof options === 'object' ? options : {};
     if (opts.all) {
       cb(null, [
         { address: '8.8.8.8', family: 4 },
-        { address: '127.0.0.1', family: 4 }
+        { address: '127.0.0.1', family: 4 },
       ]);
     } else {
       cb(null, '8.8.8.8', 4);

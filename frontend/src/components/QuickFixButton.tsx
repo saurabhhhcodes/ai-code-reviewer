@@ -12,8 +12,8 @@ export function QuickFixButton({ text, onApply }: { text: string; onApply: (text
         setOpen(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const handleApply = () => {
@@ -25,7 +25,8 @@ export function QuickFixButton({ text, onApply }: { text: string; onApply: (text
 
   return (
     <div ref={ref} style={{ position: 'relative', display: 'inline-flex' }}>
-      <button aria-label="Quick fix"
+      <button
+        aria-label="Quick fix"
         type="button"
         onClick={() => setOpen(!open)}
         aria-expanded={open}
@@ -47,20 +48,23 @@ export function QuickFixButton({ text, onApply }: { text: string; onApply: (text
         {applied ? <Check size={14} /> : <Lightbulb size={14} />}
       </button>
       {open && (
-        <div style={{
-          position: 'absolute',
-          top: '100%',
-          right: 0,
-          marginTop: '4px',
-          background: '#1e293b',
-          border: '1px solid rgba(255,255,255,0.1)',
-          borderRadius: '6px',
-          boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
-          minWidth: '160px',
-          zIndex: 1000,
-          overflow: 'hidden',
-        }}>
-          <button aria-label="Quick fix"
+        <div
+          style={{
+            position: 'absolute',
+            top: '100%',
+            right: 0,
+            marginTop: '4px',
+            background: '#1e293b',
+            border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: '6px',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+            minWidth: '160px',
+            zIndex: 1000,
+            overflow: 'hidden',
+          }}
+        >
+          <button
+            aria-label="Quick fix"
             type="button"
             onClick={handleApply}
             style={{
@@ -77,8 +81,8 @@ export function QuickFixButton({ text, onApply }: { text: string; onApply: (text
               cursor: 'pointer',
               textAlign: 'left',
             }}
-            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+            onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
+            onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
           >
             <Zap size={14} color="rgb(234,179,8)" />
             <span>Apply AI Fix</span>

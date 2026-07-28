@@ -13,14 +13,14 @@ export const streamReview = async (req, res) => {
   try {
     // Mocking an async stream of tokens from an AI engine
     const mockTokens = ['Here ', 'is ', 'your ', 'code ', 'review: ', '\n\n', 'Looks ', 'great!'];
-    
+
     for (const chunk of mockTokens) {
       if (abortController.signal.aborted) break;
-      
+
       res.write(`data: ${JSON.stringify({ text: chunk })}\n\n`);
-      
+
       // Simulate token generation delay
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
     if (!abortController.signal.aborted) {

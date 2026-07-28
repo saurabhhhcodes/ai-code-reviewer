@@ -67,15 +67,17 @@ test('uses req.ip when X-Forwarded-For header is an array (some middleware behav
 test('security: rate limit key is NOT derived from the raw X-Forwarded-For header', () => {
   // An attacker tries to bypass the rate limit by setting a fake leftmost IP
   const req = {
-    ip: '203.0.113.99',                             // attacker's real IP (trust-proxy resolved)
-    headers: { 'x-forwarded-for': '1.2.3.4' },     // attacker-controlled fake IP
+    ip: '203.0.113.99', // attacker's real IP (trust-proxy resolved)
+    headers: { 'x-forwarded-for': '1.2.3.4' }, // attacker-controlled fake IP
   };
 
   const key = getRateLimitKey(req);
 
   // Key must be the real IP, NOT the attacker's fake one
-  assert.equal(key, '203.0.113.99',
-    'Rate limit key must be req.ip (trust-proxy resolved), not the raw X-Forwarded-For value');
-  assert.notEqual(key, '1.2.3.4',
-    'Rate limit key must NOT be the client-controlled X-Forwarded-For leftmost entry');
+  assert.equal(
+    key,
+    '203.0.113.99',
+    'Rate limit key must be req.ip (trust-proxy resolved), not the raw X-Forwarded-For value',
+  );
+  assert.notEqual(key, '1.2.3.4', 'Rate limit key must NOT be the client-controlled X-Forwarded-For leftmost entry');
 });

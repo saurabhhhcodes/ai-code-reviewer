@@ -8,7 +8,7 @@ describe('CSRF token cookie security flags', () => {
 
   beforeEach(() => {
     app = express();
-    
+
     // Middleware that sets CSRF token cookie with secure flags
     app.use((req, res, next) => {
       res.cookie('csrf_token', 'test_token_value_123', {
@@ -35,7 +35,7 @@ describe('CSRF token cookie security flags', () => {
   it('csrf_token cookie should have Secure flag in production', async () => {
     process.env.NODE_ENV = 'production';
     const testApp = express();
-    
+
     testApp.use((req, res, next) => {
       res.cookie('csrf_token', 'test_token_value_123', {
         httpOnly: true,
@@ -54,7 +54,7 @@ describe('CSRF token cookie security flags', () => {
     const response = await request(testApp).get('/api/csrf-test');
     const setCookieHeader = response.headers['set-cookie'][0];
     assert(setCookieHeader.includes('Secure'), 'csrf_token cookie must have Secure flag in production');
-    
+
     delete process.env.NODE_ENV;
   });
 
@@ -67,8 +67,10 @@ describe('CSRF token cookie security flags', () => {
   it('csrf_token cookie should have appropriate expiration', async () => {
     const response = await request(app).get('/api/csrf-test');
     const setCookieHeader = response.headers['set-cookie'][0];
-    assert(setCookieHeader.includes('Max-Age') || setCookieHeader.includes('Expires'), 
-           'csrf_token cookie must have Max-Age or Expires');
+    assert(
+      setCookieHeader.includes('Max-Age') || setCookieHeader.includes('Expires'),
+      'csrf_token cookie must have Max-Age or Expires',
+    );
   });
 
   it('csrf_token cookie should be set on root path', async () => {
@@ -80,9 +82,11 @@ describe('CSRF token cookie security flags', () => {
   it('CSRF token value should not be exposed to JavaScript', async () => {
     const response = await request(app).get('/api/csrf-test');
     const setCookieHeader = response.headers['set-cookie'][0];
-    
+
     // Verify httpOnly prevents client-side access
-    assert(setCookieHeader.toLowerCase().includes('httponly'), 
-           'httpOnly flag prevents JavaScript from accessing cookie value');
+    assert(
+      setCookieHeader.toLowerCase().includes('httponly'),
+      'httpOnly flag prevents JavaScript from accessing cookie value',
+    );
   });
 });

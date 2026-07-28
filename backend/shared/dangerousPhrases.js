@@ -13,7 +13,10 @@ try {
   // Fail-closed: do NOT silently fall back to an empty phrase list, which would
   // disable prompt-injection protection. Surface the failure loudly and refuse
   // to start without the safety configuration.
-  console.error('SECURITY: Failed to load shared-safety-config.json, prompt injection defenses cannot start safely:', err.message);
+  console.error(
+    'SECURITY: Failed to load shared-safety-config.json, prompt injection defenses cannot start safely:',
+    err.message,
+  );
   throw new Error('Failed to load shared-safety-config.json required for prompt-injection protection: ' + err.message);
 }
 

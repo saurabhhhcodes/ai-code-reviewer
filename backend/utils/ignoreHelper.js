@@ -55,11 +55,11 @@ export function isIgnored(filePath, patterns, baseDir) {
   const relative = path.posix.relative(normalizedBaseDir, normalizedFilePath);
   if (relative.startsWith('../') || relative === '..') return false;
 
-  const pmPatterns = patterns.flatMap(p => {
+  const pmPatterns = patterns.flatMap((p) => {
     if (typeof p !== 'string') return [];
     let pat = p.startsWith('/') ? p.slice(1) : p;
     if (!pat) return [];
-    
+
     const isDir = pat.endsWith('/');
     const patClean = isDir ? pat.slice(0, -1) : pat;
     if (!patClean) return [];
@@ -86,7 +86,14 @@ const MAX_DEPTH = 5;
 const MAX_FILES = 200;
 const MAX_FILE_SIZE = 100 * 1024;
 
-export function readFilesRecursively(dir, fileList = [], baseDir = dir, ignorePatterns = [], depth = 0, skippedFiles = []) {
+export function readFilesRecursively(
+  dir,
+  fileList = [],
+  baseDir = dir,
+  ignorePatterns = [],
+  depth = 0,
+  skippedFiles = [],
+) {
   if (depth > MAX_DEPTH) return fileList;
   if (fileList.length >= MAX_FILES) return fileList;
   const files = fs.readdirSync(dir);
@@ -126,7 +133,27 @@ export function readFilesRecursively(dir, fileList = [], baseDir = dir, ignorePa
     } else {
       // Analyze only source code files (Python, JS, TS, HTML, CSS, Go, Rust, Java, C++, PHP, Ruby, SQL)
       const ext = path.extname(file).toLowerCase();
-      const validExtensions = ['.js', '.jsx', '.ts', '.tsx', '.py', '.java', '.go', '.rs', '.cpp', '.h', '.cs', '.php', '.rb', '.sql', '.html', '.css', '.json', '.yaml', '.yml'];
+      const validExtensions = [
+        '.js',
+        '.jsx',
+        '.ts',
+        '.tsx',
+        '.py',
+        '.java',
+        '.go',
+        '.rs',
+        '.cpp',
+        '.h',
+        '.cs',
+        '.php',
+        '.rb',
+        '.sql',
+        '.html',
+        '.css',
+        '.json',
+        '.yaml',
+        '.yml',
+      ];
 
       // Extensionless files (e.g. `deploy`, `process`) are not auto-skipped —
       // peek the first line for a shebang before discarding, so shebang-based
@@ -137,7 +164,11 @@ export function readFilesRecursively(dir, fileList = [], baseDir = dir, ignorePa
         try {
           if (stat.size > MAX_FILE_SIZE) {
             if (validExtensions.includes(ext)) {
-              skippedFiles.push({ name: path.relative(baseDir, filePath).replace(/\\/g, '/'), reason: 'File exceeds size limit of 100KB', size: stat.size });
+              skippedFiles.push({
+                name: path.relative(baseDir, filePath).replace(/\\/g, '/'),
+                reason: 'File exceeds size limit of 100KB',
+                size: stat.size,
+              });
             }
             continue;
           }
@@ -158,7 +189,7 @@ export function readFilesRecursively(dir, fileList = [], baseDir = dir, ignorePa
 
           fileList.push({
             name: path.relative(baseDir, filePath).replace(/\\/g, '/'),
-            content: content
+            content: content,
           });
         } catch (e) {
           console.warn(`Could not read file: ${filePath}`, e.message);

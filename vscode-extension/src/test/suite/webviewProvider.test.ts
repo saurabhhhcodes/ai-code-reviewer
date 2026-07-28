@@ -21,10 +21,7 @@ suite('webviewProvider helpers', () => {
   });
 
   test('escapeHtml escapes multiple special chars', () => {
-    assert.equal(
-      escapeHtml('<script>alert("xss")</script>'),
-      '&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;'
-    );
+    assert.equal(escapeHtml('<script>alert("xss")</script>'), '&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;');
   });
 
   test('escapeHtml returns unchanged string when no special chars', () => {

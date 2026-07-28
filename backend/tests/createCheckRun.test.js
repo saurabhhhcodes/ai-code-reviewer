@@ -59,9 +59,7 @@ test('createCheckRun calls octokit.rest.checks.create with findings', async () =
     },
   };
 
-  const findings = [
-    { file: 'src/app.js', line: 10, message: 'bug', severity: 'error', rule_id: 'bug-rule' },
-  ];
+  const findings = [{ file: 'src/app.js', line: 10, message: 'bug', severity: 'error', rule_id: 'bug-rule' }];
 
   await createCheckRun(mockOctokit, 'owner', 'repo', 'sha123', findings);
   assert.equal(createCallCount, 1);
@@ -76,9 +74,7 @@ test('createCheckRun returns check run IDs and batch count', async () => {
     },
   };
 
-  const findings = [
-    { file: 'src/app.js', line: 10, message: 'bug', severity: 'error', rule_id: 'bug-rule' },
-  ];
+  const findings = [{ file: 'src/app.js', line: 10, message: 'bug', severity: 'error', rule_id: 'bug-rule' }];
 
   const result = await createCheckRun(mockOctokit, 'owner', 'repo', 'sha123', findings);
 
@@ -214,7 +210,9 @@ test('createCheckRun returns null when findings is null', async () => {
 
 test('createCheckRun throws Error when octokit is missing', async () => {
   try {
-    await createCheckRun(null, 'owner', 'repo', 'sha123', [{ file: 'f', line: 1, message: 'x', severity: 'error', rule_id: 'r' }]);
+    await createCheckRun(null, 'owner', 'repo', 'sha123', [
+      { file: 'f', line: 1, message: 'x', severity: 'error', rule_id: 'r' },
+    ]);
     assert.fail('Expected Error to be thrown');
   } catch (e) {
     assert.ok(e.message.includes('Missing required parameters'));
@@ -223,7 +221,9 @@ test('createCheckRun throws Error when octokit is missing', async () => {
 
 test('createCheckRun throws Error when owner is missing', async () => {
   try {
-    await createCheckRun({}, null, 'repo', 'sha123', [{ file: 'f', line: 1, message: 'x', severity: 'error', rule_id: 'r' }]);
+    await createCheckRun({}, null, 'repo', 'sha123', [
+      { file: 'f', line: 1, message: 'x', severity: 'error', rule_id: 'r' },
+    ]);
     assert.fail('Expected Error to be thrown');
   } catch (e) {
     assert.ok(e.message.includes('Missing required parameters'));
@@ -232,7 +232,9 @@ test('createCheckRun throws Error when owner is missing', async () => {
 
 test('createCheckRun throws Error when sha is missing', async () => {
   try {
-    await createCheckRun({}, 'owner', 'repo', null, [{ file: 'f', line: 1, message: 'x', severity: 'error', rule_id: 'r' }]);
+    await createCheckRun({}, 'owner', 'repo', null, [
+      { file: 'f', line: 1, message: 'x', severity: 'error', rule_id: 'r' },
+    ]);
     assert.fail('Expected Error to be thrown');
   } catch (e) {
     assert.ok(e.message.includes('Missing required parameters'));
@@ -250,9 +252,7 @@ test('createCheckRun throws octokit error and re-throws it', async () => {
     },
   };
 
-  const findings = [
-    { file: 'src/app.js', line: 10, message: 'bug', severity: 'error', rule_id: 'bug-rule' },
-  ];
+  const findings = [{ file: 'src/app.js', line: 10, message: 'bug', severity: 'error', rule_id: 'bug-rule' }];
 
   try {
     await createCheckRun(mockOctokit, 'owner', 'repo', 'sha123', findings);
@@ -271,9 +271,7 @@ test('createCheckRun returns correct batchCount for single batch', async () => {
     },
   };
 
-  const findings = [
-    { file: 'src/app.js', line: 10, message: 'bug', severity: 'error', rule_id: 'bug-rule' },
-  ];
+  const findings = [{ file: 'src/app.js', line: 10, message: 'bug', severity: 'error', rule_id: 'bug-rule' }];
 
   const result = await createCheckRun(mockOctokit, 'owner', 'repo', 'sha123', findings);
   assert.equal(result.batchCount, 1);

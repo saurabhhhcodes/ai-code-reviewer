@@ -23,10 +23,7 @@ test('escapeHtml escapes single-quote to &#39;', () => {
 });
 
 test('escapeHtml escapes all HTML special characters together', () => {
-  assert.equal(
-    escapeHtml('<script>alert("XSS")</script>'),
-    '&lt;script&gt;alert(&quot;XSS&quot;)&lt;/script&gt;'
-  );
+  assert.equal(escapeHtml('<script>alert("XSS")</script>'), '&lt;script&gt;alert(&quot;XSS&quot;)&lt;/script&gt;');
 });
 
 test('escapeHtml returns empty string for null', () => {

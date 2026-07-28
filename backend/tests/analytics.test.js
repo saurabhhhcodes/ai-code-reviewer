@@ -21,9 +21,7 @@ mongoose.model = (name, schema) => {
       for (const [field, pathDef] of Object.entries(paths)) {
         if (pathDef.options && 'default' in pathDef.options) {
           defaults[field] =
-            typeof pathDef.options.default === 'function'
-              ? pathDef.options.default()
-              : pathDef.options.default;
+            typeof pathDef.options.default === 'function' ? pathDef.options.default() : pathDef.options.default;
         }
       }
       Object.assign(this, defaults, data);
@@ -215,7 +213,7 @@ test('Analytics schema sets correct defaults on field definitions', () => {
   assert.equal(
     paths.model?.options?.default,
     'llama-3.3-70b-versatile',
-    'model default should be llama-3.3-70b-versatile'
+    'model default should be llama-3.3-70b-versatile',
   );
 });
 
@@ -223,13 +221,8 @@ test('Analytics schema defines two indexes', () => {
   const schema = Analytics.schema;
   const indexes = schema.indexes ? schema.indexes() : [];
   assert.ok(indexes.length >= 2, 'schema should define at least 2 indexes');
-  const hasAnalyzedAt = indexes.some(
-    (idx) => idx[0] && idx[0].analyzedAt === -1
-  );
-  const hasCompound = indexes.some(
-    (idx) =>
-      idx[0] && idx[0].repoName === 1 && idx[0].analyzedAt === -1
-  );
+  const hasAnalyzedAt = indexes.some((idx) => idx[0] && idx[0].analyzedAt === -1);
+  const hasCompound = indexes.some((idx) => idx[0] && idx[0].repoName === 1 && idx[0].analyzedAt === -1);
   assert.ok(hasAnalyzedAt, 'schema should have index on analyzedAt');
   assert.ok(hasCompound, 'schema should have compound index on repoName+analyzedAt');
 });

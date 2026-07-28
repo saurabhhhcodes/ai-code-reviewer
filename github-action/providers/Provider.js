@@ -1,7 +1,7 @@
 export class Provider {
   constructor() {
     if (this.constructor === Provider) {
-      throw new Error("Cannot instantiate abstract class Provider");
+      throw new Error('Cannot instantiate abstract class Provider');
     }
   }
 
@@ -30,8 +30,8 @@ export class Provider {
 
   /**
    * Fetch file content at a specific commit
-   * @param {string} path 
-   * @param {string} ref 
+   * @param {string} path
+   * @param {string} ref
    * @returns {Promise<string>}
    */
   async getFileContent(path, ref) {
@@ -40,7 +40,7 @@ export class Provider {
 
   /**
    * Create a review or post comments on the PR/MR
-   * @param {Object} reviewData 
+   * @param {Object} reviewData
    */
   async createReview(reviewData) {
     throw new Error("Method 'createReview()' must be implemented.");
@@ -48,7 +48,7 @@ export class Provider {
 
   /**
    * Add a label to the PR/MR
-   * @param {string} label 
+   * @param {string} label
    */
   async addLabel(label) {
     throw new Error("Method 'addLabel()' must be implemented.");
@@ -64,7 +64,7 @@ export class Provider {
 
   /**
    * Update the PR/MR description body
-   * @param {string} body 
+   * @param {string} body
    */
   async updatePRBody(body) {
     throw new Error("Method 'updatePRBody()' must be implemented.");

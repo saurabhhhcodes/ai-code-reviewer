@@ -2,7 +2,8 @@ const fs = require('fs');
 const file = 'ai-engine/app.py';
 let content = fs.readFileSync(file, 'utf8');
 
-const regex = /try:\n\s*batch_result = await run_batch_pipeline\([\s\S]*?llm_caller=_call_llm\n\s*\)\n[\s\S]*?truncated_files\.extend\(local_truncated_files\)/;
+const regex =
+  /try:\n\s*batch_result = await run_batch_pipeline\([\s\S]*?llm_caller=_call_llm\n\s*\)\n[\s\S]*?truncated_files\.extend\(local_truncated_files\)/;
 
 const replacement = `try:
                     batch_result = await run_batch_pipeline(
@@ -37,4 +38,4 @@ const replacement = `try:
 
 content = content.replace(regex, replacement);
 fs.writeFileSync(file, content);
-console.log("Fixed app logic");
+console.log('Fixed app logic');

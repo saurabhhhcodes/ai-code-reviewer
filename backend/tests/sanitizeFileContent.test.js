@@ -37,7 +37,7 @@ test('sanitizeFileContent truncates long lines to 500 chars', async () => {
   const longLine = 'x'.repeat(1000);
   const result = sanitizeFileContent(longLine);
   const wrapped = result.split('\n');
-  const line = wrapped.find(l => l.includes('x'.repeat(500)));
+  const line = wrapped.find((l) => l.includes('x'.repeat(500)));
   assert.ok(line);
   assert.ok(line.length <= 500 + '[INSTRUCTION_0_NEUTRALIZED]'.length);
 });

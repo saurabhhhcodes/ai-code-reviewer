@@ -87,6 +87,4 @@ test('sanitizeRedisKey colons are replaced with underscores then prefixed', asyn
   assert.strictEqual(result, '_:');
 });
 
-
-
 console.warn = originalWarn;

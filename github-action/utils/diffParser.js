@@ -17,7 +17,7 @@ export function parseDiff(diffStr) {
         currentFile = {
           path: cleanPath,
           changes: [],
-          deletions: []
+          deletions: [],
         };
         files.push(currentFile);
       }
@@ -35,13 +35,13 @@ export function parseDiff(diffStr) {
       if (line.startsWith('+') && !line.startsWith('+++')) {
         currentFile.changes.push({
           line: currentLineInNewFile,
-          content: line.slice(1)
+          content: line.slice(1),
         });
         currentLineInNewFile++;
       } else if (line.startsWith('-') && !line.startsWith('---')) {
         currentFile.deletions.push({
           line: currentLineInOldFile,
-          content: line.slice(1)
+          content: line.slice(1),
         });
         currentLineInOldFile++;
       } else if (line.startsWith(' ')) {

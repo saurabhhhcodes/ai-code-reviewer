@@ -53,19 +53,52 @@ export default function TotalIssuesKpiCard({ fileReviews, isLoading = false }: P
         width: '100%',
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '14px', flexWrap: 'wrap' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+          gap: '14px',
+          flexWrap: 'wrap',
+        }}
+      >
         <div>
-          <span style={{ fontSize: '10px', background: 'rgba(59, 130, 246, 0.14)', border: '1px solid rgba(59, 130, 246, 0.28)', color: '#60a5fa', padding: '3px 8px', borderRadius: '999px', fontWeight: 700, textTransform: 'uppercase' }}>
+          <span
+            style={{
+              fontSize: '10px',
+              background: 'rgba(59, 130, 246, 0.14)',
+              border: '1px solid rgba(59, 130, 246, 0.28)',
+              color: '#60a5fa',
+              padding: '3px 8px',
+              borderRadius: '999px',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+            }}
+          >
             KPI Metric
           </span>
-          <h2 style={{ fontSize: '16px', color: 'var(--title-color, #f3f4f6)', margin: '8px 0 4px 0', fontWeight: 800 }}>
+          <h2
+            style={{ fontSize: '16px', color: 'var(--title-color, #f3f4f6)', margin: '8px 0 4px 0', fontWeight: 800 }}
+          >
             Total Issues Found
           </h2>
           <p style={{ margin: 0, color: 'var(--subtext-color, #9ca3af)', fontSize: '12px', lineHeight: 1.5 }}>
             Aggregated findings across all categories
           </p>
         </div>
-        <div style={{ alignSelf: 'center', background: colors.bg, border: `1px solid ${colors.border}`, color: colors.text, borderRadius: '8px', padding: '8px 12px', fontSize: '12px', fontWeight: 800, whiteSpace: 'nowrap' }}>
+        <div
+          style={{
+            alignSelf: 'center',
+            background: colors.bg,
+            border: `1px solid ${colors.border}`,
+            color: colors.text,
+            borderRadius: '8px',
+            padding: '8px 12px',
+            fontSize: '12px',
+            fontWeight: 800,
+            whiteSpace: 'nowrap',
+          }}
+        >
           {isLoading ? '...' : colors.label}
         </div>
       </div>
@@ -75,7 +108,15 @@ export default function TotalIssuesKpiCard({ fileReviews, isLoading = false }: P
           <div style={{ fontSize: '36px', fontWeight: 850, color: colors.text, lineHeight: 1 }}>
             {isLoading ? '...' : total}
           </div>
-          <div style={{ fontSize: '10px', color: 'var(--subtext-color, #9ca3af)', fontWeight: 600, textTransform: 'uppercase', marginTop: '4px' }}>
+          <div
+            style={{
+              fontSize: '10px',
+              color: 'var(--subtext-color, #9ca3af)',
+              fontWeight: 600,
+              textTransform: 'uppercase',
+              marginTop: '4px',
+            }}
+          >
             Total Issues
           </div>
         </div>
@@ -89,12 +130,30 @@ export default function TotalIssuesKpiCard({ fileReviews, isLoading = false }: P
           ].map((item) => {
             const Icon = item.icon;
             return (
-              <div key={item.label} style={{ background: `${item.color}10`, border: `1px solid ${item.color}25`, borderRadius: '8px', padding: '10px 8px', textAlign: 'center', minWidth: 0 }}>
+              <div
+                key={item.label}
+                style={{
+                  background: `${item.color}10`,
+                  border: `1px solid ${item.color}25`,
+                  borderRadius: '8px',
+                  padding: '10px 8px',
+                  textAlign: 'center',
+                  minWidth: 0,
+                }}
+              >
                 <Icon aria-hidden="true" size={16} style={{ color: item.color, marginBottom: '4px' }} />
                 <div style={{ fontSize: '18px', fontWeight: 800, color: item.color, lineHeight: 1.2 }}>
                   {isLoading ? '...' : item.count}
                 </div>
-                <div style={{ fontSize: '9px', color: 'var(--subtext-color, #9ca3af)', fontWeight: 600, textTransform: 'uppercase', marginTop: '2px' }}>
+                <div
+                  style={{
+                    fontSize: '9px',
+                    color: 'var(--subtext-color, #9ca3af)',
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    marginTop: '2px',
+                  }}
+                >
                   {item.label}
                 </div>
               </div>

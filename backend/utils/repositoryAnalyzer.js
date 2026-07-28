@@ -14,11 +14,11 @@ export function buildRepositoryContext(files) {
       hasFrontend: false,
       hasBackend: false,
       hasDatabase: false,
-      directories: new Set()
-    }
+      directories: new Set(),
+    },
   };
 
-  files.forEach(file => {
+  files.forEach((file) => {
     const fileName = file.name;
     const content = file.content;
     const lowerName = fileName.toLowerCase();
@@ -46,7 +46,7 @@ export function buildRepositoryContext(files) {
       }
     } else if (lowerName.endsWith('requirements.txt')) {
       const lines = content.split('\n');
-      lines.forEach(line => {
+      lines.forEach((line) => {
         const dep = line.split('==')[0].trim();
         if (dep) {
           context.dependencies[dep] = 'latest';
@@ -74,13 +74,29 @@ export function buildRepositoryContext(files) {
     }
 
     // 4. Architecture Summary Generation
-    if (lowerName.includes('/src/components') || lowerName.includes('/src/pages') || lowerName.endsWith('.jsx') || lowerName.endsWith('.tsx')) {
+    if (
+      lowerName.includes('/src/components') ||
+      lowerName.includes('/src/pages') ||
+      lowerName.endsWith('.jsx') ||
+      lowerName.endsWith('.tsx')
+    ) {
       context.architecture.hasFrontend = true;
     }
-    if (lowerName.includes('/controllers') || lowerName.includes('/routes') || lowerName.includes('server.js') || lowerName.includes('app.py') || lowerName.includes('main.go')) {
+    if (
+      lowerName.includes('/controllers') ||
+      lowerName.includes('/routes') ||
+      lowerName.includes('server.js') ||
+      lowerName.includes('app.py') ||
+      lowerName.includes('main.go')
+    ) {
       context.architecture.hasBackend = true;
     }
-    if (lowerName.includes('schema.prisma') || lowerName.includes('mongoose') || lowerName.includes('typeorm') || lowerName.includes('/models/')) {
+    if (
+      lowerName.includes('schema.prisma') ||
+      lowerName.includes('mongoose') ||
+      lowerName.includes('typeorm') ||
+      lowerName.includes('/models/')
+    ) {
       context.architecture.hasDatabase = true;
     }
   });
@@ -96,27 +112,27 @@ export function buildRepositoryContext(files) {
       hasFrontend: context.architecture.hasFrontend,
       hasBackend: context.architecture.hasBackend,
       hasDatabase: context.architecture.hasDatabase,
-      rootDirectories: Array.from(context.architecture.directories)
-    }
+      rootDirectories: Array.from(context.architecture.directories),
+    },
   };
 }
 
 function detectFrameworksFromDeps(deps, context) {
   const fwMap = {
-    'react': 'React',
-    'next': 'Next.js',
-    'vue': 'Vue.js',
-    'nuxt': 'Nuxt.js',
-    'angular': 'Angular',
-    'express': 'Express.js',
-    'fastapi': 'FastAPI',
-    'django': 'Django',
-    'flask': 'Flask',
-    'tailwindcss': 'Tailwind CSS',
-    'mongoose': 'Mongoose (MongoDB)',
-    'prisma': 'Prisma ORM',
-    'jest': 'Jest',
-    'typescript': 'TypeScript'
+    react: 'React',
+    next: 'Next.js',
+    vue: 'Vue.js',
+    nuxt: 'Nuxt.js',
+    angular: 'Angular',
+    express: 'Express.js',
+    fastapi: 'FastAPI',
+    django: 'Django',
+    flask: 'Flask',
+    tailwindcss: 'Tailwind CSS',
+    mongoose: 'Mongoose (MongoDB)',
+    prisma: 'Prisma ORM',
+    jest: 'Jest',
+    typescript: 'TypeScript',
   };
 
   for (const dep of Object.keys(deps)) {

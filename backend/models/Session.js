@@ -95,7 +95,7 @@ function validateSessionIdFilter(next) {
 }
 
 // Register the validation hook on all query methods that accept sessionId filters
-['find', 'findOne', 'findOneAndUpdate', 'findOneAndDelete', 'deleteOne', 'updateOne'].forEach(method => {
+['find', 'findOne', 'findOneAndUpdate', 'findOneAndDelete', 'deleteOne', 'updateOne'].forEach((method) => {
   sessionSchema.pre(method, validateSessionIdFilter);
 });
 

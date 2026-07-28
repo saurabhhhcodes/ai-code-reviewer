@@ -9,8 +9,8 @@ describe('Batch Integration Tests', () => {
     const req = {
       body: {
         repoUrl: 'https://github.com/test/repo',
-        batchSize: 10
-      }
+        batchSize: 10,
+      },
     };
     const { repoUrl, batchSize = 5 } = req.body;
     assert.strictEqual(repoUrl, 'https://github.com/test/repo');
@@ -20,8 +20,8 @@ describe('Batch Integration Tests', () => {
   it('should fall back to default batchSize of 5 when not provided', () => {
     const req = {
       body: {
-        repoUrl: 'https://github.com/test/repo'
-      }
+        repoUrl: 'https://github.com/test/repo',
+      },
     };
     const { batchSize = 5 } = req.body;
     assert.strictEqual(batchSize, 5);
@@ -123,8 +123,8 @@ describe('Batch Integration Tests', () => {
     const req = {
       body: {
         repoUrl: 'https://github.com/acme/myapp',
-        batchSize: 8
-      }
+        batchSize: 8,
+      },
     };
     const {
       repoUrl,
@@ -134,7 +134,7 @@ describe('Batch Integration Tests', () => {
       model = 'llama-3.3-70b-versatile',
       language = 'English',
       company = 'General',
-      systemPrompt = ''
+      systemPrompt = '',
     } = req.body;
 
     assert.strictEqual(repoUrl, 'https://github.com/acme/myapp');

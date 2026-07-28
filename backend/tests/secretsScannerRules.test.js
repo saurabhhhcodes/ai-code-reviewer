@@ -14,7 +14,8 @@ const slackUrl = 'https://hooks.slack.com/services/T' + '12345678/B12345678/' + 
 const twilioSid = 'AC' + 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6';
 const twilioToken = 'twilio_auth = "' + 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6' + '"';
 const jwtToken =
-  'eyJ' + 'hbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
+  'eyJ' +
+  'hbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
 
 // ---------------------------------------------------------------------------
 // Expected rule types that should exist in the rules array
@@ -51,19 +52,13 @@ test('rules has exactly 17 entries', () => {
 
 test('every rule has a type string', () => {
   rules.forEach((rule, i) => {
-    assert.ok(
-      typeof rule.type === 'string' && rule.type.length > 0,
-      `rule[${i}] should have a non-empty type string`
-    );
+    assert.ok(typeof rule.type === 'string' && rule.type.length > 0, `rule[${i}] should have a non-empty type string`);
   });
 });
 
 test('every rule has a regex field that is a RegExp', () => {
   rules.forEach((rule, i) => {
-    assert.ok(
-      rule.regex instanceof RegExp,
-      `rule[${i}] (${rule.type}) should have a regex property that is a RegExp`
-    );
+    assert.ok(rule.regex instanceof RegExp, `rule[${i}] (${rule.type}) should have a regex property that is a RegExp`);
   });
 });
 
@@ -71,7 +66,7 @@ test('every rule has a description string', () => {
   rules.forEach((rule, i) => {
     assert.ok(
       typeof rule.description === 'string' && rule.description.length > 0,
-      `rule[${i}] (${rule.type}) should have a non-empty description string`
+      `rule[${i}] (${rule.type}) should have a non-empty description string`,
     );
   });
 });
@@ -188,10 +183,7 @@ test('Generic API Key / Token rule exists', () => {
 test('all expected rule types are present', () => {
   const ruleTypes = rules.map((r) => r.type);
   EXPECTED_RULE_TYPES.forEach((expected) => {
-    assert.ok(
-      ruleTypes.includes(expected),
-      `Expected rule type "${expected}" should be present in rules array`
-    );
+    assert.ok(ruleTypes.includes(expected), `Expected rule type "${expected}" should be present in rules array`);
   });
 });
 
@@ -228,7 +220,7 @@ test('Ethereum (ETH) Wallet Address rule exists and matches ETH format', () => {
   assert.ok(ethRule, 'ETH wallet rule should exist');
 
   ethRule.regex.lastIndex = 0;
-  assert.ok(ethRule.regex.test('0x' + 'aB3d' .repeat(10)), 'should match valid 42-char ETH address');
+  assert.ok(ethRule.regex.test('0x' + 'aB3d'.repeat(10)), 'should match valid 42-char ETH address');
 
   ethRule.regex.lastIndex = 0;
   assert.ok(!ethRule.regex.test('0xDEAD'), 'should NOT match short hex string');
@@ -252,7 +244,7 @@ test('each rule regex source is non-empty', () => {
   rules.forEach((rule, i) => {
     assert.ok(
       rule.regex.source && rule.regex.source.length > 0,
-      `rule[${i}] (${rule.type}) regex.source should be non-empty`
+      `rule[${i}] (${rule.type}) regex.source should be non-empty`,
     );
   });
 });

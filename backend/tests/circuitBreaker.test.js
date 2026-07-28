@@ -31,7 +31,9 @@ test('CircuitBreaker: does not increment halfOpenRequests in CLOSED state', asyn
   assert.equal(cb._halfOpenRequests, 0, 'should remain 0 in CLOSED state');
 
   try {
-    await cb.call(async () => { throw new Error('fail'); });
+    await cb.call(async () => {
+      throw new Error('fail');
+    });
   } catch (err) {
     assert.equal(err.message, 'fail');
   }
@@ -40,10 +42,12 @@ test('CircuitBreaker: does not increment halfOpenRequests in CLOSED state', asyn
 
 test('CircuitBreaker: trips to OPEN after failureThreshold is reached', async () => {
   const cb = new CircuitBreaker({ failureThreshold: 2, cooldownMs: 50 });
-  
+
   // Failure 1
   try {
-    await cb.call(async () => { throw new Error('err1'); });
+    await cb.call(async () => {
+      throw new Error('err1');
+    });
   } catch (e) {
     assert.equal(e.message, 'err1');
   }
@@ -51,15 +55,16 @@ test('CircuitBreaker: trips to OPEN after failureThreshold is reached', async ()
 
   // Failure 2
   try {
-    await cb.call(async () => { throw new Error('err2'); });
+    await cb.call(async () => {
+      throw new Error('err2');
+    });
   } catch (e) {
     assert.equal(e.message, 'err2');
   }
   assert.equal(cb.getState(), 'OPEN');
 
   // Next call should throw CircuitBreakerOpenError immediately
-  await assert.rejects(
-    async () => { await cb.call(async () => 'ok'); },
-    CircuitBreakerOpenError
-  );
+  await assert.rejects(async () => {
+    await cb.call(async () => 'ok');
+  }, CircuitBreakerOpenError);
 });

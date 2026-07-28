@@ -14,11 +14,7 @@ const assert = require('assert');
 // ---------------------------------------------------------------------------
 
 function escapeHtml(text) {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 function renderMarkdown(md) {
@@ -58,10 +54,7 @@ function renderMarkdown(md) {
     } else if (line.trim() === '') {
       html += `<div class="spacer"></div>`;
     } else {
-      const formatted = escapeHtml(line).replace(
-        /`([^`]+)`/g,
-        '<code>$1</code>'
-      );
+      const formatted = escapeHtml(line).replace(/`([^`]+)`/g, '<code>$1</code>');
       html += `<p>${formatted}</p>`;
     }
   }
@@ -78,10 +71,10 @@ function getWebviewContent(markdown, isLoading, error) {
   const bodyContent = error
     ? `<div class="error-message">${escapeHtml(error)}</div>`
     : isLoading
-    ? `<div class="loading"><div class="spinner"></div><span>Reviewing your code...</span></div>`
-    : markdown
-    ? renderMarkdown(markdown)
-    : `<div class="empty-state"><span class="empty-icon">🔍</span><p>Open a file and run <strong>RepoSage: Review Current File</strong> to see results here.</p></div>`;
+      ? `<div class="loading"><div class="spinner"></div><span>Reviewing your code...</span></div>`
+      : markdown
+        ? renderMarkdown(markdown)
+        : `<div class="empty-state"><span class="empty-icon">🔍</span><p>Open a file and run <strong>RepoSage: Review Current File</strong> to see results here.</p></div>`;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -187,7 +180,6 @@ li { margin-left: 16px; margin-bottom: 4px; }
 // Suite
 // ---------------------------------------------------------------------------
 suite('webviewProvider.ts - getWebviewContent', function () {
-
   test('with isLoading=true renders loading spinner and not the markdown', function () {
     const html = getWebviewContent('# Hello World', true, null);
 
@@ -238,55 +230,45 @@ suite('webviewProvider.ts - getWebviewContent', function () {
 
   test('body tag contains the correct bodyContent', function () {
     const errorHtml = getWebviewContent('', false, 'Oops!');
-    assert.ok(errorHtml.includes('<body><div class="error-message">'),
-      'error bodyContent should be in body');
+    assert.ok(errorHtml.includes('<body><div class="error-message">'), 'error bodyContent should be in body');
 
     const loadingHtml = getWebviewContent('# Hi', true, null);
-    assert.ok(loadingHtml.includes('<body><div class="loading">'),
-      'loading bodyContent should be in body');
+    assert.ok(loadingHtml.includes('<body><div class="loading">'), 'loading bodyContent should be in body');
 
     const markdownHtml = getWebviewContent('# Test', false, null);
-    assert.ok(markdownHtml.includes('<body><h1>'),
-      'markdown bodyContent should be in body');
+    assert.ok(markdownHtml.includes('<body><h1>'), 'markdown bodyContent should be in body');
 
     const emptyHtml = getWebviewContent('', false, null);
-    assert.ok(emptyHtml.includes('<body><div class="empty-state">'),
-      'empty state bodyContent should be in body');
+    assert.ok(emptyHtml.includes('<body><div class="empty-state">'), 'empty state bodyContent should be in body');
   });
 
   test('error text is HTML-escaped', function () {
     const html = getWebviewContent('', false, '<script>alert(1)</script>');
 
-    assert.ok(!html.includes('<script>alert(1)</script>'),
-      'raw script tag should not appear in error');
-    assert.ok(html.includes('&lt;script&gt;'),
-      'script tag should be escaped in error message');
+    assert.ok(!html.includes('<script>alert(1)</script>'), 'raw script tag should not appear in error');
+    assert.ok(html.includes('&lt;script&gt;'), 'script tag should be escaped in error message');
   });
 
   test('markdown content is HTML-escaped via renderMarkdown', function () {
     const html = getWebviewContent('<img src=x onerror=alert(1)>', false, null);
 
     // The markdown content should be escaped
-    assert.ok(!html.includes('<img src=x onerror=alert'),
-      'raw XSS in markdown should not appear unescaped');
+    assert.ok(!html.includes('<img src=x onerror=alert'), 'raw XSS in markdown should not appear unescaped');
   });
 
   test('error takes priority over loading when both are set', function () {
     // error is checked first in the conditional chain
     const html = getWebviewContent('', true, 'Error text');
 
-    assert.ok(html.includes('<div class="error-message">'),
-      'error should be shown even when isLoading=true');
+    assert.ok(html.includes('<div class="error-message">'), 'error should be shown even when isLoading=true');
     assert.ok(html.includes('Error text'));
-    assert.ok(!html.includes('<div class="loading">'),
-      'loading should not appear when error is set');
+    assert.ok(!html.includes('<div class="loading">'), 'loading should not appear when error is set');
   });
 
   test('markdown takes priority over empty state when markdown is non-empty', function () {
     const html = getWebviewContent('# Title', false, null);
 
     assert.ok(html.includes('<h1>Title</h1>'), 'markdown should be rendered');
-    assert.ok(!html.includes('<div class="empty-state">'),
-      'empty state should not appear when markdown is provided');
+    assert.ok(!html.includes('<div class="empty-state">'), 'empty state should not appear when markdown is provided');
   });
 });

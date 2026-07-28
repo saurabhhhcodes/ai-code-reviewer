@@ -12,7 +12,7 @@ function severityToGitHubLevel(severity) {
 
 function formatAnnotations(findings) {
   if (!Array.isArray(findings)) return [];
-  return findings.map(finding => {
+  return findings.map((finding) => {
     const rawLine = parseInt(finding.line, 10);
     const line = Number.isInteger(rawLine) && rawLine >= 1 ? rawLine : 1;
     return {
@@ -52,7 +52,7 @@ async function createCheckRun(octokit, owner, repo, sha, findings) {
     const batchAnnotations = batches[i];
     const isLastBatch = i === batches.length - 1;
 
-    const hasErrorSeverity = findings.some(f => f.severity === 'error');
+    const hasErrorSeverity = findings.some((f) => f.severity === 'error');
 
     const checkRunPayload = {
       owner,
@@ -85,9 +85,4 @@ async function createCheckRun(octokit, owner, repo, sha, findings) {
   };
 }
 
-export {
-  createCheckRun,
-  severityToGitHubLevel,
-  formatAnnotations,
-  batchAnnotations,
-};
+export { createCheckRun, severityToGitHubLevel, formatAnnotations, batchAnnotations };

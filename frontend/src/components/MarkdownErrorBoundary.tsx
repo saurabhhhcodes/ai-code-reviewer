@@ -1,4 +1,4 @@
-import { Component, ErrorInfo, ReactNode } from "react";
+import { Component, ErrorInfo, ReactNode } from 'react';
 
 interface Props {
   children: ReactNode;
@@ -20,7 +20,7 @@ class MarkdownErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("Markdown rendering error:", error, errorInfo);
+    console.error('Markdown rendering error:', error, errorInfo);
   }
 
   public render() {
@@ -28,29 +28,27 @@ class MarkdownErrorBoundary extends Component<Props, State> {
       return (
         <div
           style={{
-            padding: "20px",
-            background: "rgba(239, 68, 68, 0.1)",
-            border: "1px solid rgba(239, 68, 68, 0.3)",
-            borderRadius: "8px",
-            color: "#fca5a5",
-            fontSize: "12px",
-            fontFamily: "monospace",
-            margin: "16px 0",
+            padding: '20px',
+            background: 'rgba(239, 68, 68, 0.1)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            borderRadius: '8px',
+            color: '#fca5a5',
+            fontSize: '12px',
+            fontFamily: 'monospace',
+            margin: '16px 0',
           }}
         >
-          <div style={{ fontWeight: "bold", marginBottom: "8px", color: "#ef4444" }}>
+          <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#ef4444' }}>
             ⚠️ Failed to render Markdown preview
           </div>
-          <p style={{ marginBottom: "12px" }}>
-            An unexpected error occurred while parsing the markdown content.
-          </p>
+          <p style={{ marginBottom: '12px' }}>An unexpected error occurred while parsing the markdown content.</p>
           <pre
             style={{
-              background: "rgba(0,0,0,0.3)",
-              padding: "12px",
-              borderRadius: "4px",
-              overflowX: "auto",
-              color: "#d1d5db",
+              background: 'rgba(0,0,0,0.3)',
+              padding: '12px',
+              borderRadius: '4px',
+              overflowX: 'auto',
+              color: '#d1d5db',
             }}
           >
             {this.state.error?.toString()}

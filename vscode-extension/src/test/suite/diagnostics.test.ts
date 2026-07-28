@@ -26,12 +26,20 @@ let mockClearCount = 0;
 const vscode = require('vscode') as any;
 // Stub the APIs used by RepoSageDiagnostics
 (vscode as any).window = {
-  showWarningMessage: (msg: string) => { mockWarning = msg; return Promise.resolve(); },
-  showInformationMessage: (msg: string) => { mockInfo = msg; return Promise.resolve(); },
+  showWarningMessage: (msg: string) => {
+    mockWarning = msg;
+    return Promise.resolve();
+  },
+  showInformationMessage: (msg: string) => {
+    mockInfo = msg;
+    return Promise.resolve();
+  },
 };
 (vscode as any).languages = {
   createDiagnosticCollection: () => ({
-    clear: () => { mockClearCount++; },
+    clear: () => {
+      mockClearCount++;
+    },
     set: (_uri: any, diags: any[]) => {
       mockDiagnosticsSet.length = 0;
       for (const d of diags) {
@@ -53,7 +61,7 @@ const vscode = require('vscode') as any;
     public startLine: number,
     public startChar: number,
     public endLine: number,
-    public endChar: number
+    public endChar: number,
   ) {
     this.start = { line: startLine, character: startChar };
     this.end = { line: endLine, character: endChar };
@@ -65,7 +73,7 @@ const vscode = require('vscode') as any;
   constructor(
     public range: { start: { line: number; character: number }; end: { line: number; character: number } },
     public message: string,
-    public severity: number
+    public severity: number,
   ) {
     this.source = '';
   }
@@ -99,10 +107,7 @@ test('RepoSageDiagnostics constructor creates a diagnostics collection', () => {
 test('updateFromResponse clears previous diagnostics', () => {
   reset();
   const rq = new RepoSageDiagnostics();
-  rq.updateFromResponse(
-    { success: true, analysis: { fileReviews: {} } },
-    'foo.js'
-  );
+  rq.updateFromResponse({ success: true, analysis: { fileReviews: {} } }, 'foo.js');
   assert.equal(mockClearCount, 1);
   rq.dispose();
 });
@@ -110,10 +115,7 @@ test('updateFromResponse clears previous diagnostics', () => {
 test('updateFromResponse returns empty array when file has no review', () => {
   reset();
   const rq = new RepoSageDiagnostics();
-  rq.updateFromResponse(
-    { success: true, analysis: { fileReviews: {} } },
-    'foo.js'
-  );
+  rq.updateFromResponse({ success: true, analysis: { fileReviews: {} } }, 'foo.js');
   assert.deepEqual(mockDiagnosticsSet, []);
   rq.dispose();
 });
@@ -135,7 +137,7 @@ test('security items are mapped to Error severity', () => {
         },
       },
     },
-    'foo.js'
+    'foo.js',
   );
   assert.equal(mockDiagnosticsSet.length, 1);
   assert.equal(mockDiagnosticsSet[0].severity, DiagnosticSeverity.Error);
@@ -162,7 +164,7 @@ test('bug items are mapped to Error severity', () => {
         },
       },
     },
-    'foo.js'
+    'foo.js',
   );
   assert.equal(mockDiagnosticsSet.length, 1);
   assert.equal(mockDiagnosticsSet[0].severity, DiagnosticSeverity.Error);
@@ -187,7 +189,7 @@ test('optimization items are mapped to Warning severity', () => {
         },
       },
     },
-    'foo.js'
+    'foo.js',
   );
   assert.equal(mockDiagnosticsSet.length, 1);
   assert.equal(mockDiagnosticsSet[0].severity, DiagnosticSeverity.Warning);
@@ -212,7 +214,7 @@ test('styling items are mapped to Information severity', () => {
         },
       },
     },
-    'foo.js'
+    'foo.js',
   );
   assert.equal(mockDiagnosticsSet.length, 1);
   assert.equal(mockDiagnosticsSet[0].severity, DiagnosticSeverity.Information);
@@ -237,7 +239,7 @@ test('line numbers are converted from 1-based (backend) to 0-based (VS Code)', (
         },
       },
     },
-    'foo.js'
+    'foo.js',
   );
   // Backend sends 1-based line 5; VS Code uses 0-based, so range should start at 4
   assert.equal(mockDiagnosticsSet[0].line, 4);
@@ -261,7 +263,7 @@ test('line number 0 stays at 0', () => {
         },
       },
     },
-    'foo.js'
+    'foo.js',
   );
   assert.equal(mockDiagnosticsSet[0].line, 0);
   rq.dispose();
@@ -284,7 +286,7 @@ test('diagnostic source is set to RepoSage', () => {
         },
       },
     },
-    'foo.js'
+    'foo.js',
   );
   assert.equal(mockDiagnosticsSet[0].source, 'RepoSage');
   rq.dispose();
@@ -307,7 +309,7 @@ test('shows warning when at least one issue is found', () => {
         },
       },
     },
-    'foo.js'
+    'foo.js',
   );
   assert.ok(mockWarning.includes('1 issue'));
   rq.dispose();
@@ -330,7 +332,7 @@ test('shows info when no issues found', () => {
         },
       },
     },
-    'foo.js'
+    'foo.js',
   );
   assert.ok(mockInfo.includes('no issues'));
   rq.dispose();
@@ -369,13 +371,13 @@ test('multiple items across categories are all included', () => {
         },
       },
     },
-    'foo.js'
+    'foo.js',
   );
   assert.equal(mockDiagnosticsSet.length, 4);
-  const severities = mockDiagnosticsSet.map(d => d.severity);
-  assert.ok(severities.includes(DiagnosticSeverity.Error));    // security
-  assert.ok(severities.includes(DiagnosticSeverity.Error));    // bug
-  assert.ok(severities.includes(DiagnosticSeverity.Warning));  // optimization
+  const severities = mockDiagnosticsSet.map((d) => d.severity);
+  assert.ok(severities.includes(DiagnosticSeverity.Error)); // security
+  assert.ok(severities.includes(DiagnosticSeverity.Error)); // bug
+  assert.ok(severities.includes(DiagnosticSeverity.Warning)); // optimization
   assert.ok(severities.includes(DiagnosticSeverity.Information)); // styling
   rq.dispose();
 });

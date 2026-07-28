@@ -41,8 +41,8 @@ Accepts a repository URL plus configuration options, forwards the request to the
 
 **Body**
 
-| Field      | Type   | Required | Description                                                                 |
-| ---------- | ------ | -------- | --------------------------------------------------------------------------- |
+| Field      | Type   | Required | Description                                                                |
+| ---------- | ------ | -------- | -------------------------------------------------------------------------- |
 | `repoUrl`  | string | Yes      | Full HTTPS URL of the Git repository to analyze (e.g. a GitHub repo URL).  |
 | `model`    | string | Yes      | AI model identifier to use for analysis (e.g. `"gpt-4o"`, `"gemini-pro"`). |
 | `language` | string | No       | Primary programming language hint (e.g. `"python"`, `"javascript"`).       |
@@ -61,28 +61,28 @@ Accepts a repository URL plus configuration options, forwards the request to the
 
 **Status `200 OK`**
 
-| Field         | Type            | Description                                                     |
-| ------------- | --------------- | --------------------------------------------------------------- |
-| `bugs`        | array\<Finding> | List of bug-related findings across the repository.             |
-| `security`    | array\<Finding> | List of security vulnerability findings.                        |
-| `optimization`| array\<Finding> | List of performance and code-quality improvement suggestions.   |
-| `files`       | array\<File>    | Metadata for every file that was analyzed.                      |
+| Field          | Type            | Description                                                   |
+| -------------- | --------------- | ------------------------------------------------------------- |
+| `bugs`         | array\<Finding> | List of bug-related findings across the repository.           |
+| `security`     | array\<Finding> | List of security vulnerability findings.                      |
+| `optimization` | array\<Finding> | List of performance and code-quality improvement suggestions. |
+| `files`        | array\<File>    | Metadata for every file that was analyzed.                    |
 
 **Finding object**
 
-| Field       | Type   | Description                                          |
-| ----------- | ------ | ---------------------------------------------------- |
-| `file`      | string | Relative path of the file containing the finding.   |
-| `line`      | number | Line number where the issue was detected.            |
-| `severity`  | string | `"low"`, `"medium"`, or `"high"`.                   |
-| `message`   | string | Human-readable description of the finding.          |
-| `suggestion`| string | Recommended fix or improvement.                     |
+| Field        | Type   | Description                                       |
+| ------------ | ------ | ------------------------------------------------- |
+| `file`       | string | Relative path of the file containing the finding. |
+| `line`       | number | Line number where the issue was detected.         |
+| `severity`   | string | `"low"`, `"medium"`, or `"high"`.                 |
+| `message`    | string | Human-readable description of the finding.        |
+| `suggestion` | string | Recommended fix or improvement.                   |
 
 **File object**
 
-| Field    | Type   | Description                           |
-| -------- | ------ | ------------------------------------- |
-| `path`   | string | Relative path of the file.            |
+| Field    | Type   | Description                              |
+| -------- | ------ | ---------------------------------------- |
+| `path`   | string | Relative path of the file.               |
 | `status` | string | `"analyzed"`, `"skipped"`, or `"error"`. |
 
 **Example response body**
@@ -118,8 +118,8 @@ Accepts a repository URL plus configuration options, forwards the request to the
   ],
   "files": [
     { "path": "src/utils/parser.py", "status": "analyzed" },
-    { "path": "src/api/routes.py",   "status": "analyzed" },
-    { "path": "README.md",           "status": "skipped"  }
+    { "path": "src/api/routes.py", "status": "analyzed" },
+    { "path": "README.md", "status": "skipped" }
   ]
 }
 ```
@@ -160,12 +160,12 @@ Analyzes source code content and returns categorized findings.
 
 **Body**
 
-| Field      | Type             | Required | Description                                                                    |
-| ---------- | ---------------- | -------- | ------------------------------------------------------------------------------ |
-| `repoUrl`  | string           | Yes      | Full HTTPS URL of the repository to clone and analyze.                         |
-| `model`    | string           | Yes      | AI model identifier passed through to the underlying LLM client.              |
-| `language` | string           | No       | Language hint used to filter files and tune prompts.                           |
-| `files`    | array\<string>   | No       | Explicit list of relative file paths to analyze; analyzes all files if omitted.|
+| Field      | Type           | Required | Description                                                                     |
+| ---------- | -------------- | -------- | ------------------------------------------------------------------------------- |
+| `repoUrl`  | string         | Yes      | Full HTTPS URL of the repository to clone and analyze.                          |
+| `model`    | string         | Yes      | AI model identifier passed through to the underlying LLM client.                |
+| `language` | string         | No       | Language hint used to filter files and tune prompts.                            |
+| `files`    | array\<string> | No       | Explicit list of relative file paths to analyze; analyzes all files if omitted. |
 
 **Example request body**
 
@@ -230,28 +230,26 @@ Converses with the AI engine about the provided codebase. Injects repository str
 
 **Body**
 
-| Field      | Type             | Required | Description                                                               |
-| ---------- | ---------------- | -------- | ------------------------------------------------------------------------ |
-| `files`    | array\<FileItem> | Yes      | List of files with `{ name: string, content: string }`.                  |
-| `message`  | string           | Yes      | User message/question.                                                   |
-| `history`  | array\<object>  | No       | Prior chat messages as `[{ role: "user"|"assistant", content: string }]`. |
-| `model`    | string           | No       | Groq model name (default: `llama-3.3-70b-versatile`).                  |
-| `useRag`   | boolean          | No       | Whether to retrieve RAG chunks before answering (default: `false`).     |
+| Field     | Type             | Required | Description                                                         |
+| --------- | ---------------- | -------- | ------------------------------------------------------------------- |
+| `files`   | array\<FileItem> | Yes      | List of files with `{ name: string, content: string }`.             |
+| `message` | string           | Yes      | User message/question.                                              |
+| `history` | array\<object>   | No       | Prior chat messages as `[{ role: "user"                             | "assistant", content: string }]`. |
+| `model`   | string           | No       | Groq model name (default: `llama-3.3-70b-versatile`).               |
+| `useRag`  | boolean          | No       | Whether to retrieve RAG chunks before answering (default: `false`). |
 
 **FileItem object**
 
-| Field    | Type   | Description                    |
-| -------- | ------ | ------------------------------ |
-| `name`   | string | Relative file path.            |
-| `content`| string | Full file contents.            |
+| Field     | Type   | Description         |
+| --------- | ------ | ------------------- |
+| `name`    | string | Relative file path. |
+| `content` | string | Full file contents. |
 
 **Example request body**
 
 ```json
 {
-  "files": [
-    { "name": "src/utils/helper.py", "content": "def add(a, b):\n    return a + b" }
-  ],
+  "files": [{ "name": "src/utils/helper.py", "content": "def add(a, b):\n    return a + b" }],
   "message": "What does this file do?",
   "history": [],
   "model": "llama-3.3-70b-versatile",
@@ -263,9 +261,9 @@ Converses with the AI engine about the provided codebase. Injects repository str
 
 **Status `200 OK`**
 
-| Field       | Type   | Description                          |
-| ----------- | ------ | ------------------------------------ |
-| `response`  | string | AI assistant reply (HTML sanitized). |
+| Field      | Type   | Description                          |
+| ---------- | ------ | ------------------------------------ |
+| `response` | string | AI assistant reply (HTML sanitized). |
 
 **Example response body**
 
@@ -303,24 +301,24 @@ Reviews code additions in a pull request diff using the Groq LLM. Returns struct
 
 **Body**
 
-| Field   | Type                   | Required | Description                            |
-| ------- | ---------------------- | -------- | -------------------------------------- |
-| `files` | array\<FileChanges>  | Yes      | List of changed files with line diffs. |
-| `model` | string                | No       | Groq model name (default: `llama-3.3-70b-versatile`). |
+| Field   | Type                | Required | Description                                           |
+| ------- | ------------------- | -------- | ----------------------------------------------------- |
+| `files` | array\<FileChanges> | Yes      | List of changed files with line diffs.                |
+| `model` | string              | No       | Groq model name (default: `llama-3.3-70b-versatile`). |
 
 **FileChanges object**
 
-| Field     | Type                    | Description                                      |
-| --------- | ----------------------- | ------------------------------------------------ |
-| `path`    | string                 | Relative file path.                              |
-| `changes` | array\<DiffChange>    | Line additions in this file.                     |
+| Field     | Type               | Description                  |
+| --------- | ------------------ | ---------------------------- |
+| `path`    | string             | Relative file path.          |
+| `changes` | array\<DiffChange> | Line additions in this file. |
 
 **DiffChange object**
 
-| Field     | Type   | Description                   |
-| --------- | ------ | ----------------------------- |
+| Field     | Type   | Description                  |
+| --------- | ------ | ---------------------------- |
 | `line`    | number | Line number in the new file. |
-| `content` | string | New line content.             |
+| `content` | string | New line content.            |
 
 **Example request body**
 
@@ -343,21 +341,21 @@ Reviews code additions in a pull request diff using the Groq LLM. Returns struct
 
 **Status `200 OK`**
 
-| Field      | Type                        | Description                    |
-| ---------- | --------------------------- | ------------------------------ |
-| `comments` | array\<ReviewComment>      | List of inline review comments. |
+| Field      | Type                  | Description                     |
+| ---------- | --------------------- | ------------------------------- |
+| `comments` | array\<ReviewComment> | List of inline review comments. |
 
 **ReviewComment object**
 
-| Field  | Type   | Description                                         |
-| ------ | ------ | --------------------------------------------------- |
-| `path` | string | File path the comment refers to.                    |
-| `line` | number | Line number.                                        |
-| `body` | string | Markdown-formatted review text (HTML-sanitized).    |
+| Field  | Type   | Description                                      |
+| ------ | ------ | ------------------------------------------------ |
+| `path` | string | File path the comment refers to.                 |
+| `line` | number | Line number.                                     |
+| `body` | string | Markdown-formatted review text (HTML-sanitized). |
 
 **Example response body**
 
-```json
+````json
 {
   "comments": [
     {
@@ -367,7 +365,7 @@ Reviews code additions in a pull request diff using the Groq LLM. Returns struct
     }
   ]
 }
-```
+````
 
 #### curl Example
 
@@ -396,20 +394,18 @@ Splits source files into text chunks suitable for RAG (Retrieval-Augmented Gener
 
 **Body**
 
-| Field          | Type                  | Required | Description                                           |
-| -------------- | --------------------- | -------- | ----------------------------------------------------- |
-| `files`        | array\<FileItem>     | Yes      | Files to split (same FileItem shape as /chat).       |
-| `chunk_size`   | number               | No       | Max characters per chunk (default: `1000`).          |
-| `chunk_overlap`| number               | No       | Overlap between chunks (default: `200`).             |
-| `repo_url`     | string               | No       | Repository URL stored in chunk metadata.               |
+| Field           | Type             | Required | Description                                    |
+| --------------- | ---------------- | -------- | ---------------------------------------------- |
+| `files`         | array\<FileItem> | Yes      | Files to split (same FileItem shape as /chat). |
+| `chunk_size`    | number           | No       | Max characters per chunk (default: `1000`).    |
+| `chunk_overlap` | number           | No       | Overlap between chunks (default: `200`).       |
+| `repo_url`      | string           | No       | Repository URL stored in chunk metadata.       |
 
 **Example request body**
 
 ```json
 {
-  "files": [
-    { "name": "src/app.py", "content": "..." }
-  ],
+  "files": [{ "name": "src/app.py", "content": "..." }],
   "chunk_size": 1000,
   "chunk_overlap": 200,
   "repo_url": "https://github.com/user/repo"
@@ -420,19 +416,19 @@ Splits source files into text chunks suitable for RAG (Retrieval-Augmented Gener
 
 **Status `200 OK`**
 
-| Field          | Type             | Description                          |
-| -------------- | ---------------- | ------------------------------------ |
-| `chunks`       | array\<Chunk>  | List of text chunks with metadata.   |
-| `total_chunks` | number          | Total number of chunks produced.     |
-| `total_files`  | number          | Number of input files processed.     |
+| Field          | Type          | Description                        |
+| -------------- | ------------- | ---------------------------------- |
+| `chunks`       | array\<Chunk> | List of text chunks with metadata. |
+| `total_chunks` | number        | Total number of chunks produced.   |
+| `total_files`  | number        | Number of input files processed.   |
 
 **Chunk object**
 
-| Field      | Type   | Description                                                    |
-| ---------- | ------ | -------------------------------------------------------------- |
-| `chunk_id` | string | SHA256-based 16-character hex identifier.                      |
-| `content`  | string | Chunk text content.                                            |
-| `metadata` | object | Source file, language, line range, chunk index, repo URL.       |
+| Field      | Type   | Description                                               |
+| ---------- | ------ | --------------------------------------------------------- |
+| `chunk_id` | string | SHA256-based 16-character hex identifier.                 |
+| `content`  | string | Chunk text content.                                       |
+| `metadata` | object | Source file, language, line range, chunk index, repo URL. |
 
 **Example response body**
 
@@ -487,9 +483,9 @@ Queries the RAG (ChromaDB) vector store for semantically relevant code chunks gi
 
 **Body**
 
-| Field      | Type   | Required | Description                        |
-| ---------- | ------ | -------- | ---------------------------------- |
-| `question` | string | Yes      | Natural-language query.            |
+| Field      | Type   | Required | Description             |
+| ---------- | ------ | -------- | ----------------------- |
+| `question` | string | Yes      | Natural-language query. |
 
 **Example request body**
 
@@ -503,19 +499,19 @@ Queries the RAG (ChromaDB) vector store for semantically relevant code chunks gi
 
 **Status `200 OK`**
 
-| Field          | Type               | Description                        |
-| -------------- | ------------------ | ---------------------------------- |
-| `chunks`       | array\<RagChunk> | Ranked list of relevant chunks.    |
-| `total_chunks` | number            | Number of chunks returned.         |
+| Field          | Type             | Description                     |
+| -------------- | ---------------- | ------------------------------- |
+| `chunks`       | array\<RagChunk> | Ranked list of relevant chunks. |
+| `total_chunks` | number           | Number of chunks returned.      |
 
 **RagChunk object**
 
-| Field              | Type   | Description                                          |
-| ------------------ | ------ | ---------------------------------------------------- |
-| `chunk_id`         | string | Unique chunk identifier.                             |
-| `content`          | string | Chunk text content.                                  |
-| `metadata`         | object | Source file, language, line range, repo URL.         |
-| `similarity_score` | number | Cosine similarity score (1 = perfect match).        |
+| Field              | Type   | Description                                  |
+| ------------------ | ------ | -------------------------------------------- |
+| `chunk_id`         | string | Unique chunk identifier.                     |
+| `content`          | string | Chunk text content.                          |
+| `metadata`         | object | Source file, language, line range, repo URL. |
+| `similarity_score` | number | Cosine similarity score (1 = perfect match). |
 
 **Example response body**
 
@@ -551,10 +547,10 @@ curl -X POST http://localhost:8000/api/rag/query \
 
 Both services return standard HTTP error codes with a JSON body.
 
-| Status | Meaning               | Example body                                      |
-| ------ | --------------------- | ------------------------------------------------- |
-| `400`  | Bad Request           | `{ "error": "repoUrl is required" }`              |
-| `422`  | Unprocessable Entity  | `{ "detail": [{ "msg": "field required", ... }] }`|
-| `500`  | Internal Server Error | `{ "error": "Failed to clone repository" }`       |
+| Status | Meaning               | Example body                                       |
+| ------ | --------------------- | -------------------------------------------------- |
+| `400`  | Bad Request           | `{ "error": "repoUrl is required" }`               |
+| `422`  | Unprocessable Entity  | `{ "detail": [{ "msg": "field required", ... }] }` |
+| `500`  | Internal Server Error | `{ "error": "Failed to clone repository" }`        |
 
 > **Note:** `422` responses are generated automatically by FastAPI when request validation fails and follow the standard Pydantic error schema.

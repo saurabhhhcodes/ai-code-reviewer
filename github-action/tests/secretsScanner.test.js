@@ -19,7 +19,7 @@ test('rules is exported as an array', () => {
 });
 
 test('rules contains at least the expected secret types', () => {
-  const types = rules.map(r => r.type);
+  const types = rules.map((r) => r.type);
   assert.ok(types.includes('AWS Access Key Check'));
   assert.ok(types.includes('GitHub Personal Access Token'));
   assert.ok(types.includes('Stripe Secret API Key'));
@@ -58,9 +58,7 @@ test('totalChanges reflects the input length', () => {
 // ---------------------------------------------------------------------------
 
 test('detects AWS Access Key (AKIA followed by 16 alphanumeric)', () => {
-  const result = scanSecretsInChanges([
-    makeChange(10, 'AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE')
-  ]);
+  const result = scanSecretsInChanges([makeChange(10, 'AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE')]);
   assert.equal(result.findings.length, 1);
   assert.equal(result.findings[0].line, 10);
   assert.equal(result.findings[0].type, 'security');
@@ -75,11 +73,9 @@ test('detects AWS Access Key (AKIA followed by 16 alphanumeric)', () => {
 test('detects GitHub PAT (ghp_ followed by exactly 36 alphanumeric chars)', () => {
   // The ghp_ token matches both the GitHub PAT rule and the Common Env Cred rule
   // (because the variable name contains the token keyword). Two findings expected.
-  const result = scanSecretsInChanges([
-    makeChange(5, 'const mytoken = "ghp_abcdefghijklmnopqrstuvwxyz1234567890";')
-  ]);
+  const result = scanSecretsInChanges([makeChange(5, 'const mytoken = "ghp_abcdefghijklmnopqrstuvwxyz1234567890";')]);
   assert.ok(result.findings.length >= 1, `Expected at least 1 finding, got ${result.findings.length}`);
-  const patFinding = result.findings.find(f => f.comment.includes('GitHub Personal Access Token'));
+  const patFinding = result.findings.find((f) => f.comment.includes('GitHub Personal Access Token'));
   assert.ok(patFinding, 'GitHub PAT should be detected');
   assert.equal(patFinding.line, 5);
 });
@@ -91,9 +87,7 @@ test('detects GitHub PAT (ghp_ followed by exactly 36 alphanumeric chars)', () =
 test('detects Google Cloud API key (AIzaSy followed by 33 chars)', () => {
   // Using GCP key format to avoid sk_live_ prefix being blocked by GitHub push protection.
   // The GCP rule matches AIzaSy + 33 chars from [a-zA-Z0-9-_]
-  const result = scanSecretsInChanges([
-    makeChange(3, 'gcp_key = AIzaSyabcdefghijklmnopqrstuvwxyz123456789012345')
-  ]);
+  const result = scanSecretsInChanges([makeChange(3, 'gcp_key = AIzaSyabcdefghijklmnopqrstuvwxyz123456789012345')]);
   assert.equal(result.findings.length, 1);
   assert.ok(result.findings[0].comment.includes('Google Cloud API Key'));
 });
@@ -103,17 +97,13 @@ test('detects Google Cloud API key (AIzaSy followed by 33 chars)', () => {
 // ---------------------------------------------------------------------------
 
 test('detects RSA private key header', () => {
-  const result = scanSecretsInChanges([
-    makeChange(7, '-----BEGIN RSA PRIVATE KEY-----')
-  ]);
+  const result = scanSecretsInChanges([makeChange(7, '-----BEGIN RSA PRIVATE KEY-----')]);
   assert.equal(result.findings.length, 1);
   assert.ok(result.findings[0].comment.includes('Generic Private Key'));
 });
 
 test('detects BEGIN PRIVATE KEY (PKCS8 format)', () => {
-  const result = scanSecretsInChanges([
-    makeChange(1, '-----BEGIN PRIVATE KEY-----')
-  ]);
+  const result = scanSecretsInChanges([makeChange(1, '-----BEGIN PRIVATE KEY-----')]);
   assert.equal(result.findings.length, 1);
 });
 
@@ -122,24 +112,18 @@ test('detects BEGIN PRIVATE KEY (PKCS8 format)', () => {
 // ---------------------------------------------------------------------------
 
 test('detects password= assignment', () => {
-  const result = scanSecretsInChanges([
-    makeChange(2, 'const password = "supersecret";')
-  ]);
+  const result = scanSecretsInChanges([makeChange(2, 'const password = "supersecret";')]);
   assert.equal(result.findings.length, 1);
   assert.ok(result.findings[0].comment.includes('Common Environment Credential'));
 });
 
 test('detects secret= assignment', () => {
-  const result = scanSecretsInChanges([
-    makeChange(4, 'API_SECRET="abc123def456"')
-  ]);
+  const result = scanSecretsInChanges([makeChange(4, 'API_SECRET="abc123def456"')]);
   assert.equal(result.findings.length, 1);
 });
 
 test('detects token= assignment with any non-empty value', () => {
-  const result = scanSecretsInChanges([
-    makeChange(6, 'token = "anyvalue123"')
-  ]);
+  const result = scanSecretsInChanges([makeChange(6, 'token = "anyvalue123"')]);
   assert.equal(result.findings.length, 1);
 });
 
@@ -151,11 +135,11 @@ test('detects multiple different secrets on the same change', () => {
   // Using GCP key format instead of Stripe sk_live_ to avoid GitHub push protection blocks.
   // Both the AWS key and the GCP key should be found in one change
   const result = scanSecretsInChanges([
-    makeChange(1, 'AWS_KEY=AKIAIOSFODNN7EXAMPLE; GCP_KEY=AIzaSyabcdefghijklmnopqrstuvwxyz123456789012345')
+    makeChange(1, 'AWS_KEY=AKIAIOSFODNN7EXAMPLE; GCP_KEY=AIzaSyabcdefghijklmnopqrstuvwxyz123456789012345'),
   ]);
   assert.equal(result.findings.length, 2, `Expected 2, got ${result.findings.length}`);
-  const types = result.findings.map(f => f.type);
-  assert.ok(types.every(t => t === 'security'));
+  const types = result.findings.map((f) => f.type);
+  assert.ok(types.every((t) => t === 'security'));
 });
 
 // ---------------------------------------------------------------------------
@@ -199,35 +183,26 @@ test('regex lastIndex is reset between checks so global flags do not skip matche
 test('skips change with no content field', () => {
   const result = scanSecretsInChanges([
     makeChange(1, 'password = "hunter2"'),
-    { line: 2 }  // missing content
+    { line: 2 }, // missing content
   ]);
   assert.equal(result.findings.length, 1);
   assert.equal(result.findings[0].line, 1);
 });
 
 test('skips change with null content', () => {
-  const result = scanSecretsInChanges([
-    { line: 1, content: null },
-    makeChange(2, 'password = "hunter2"'),
-  ]);
+  const result = scanSecretsInChanges([{ line: 1, content: null }, makeChange(2, 'password = "hunter2"')]);
   assert.equal(result.findings.length, 1);
   assert.equal(result.findings[0].line, 2);
 });
 
 test('skips change with undefined content', () => {
-  const result = scanSecretsInChanges([
-    { line: 1, content: undefined },
-    makeChange(2, 'password = "hunter2"'),
-  ]);
+  const result = scanSecretsInChanges([{ line: 1, content: undefined }, makeChange(2, 'password = "hunter2"')]);
   assert.equal(result.findings.length, 1);
   assert.equal(result.findings[0].line, 2);
 });
 
 test('skips null change entries', () => {
-  const result = scanSecretsInChanges([
-    null,
-    makeChange(1, 'password = "hunter2"'),
-  ]);
+  const result = scanSecretsInChanges([null, makeChange(1, 'password = "hunter2"')]);
   assert.equal(result.findings.length, 1);
 });
 
@@ -251,24 +226,18 @@ test('findings preserve the correct change line number', () => {
 // ---------------------------------------------------------------------------
 
 test('finding comment includes the rule type', () => {
-  const result = scanSecretsInChanges([
-    makeChange(15, 'password = "hunter2"'),
-  ]);
+  const result = scanSecretsInChanges([makeChange(15, 'password = "hunter2"')]);
   assert.ok(result.findings.length >= 1);
   assert.ok(result.findings[0].comment.includes('Common Environment Credential'));
 });
 
 test('finding comment includes the line number', () => {
-  const result = scanSecretsInChanges([
-    makeChange(15, 'password = "hunter2"'),
-  ]);
+  const result = scanSecretsInChanges([makeChange(15, 'password = "hunter2"')]);
   assert.ok(result.findings[0].comment.includes('15'));
 });
 
 test('finding comment includes actionable suggestion', () => {
-  const result = scanSecretsInChanges([
-    makeChange(1, '-----BEGIN RSA PRIVATE KEY-----'),
-  ]);
+  const result = scanSecretsInChanges([makeChange(1, '-----BEGIN RSA PRIVATE KEY-----')]);
   assert.ok(result.findings[0].comment.includes('environment variable'));
   assert.ok(result.findings[0].comment.includes('DO NOT commit'));
 });

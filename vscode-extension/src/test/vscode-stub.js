@@ -45,15 +45,29 @@ class MockDiagnostic {
 }
 
 class MockDiagnosticCollection {
-  clear() { diagnosticsMap.clear(); }
-  set(uri, diagnostics) { diagnosticsMap.set(uri, diagnostics); }
-  delete(uri) { diagnosticsMap.delete(uri); }
-  dispose() { diagnosticsMap.clear(); }
+  clear() {
+    diagnosticsMap.clear();
+  }
+  set(uri, diagnostics) {
+    diagnosticsMap.set(uri, diagnostics);
+  }
+  delete(uri) {
+    diagnosticsMap.delete(uri);
+  }
+  dispose() {
+    diagnosticsMap.clear();
+  }
 }
 
 const mockWindow = {
-  showWarningMessage: (msg) => { warningMessage = msg; return Promise.resolve(msg); },
-  showInformationMessage: (msg) => { infoMessage = msg; return Promise.resolve(msg); },
+  showWarningMessage: (msg) => {
+    warningMessage = msg;
+    return Promise.resolve(msg);
+  },
+  showInformationMessage: (msg) => {
+    infoMessage = msg;
+    return Promise.resolve(msg);
+  },
   showErrorMessage: () => Promise.resolve(),
 };
 
@@ -83,5 +97,7 @@ module.exports = {
     diagnosticsMap.clear();
     mockApiUrl = 'http://localhost:5000';
   },
-  setApiUrl: (url) => { mockApiUrl = url; },
+  setApiUrl: (url) => {
+    mockApiUrl = url;
+  },
 };

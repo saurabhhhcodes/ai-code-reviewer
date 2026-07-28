@@ -6,7 +6,7 @@ import { verifyWebhookSignature } from '../utils/signatureVerifier.js';
 test('verifyWebhookSignature should validate signatures correctly', () => {
   const secret = 'my_secret_token';
   const rawBody = JSON.stringify({ action: 'opened', pull_request: {} });
-  
+
   const hmac = crypto.createHmac('sha256', secret);
   const expectedSignature = `sha256=${hmac.update(rawBody).digest('hex')}`;
 

@@ -54,11 +54,7 @@ test('buildContentHashCache skips unreadable files silently', async () => {
     const cache = buildContentHashCache([goodFile, missingFile]);
 
     assert.ok(cache[goodFile], 'good.js should be in cache');
-    assert.equal(
-      cache[missingFile],
-      undefined,
-      'missing.js should not be in cache'
-    );
+    assert.equal(cache[missingFile], undefined, 'missing.js should not be in cache');
   });
 });
 
@@ -73,11 +69,7 @@ test('getFilesToReview identifies unchanged files (same hash)', async () => {
 
     const result = getFilesToReview([file], previousCache);
 
-    assert.equal(
-      result.filesToReview.length,
-      0,
-      'unchanged file should not be in review list'
-    );
+    assert.equal(result.filesToReview.length, 0, 'unchanged file should not be in review list');
     assert.equal(result.changedCount, 0);
   });
 });
@@ -94,10 +86,7 @@ test('getFilesToReview flags changed files (different hash)', async () => {
 
     const result = getFilesToReview([file], previousCache);
 
-    assert.ok(
-      result.filesToReview.includes(file),
-      'changed file should be in review list'
-    );
+    assert.ok(result.filesToReview.includes(file), 'changed file should be in review list');
     assert.equal(result.changedCount, 1);
   });
 });
@@ -114,14 +103,8 @@ test('getFilesToReview flags new files (not in previous cache)', async () => {
 
     const result = getFilesToReview([fileA, fileB], previousCache);
 
-    assert.ok(
-      !result.filesToReview.includes(fileA),
-      'existing file should not be flagged (unchanged)'
-    );
-    assert.ok(
-      result.filesToReview.includes(fileB),
-      'new file should be flagged'
-    );
+    assert.ok(!result.filesToReview.includes(fileA), 'existing file should not be flagged (unchanged)');
+    assert.ok(result.filesToReview.includes(fileB), 'new file should be flagged');
     assert.equal(result.changedCount, 1);
     assert.equal(result.totalCount, 2);
   });

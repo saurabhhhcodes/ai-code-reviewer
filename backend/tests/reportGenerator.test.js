@@ -93,9 +93,14 @@ test('reportGenerator: generateJSONReport handles null reviewResult gracefully',
 test('reportGenerator: generateJSONReport handles fileReviews with no issues', () => {
   const outputPath = path.join(TMPDIR, `test-clean-${Date.now()}.json`);
   try {
-    const result = generateJSONReport('clean-repo', [{ name: 'src/index.js' }], {
-      fileReviews: { 'src/index.js': { bugs: [], security: [], optimization: [], styling: [] } },
-    }, outputPath);
+    const result = generateJSONReport(
+      'clean-repo',
+      [{ name: 'src/index.js' }],
+      {
+        fileReviews: { 'src/index.js': { bugs: [], security: [], optimization: [], styling: [] } },
+      },
+      outputPath,
+    );
     assert.equal(result.success, true);
     assert.equal(result.findingCount, 0);
   } finally {
@@ -137,19 +142,24 @@ test('reportGenerator: generateHTMLReport handles custom or unknown severities i
   try {
     const repoName = 'custom-severity-repo';
     const files = [{ name: 'src/app.js' }];
-    const result = generateHTMLReport(repoName, files, {
-      fileReviews: {
-        'src/app.js': {
-          bugs: [
-            { line: 5, description: 'Normal bug', rule: 'bug-rule' },
-            { line: 6, description: 'Unknown severity bug', rule: 'custom-rule', severity: 'critical' }
-          ],
-          security: [],
-          optimization: [],
-          styling: [],
-        }
-      }
-    }, outputPath);
+    const result = generateHTMLReport(
+      repoName,
+      files,
+      {
+        fileReviews: {
+          'src/app.js': {
+            bugs: [
+              { line: 5, description: 'Normal bug', rule: 'bug-rule' },
+              { line: 6, description: 'Unknown severity bug', rule: 'custom-rule', severity: 'critical' },
+            ],
+            security: [],
+            optimization: [],
+            styling: [],
+          },
+        },
+      },
+      outputPath,
+    );
     assert.equal(result.success, true);
     assert.equal(result.findingCount, 2);
   } finally {
@@ -189,10 +199,10 @@ test('reportGenerator: supports both rule and rule_id properties in input findin
       'src/file.js': {
         bugs: [
           { line: 5, rule_id: 'my-custom-bug-rule', description: 'Some bug' },
-          { line: 10, rule: 'legacy-bug-rule', message: 'Legacy bug' }
-        ]
-      }
-    }
+          { line: 10, rule: 'legacy-bug-rule', message: 'Legacy bug' },
+        ],
+      },
+    },
   };
 
   try {

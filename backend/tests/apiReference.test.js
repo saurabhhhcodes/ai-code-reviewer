@@ -17,10 +17,7 @@ test('app has trust proxy set to 1', () => {
 });
 
 test('POST /api/analyze returns 200 with success message', async () => {
-  const response = await request(apiRefApp)
-    .post('/api/analyze')
-    .send({})
-    .set('Accept', 'application/json');
+  const response = await request(apiRefApp).post('/api/analyze').send({}).set('Accept', 'application/json');
 
   assert.strictEqual(response.status, 200);
   assert.strictEqual(response.body.success, true);
@@ -33,10 +30,7 @@ test('POST /api/analyze returns JSON content-type', async () => {
     .send({ repoUrl: 'https://github.com/example/repo', model: 'gpt-4o' })
     .set('Accept', 'application/json');
 
-  assert.ok(
-    response.headers['content-type'].includes('application/json'),
-    'Content-Type should be application/json'
-  );
+  assert.ok(response.headers['content-type'].includes('application/json'), 'Content-Type should be application/json');
 });
 
 test('GET /api/analyze returns 404', async () => {

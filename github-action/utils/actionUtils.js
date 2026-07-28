@@ -69,7 +69,7 @@ export function normalizeReviewLineNumber(value) {
  */
 export function sanitizeMarkdownCodeBlocks(commentText) {
   if (typeof commentText !== 'string') return commentText;
-  
+
   const matches = commentText.match(/```/g);
   if (matches && matches.length % 2 !== 0) {
     return commentText.endsWith('\n') ? commentText + '```' : commentText + '\n```';

@@ -12,10 +12,11 @@ export async function connectDatabase() {
   if (isConnected) return;
   if (connectionPromise) return connectionPromise;
 
-  connectionPromise = mongoose.connect(MONGODB_URI, {
-    serverSelectionTimeoutMS: process.env.NODE_ENV === 'test' ? 100 : 5000,
-    socketTimeoutMS: 45000,
-  })
+  connectionPromise = mongoose
+    .connect(MONGODB_URI, {
+      serverSelectionTimeoutMS: process.env.NODE_ENV === 'test' ? 100 : 5000,
+      socketTimeoutMS: 45000,
+    })
     .then((conn) => {
       isConnected = true;
       displayStartupBanner(true);
@@ -41,7 +42,9 @@ function displayStartupBanner(connected) {
   if (connected) {
     console.log(`\n${border}\n  MongoDB connected - Analytics and Sessions enabled\n${border}\n`);
   } else {
-    console.warn(`\n${border}\n  MongoDB NOT connected - Running in DEGRADED mode\n  Analytics will not be persisted across restarts.\n  Set MONGODB_URI in your environment to enable persistence.\n${border}\n`);
+    console.warn(
+      `\n${border}\n  MongoDB NOT connected - Running in DEGRADED mode\n  Analytics will not be persisted across restarts.\n  Set MONGODB_URI in your environment to enable persistence.\n${border}\n`,
+    );
   }
 }
 
@@ -65,7 +68,7 @@ export async function ensureConnection() {
     } catch {
       // retry
     }
-    await new Promise(r => setTimeout(r, RECONNECT_INTERVAL_MS));
+    await new Promise((r) => setTimeout(r, RECONNECT_INTERVAL_MS));
   }
 
   reconnectAttempts = 0;

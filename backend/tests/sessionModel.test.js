@@ -53,7 +53,9 @@ test('Session schema has createdAt Date field', () => {
 
 test('Session schema has TTL index on absoluteExpiry for sliding-window expiry', () => {
   const indexes = Session.schema.indexes();
-  const absIndex = indexes.find(([fields, opts]) => fields.absoluteExpiry === 1 && opts.expireAfterSeconds !== undefined);
+  const absIndex = indexes.find(
+    ([fields, opts]) => fields.absoluteExpiry === 1 && opts.expireAfterSeconds !== undefined,
+  );
   assert.ok(absIndex, 'TTL index on absoluteExpiry should be defined');
   assert.equal(absIndex[1].expireAfterSeconds, 0, 'TTL should be 0 seconds (exact expiry)');
 });

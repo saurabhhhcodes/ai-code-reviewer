@@ -26,7 +26,7 @@ function generateJSONReport(repoName, files, reviewResult, outputPath) {
     for (const [filePath, review] of Object.entries(reviewResult.fileReviews)) {
       const processIssues = (issues, severity) => {
         if (Array.isArray(issues)) {
-          issues.forEach(issue => {
+          issues.forEach((issue) => {
             const finalSeverity = issue.severity || severity;
             const category = categorizeFinding(issue);
             const finding = {
@@ -87,7 +87,7 @@ function generateHTMLReport(repoName, files, reviewResult, outputPath) {
     for (const [filePath, review] of Object.entries(reviewResult.fileReviews)) {
       const processIssues = (issues, severity) => {
         if (Array.isArray(issues)) {
-          issues.forEach(issue => {
+          issues.forEach((issue) => {
             const finalSeverity = issue.severity || severity;
             const category = categorizeFinding(issue);
             allFindings.push({
@@ -123,7 +123,9 @@ function generateHTMLReport(repoName, files, reviewResult, outputPath) {
     return rankA - rankB;
   });
 
-  const findingRows = sortedFindings.map(f => `
+  const findingRows = sortedFindings
+    .map(
+      (f) => `
     <tr>
       <td>${escapeHtml(f.file)}</td>
       <td>${escapeHtml(String(f.line))}</td>
@@ -132,7 +134,9 @@ function generateHTMLReport(repoName, files, reviewResult, outputPath) {
       <td>${escapeHtml(f.rule_id)}</td>
       <td><div style="white-space: pre-wrap; word-break: break-word;">${escapeHtml(f.message)}</div></td>
     </tr>
-  `).join('');
+  `,
+    )
+    .join('');
 
   const html = `
 <!DOCTYPE html>
@@ -233,10 +237,4 @@ function getReportPath(format = 'json', outputDir = '.') {
   return path.join(outputDir, `review-report.${ext}`);
 }
 
-export {
-  escapeHtml,
-  generateJSONReport,
-  generateHTMLReport,
-  getReportPath,
-  SCHEMA_VERSION,
-};
+export { escapeHtml, generateJSONReport, generateHTMLReport, getReportPath, SCHEMA_VERSION };

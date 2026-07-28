@@ -20,15 +20,17 @@ console.warn = () => {};
 
 test('isDatabaseConnected returns false before any connection', async () => {
   const { isDatabaseConnected } = await import('../config/db.js');
-  assert.strictEqual(isDatabaseConnected(), false,
-    'isDatabaseConnected should return false before any connectDatabase call');
+  assert.strictEqual(
+    isDatabaseConnected(),
+    false,
+    'isDatabaseConnected should return false before any connectDatabase call',
+  );
 });
 
 test('isDatabaseConnected returns a boolean type', async () => {
   const { isDatabaseConnected } = await import('../config/db.js');
   const result = isDatabaseConnected();
-  assert.strictEqual(typeof result, 'boolean',
-    'isDatabaseConnected should return a boolean');
+  assert.strictEqual(typeof result, 'boolean', 'isDatabaseConnected should return a boolean');
 });
 
 test('isDatabaseConnected is a boolean after module load (not connected)', async () => {

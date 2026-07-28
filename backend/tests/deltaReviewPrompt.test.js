@@ -19,13 +19,10 @@ test('buildDeltaReviewPrompt embeds diff in triple-backtick fence with diff tag'
 
 test('buildDeltaReviewPrompt includes instructions to focus on added lines', () => {
   const result = buildDeltaReviewPrompt('+console.log("hello")');
-  assert.ok(
-    result.includes('focus') && result.includes('added'),
-    'Prompt should instruct focus on added lines'
-  );
+  assert.ok(result.includes('focus') && result.includes('added'), 'Prompt should instruct focus on added lines');
   assert.ok(
     result.includes('EXCLUSIVELY on the newly added code'),
-    'Prompt should say exclusively on newly added code'
+    'Prompt should say exclusively on newly added code',
   );
 });
 
@@ -33,7 +30,7 @@ test('buildDeltaReviewPrompt instructs to ignore deleted lines', () => {
   const result = buildDeltaReviewPrompt('-const x = 1;');
   assert.ok(
     result.includes('DO NOT critique or comment on these lines'),
-    'Prompt should instruct not to critique deleted lines'
+    'Prompt should instruct not to critique deleted lines',
   );
 });
 
@@ -61,10 +58,7 @@ test('buildDeltaReviewPrompt with multi-line diff includes all lines', () => {
 
 test('buildDeltaReviewPrompt contains the expert AI Code Reviewer role declaration', () => {
   const result = buildDeltaReviewPrompt('+hello');
-  assert.ok(
-    result.includes('expert AI Code Reviewer'),
-    'Prompt should declare expert AI Code Reviewer role'
-  );
+  assert.ok(result.includes('expert AI Code Reviewer'), 'Prompt should declare expert AI Code Reviewer role');
 });
 
 console.warn = originalWarn;

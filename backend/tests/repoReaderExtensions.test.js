@@ -2,10 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import {
-  readCodeFilesFromLocalDir,
-  REPO_READER_DEFAULTS,
-} from '../utils/repoReader.js';
+import { readCodeFilesFromLocalDir, REPO_READER_DEFAULTS } from '../utils/repoReader.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,7 +19,7 @@ test('REPO_READER_DEFAULTS is exported and is an object', () => {
 test('REPO_READER_DEFAULTS is frozen (Object.freeze)', () => {
   assert.ok(
     Object.isFrozen(REPO_READER_DEFAULTS),
-    'REPO_READER_DEFAULTS should be frozen to prevent accidental mutation'
+    'REPO_READER_DEFAULTS should be frozen to prevent accidental mutation',
   );
 });
 
@@ -133,10 +130,7 @@ test('readCodeFilesFromLocalDir returns empty language for unknown extensions wh
   // .txt is not in the default extension map, so language would be empty/undefined
   // This test documents the current behavior
   result.forEach((entry) => {
-    assert.ok(
-      typeof entry.language === 'string',
-      `language should be a string even for unknown extensions`
-    );
+    assert.ok(typeof entry.language === 'string', `language should be a string even for unknown extensions`);
   });
 });
 
@@ -151,7 +145,7 @@ test('REPO_READER_DEFAULTS clone is not affected by mutation attempts', () => {
   assert.equal(
     JSON.stringify(REPO_READER_DEFAULTS),
     before,
-    'Frozen object should not be affected by mutation attempts'
+    'Frozen object should not be affected by mutation attempts',
   );
 });
 
@@ -198,7 +192,7 @@ test('readCodeFilesFromLocalDir returns files when extension filter includes uns
     fs.writeFileSync(path.join(mixedDir, 'image.png'), Buffer.from([0x89, 0x50, 0x4e, 0x47]));
     const result = readCodeFilesFromLocalDir(mixedDir, { extensions: ['.py', '.png'] });
     assert.equal(result.length, 2, 'Should include both py and png when both extensions are specified');
-    const extensions = result.map(e => path.extname(e.path).toLowerCase()).sort();
+    const extensions = result.map((e) => path.extname(e.path).toLowerCase()).sort();
     assert.deepEqual(extensions, ['.png', '.py']);
   } finally {
     fs.rmSync(mixedDir, { recursive: true, force: true });

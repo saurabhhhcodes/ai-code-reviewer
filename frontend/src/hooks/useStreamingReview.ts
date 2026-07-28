@@ -1,6 +1,8 @@
 import { useState, useCallback } from 'react';
 
-const API_BASE_URL = (typeof __RUNTIME_API_URL__ !== 'undefined' ? __RUNTIME_API_URL__ : import.meta.env.VITE_API_URL) || 'http://localhost:5000';
+const API_BASE_URL =
+  (typeof __RUNTIME_API_URL__ !== 'undefined' ? __RUNTIME_API_URL__ : import.meta.env.VITE_API_URL) ||
+  'http://localhost:5000';
 
 export const useStreamingReview = () => {
   const [reviewText, setReviewText] = useState<string>('');
@@ -43,13 +45,13 @@ export const useStreamingReview = () => {
         if (value) {
           buffer += decoder.decode(value, { stream: true });
           const parts = buffer.split('\n\n');
-          
+
           buffer = parts.pop() || '';
 
           for (const part of parts) {
             if (part.startsWith('data: ')) {
               const dataStr = part.replace(/^data:\s*/, '').trim();
-              
+
               if (dataStr === '[DONE]') {
                 done = true;
                 break;

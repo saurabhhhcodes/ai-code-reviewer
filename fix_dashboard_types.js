@@ -13,4 +13,4 @@ const replacementStream = `const { reviewText, isStreaming, error: streamError }
 content = content.replace(regexStream, replacementStream);
 
 fs.writeFileSync(file, content);
-console.log("Fixed Dashboard types");
+console.log('Fixed Dashboard types');

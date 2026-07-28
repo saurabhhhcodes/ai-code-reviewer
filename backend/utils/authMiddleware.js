@@ -46,11 +46,13 @@ function getCookie(req, name) {
   const header = req.headers?.cookie;
   if (!header) return '';
 
-  return header
-    .split(';')
-    .map(cookie => cookie.trim())
-    .find(cookie => cookie.startsWith(`${name}=`))
-    ?.slice(name.length + 1) || '';
+  return (
+    header
+      .split(';')
+      .map((cookie) => cookie.trim())
+      .find((cookie) => cookie.startsWith(`${name}=`))
+      ?.slice(name.length + 1) || ''
+  );
 }
 
 function safeEqual(left, right) {
@@ -115,9 +117,7 @@ export const requireApiKey = (req, res, next) => {
   const validKey = getConfiguredApiKey(res);
   if (!validKey) return;
 
-  const providedKey = Array.isArray(req.headers['x-api-key'])
-    ? req.headers['x-api-key'][0]
-    : req.headers['x-api-key'];
+  const providedKey = Array.isArray(req.headers['x-api-key']) ? req.headers['x-api-key'][0] : req.headers['x-api-key'];
 
   const sessionSecret = getSessionSecret();
 

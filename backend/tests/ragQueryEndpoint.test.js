@@ -105,7 +105,9 @@ test('502 error is thrown when AI engine returns non-ok status', async () => {
   const mockResponse = {
     ok: false,
     status: 500,
-    async text() { return 'Internal Server Error'; },
+    async text() {
+      return 'Internal Server Error';
+    },
   };
 
   // In the actual handler, non-ok triggers: throw new Error(...)
@@ -133,7 +135,9 @@ test('response structure is correct when AI engine succeeds', async () => {
   const mockResponse = {
     ok: true,
     status: 200,
-    async json() { return mockData; },
+    async json() {
+      return mockData;
+    },
   };
 
   let result;

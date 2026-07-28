@@ -60,8 +60,8 @@ test('getAllChanges handles both changes and deletions in same file', () => {
   ];
   const result = getAllChanges(files);
   assert.equal(result.length, 2);
-  const added = result.find(r => r.content === 'const x = 1;');
-  const deleted = result.find(r => r.content === 'const y = 2;');
+  const added = result.find((r) => r.content === 'const x = 1;');
+  const deleted = result.find((r) => r.content === 'const y = 2;');
   assert.ok(added, 'should have a change entry');
   assert.equal(added.deleted, undefined);
   assert.ok(deleted, 'should have a deletion entry');
@@ -76,7 +76,7 @@ test('getAllChanges handles multiple files', () => {
   ];
   const result = getAllChanges(files);
   assert.equal(result.length, 3);
-  assert.ok(result.every(r => r.file.startsWith('file')));
+  assert.ok(result.every((r) => r.file.startsWith('file')));
 });
 
 test('getAllChanges handles file with neither changes nor deletions', () => {

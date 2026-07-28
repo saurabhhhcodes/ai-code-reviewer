@@ -26,8 +26,8 @@ Please describe the tests that you ran to verify your changes. Provide instructi
 
 If your changes affect the Frontend UI or dashboard visuals, please attach screenshots, GIFs, or video recordings:
 
-| Before | After |
-| :--- | :--- |
+| Before         | After          |
+| :------------- | :------------- |
 | [Attach Image] | [Attach Image] |
 
 ## 📋 Checklist:
@@ -42,4 +42,5 @@ If your changes affect the Frontend UI or dashboard visuals, please attach scree
 - [ ] (GSSoC Contributors) I have added the appropriate `gssoc26` label
 
 ---
+
 ⭐ **Support RepoSage!** If you find this project helpful, please consider giving us a **Star** 🌟 on GitHub! Your support helps us win GSSoC '26 and grow professionally!

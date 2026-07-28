@@ -4,7 +4,7 @@ import { useStore } from './useStore.ts';
 
 const mockAnalysisResult = {
   success: true,
-  analysis: { fileReviews: {} }
+  analysis: { fileReviews: {} },
 };
 
 describe('useStore', () => {
@@ -12,7 +12,7 @@ describe('useStore', () => {
     useStore.setState({
       analysisResult: null,
       selectedFile: null,
-      chatHistory: []
+      chatHistory: [],
     });
   });
 
@@ -59,7 +59,7 @@ describe('useStore', () => {
     it('setChatHistory with an array replaces chatHistory', () => {
       const messages = [
         { role: 'user', content: 'Hello' },
-        { role: 'assistant', content: 'Hi there' }
+        { role: 'assistant', content: 'Hi there' },
       ];
       useStore.getState().setChatHistory(messages);
       expect(useStore.getState().chatHistory).toEqual(messages);
@@ -69,10 +69,7 @@ describe('useStore', () => {
       const initial = [{ role: 'user', content: 'first' }];
       useStore.setState({ chatHistory: initial });
 
-      useStore.getState().setChatHistory((prev) => [
-        ...prev,
-        { role: 'assistant', content: 'second' }
-      ]);
+      useStore.getState().setChatHistory((prev) => [...prev, { role: 'assistant', content: 'second' }]);
 
       const history = useStore.getState().chatHistory;
       expect(history).toHaveLength(2);

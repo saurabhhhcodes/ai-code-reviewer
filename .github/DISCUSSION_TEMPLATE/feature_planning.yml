@@ -1,5 +1,5 @@
-title: "[Feature Plan] "
-labels: ["enhancement", "feature-planning"]
+title: '[Feature Plan] '
+labels: ['enhancement', 'feature-planning']
 body:
   - type: markdown
     attributes:

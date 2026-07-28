@@ -21,16 +21,16 @@ function generateHtmlReportBody(repoName, analysis) {
   let fileRows = '';
 
   if (analysis && analysis.fileReviews) {
-    Object.keys(analysis.fileReviews).forEach(file => {
+    Object.keys(analysis.fileReviews).forEach((file) => {
       const review = analysis.fileReviews[file];
       const allFindings = [
-        ...(review.bugs || []).map(f => ({ ...f, category: 'Bug' })),
-        ...(review.security || []).map(f => ({ ...f, category: 'Security' })),
-        ...(review.optimization || []).map(f => ({ ...f, category: 'Optimization' })),
-        ...(review.styling || []).map(f => ({ ...f, category: 'Styling' })),
+        ...(review.bugs || []).map((f) => ({ ...f, category: 'Bug' })),
+        ...(review.security || []).map((f) => ({ ...f, category: 'Security' })),
+        ...(review.optimization || []).map((f) => ({ ...f, category: 'Optimization' })),
+        ...(review.styling || []).map((f) => ({ ...f, category: 'Styling' })),
       ];
 
-      allFindings.forEach(f => {
+      allFindings.forEach((f) => {
         fileRows += `
           <tr>
             <td><strong>${escapeHtml(file)}</strong></td>
@@ -122,7 +122,14 @@ test('file with security findings renders security badge', () => {
   const analysis = {
     fileReviews: {
       'auth.py': {
-        security: [{ line: 5, type: 'sql-injection', description: 'SQL query built from user input', suggestion: 'Use parameterized query' }],
+        security: [
+          {
+            line: 5,
+            type: 'sql-injection',
+            description: 'SQL query built from user input',
+            suggestion: 'Use parameterized query',
+          },
+        ],
       },
     },
   };
@@ -138,7 +145,9 @@ test('file with optimization findings renders optimization badge', () => {
   const analysis = {
     fileReviews: {
       'util.js': {
-        optimization: [{ line: 20, type: 'deep-copy', description: 'Unnecessary deep copy', suggestion: 'Use shallow copy' }],
+        optimization: [
+          { line: 20, type: 'deep-copy', description: 'Unnecessary deep copy', suggestion: 'Use shallow copy' },
+        ],
       },
     },
   };
@@ -188,26 +197,33 @@ test('XSS content is escaped via escapeHtml', () => {
   const analysis = {
     fileReviews: {
       '<script>alert(1)</script>': {
-        bugs: [{
-          line: 1,
-          type: 'xss-type',
-          description: '<script>stealCookies()</script>',
-          suggestion: 'Use safe API',
-        }],
+        bugs: [
+          {
+            line: 1,
+            type: 'xss-type',
+            description: '<script>stealCookies()</script>',
+            suggestion: 'Use safe API',
+          },
+        ],
       },
     },
   };
   const { html } = generateHtmlReportBody('<script>alert(1)</script>', analysis);
 
   // < and > must be escaped to prevent tag injection
-  assert.equal(html.includes('<script>alert(1)</script>'), false,
-    'raw script tag in filename must not appear unescaped');
-  assert.ok(html.includes('&lt;script&gt;alert(1)&lt;/script&gt;'),
-    'script tag should be escaped as &lt;script&gt;');
+  assert.equal(
+    html.includes('<script>alert(1)</script>'),
+    false,
+    'raw script tag in filename must not appear unescaped',
+  );
+  assert.ok(html.includes('&lt;script&gt;alert(1)&lt;/script&gt;'), 'script tag should be escaped as &lt;script&gt;');
   // description: <script>stealCookies()</script> -> &lt;script&gt;stealCookies()&lt;/script&gt;
   // so 'stealCookies' appears inside the escaped string but the raw '<script>' does not
-  assert.equal(html.includes('<script>stealCookies()'), false,
-    'raw script tag in description must not appear unescaped');
+  assert.equal(
+    html.includes('<script>stealCookies()'),
+    false,
+    'raw script tag in description must not appear unescaped',
+  );
   // XSS filename is escaped in the title tag
   assert.ok(html.includes('&lt;script&gt;alert(1)&lt;/script&gt;'), 'XSS filename should be escaped');
 });

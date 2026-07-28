@@ -10,9 +10,7 @@ describe('HealthScoreGauge', () => {
       },
     };
 
-    const { container, rerender } = render(
-      <HealthScoreGauge fileReviews={fileReviews} theme="dark" />
-    );
+    const { container, rerender } = render(<HealthScoreGauge fileReviews={fileReviews} theme="dark" />);
     const firstGradientId = container.querySelector('linearGradient')?.id;
     const firstStroke = container.querySelector('circle.gauge-circle')?.getAttribute('stroke');
 

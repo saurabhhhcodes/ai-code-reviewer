@@ -6,11 +6,11 @@ services:
     name: reposage-backend
     env: node
     plan: free
-    buildCommand: "cd backend && npm install"
-    startCommand: "cd backend && npm start"
+    buildCommand: 'cd backend && npm install'
+    startCommand: 'cd backend && npm start'
     envVars:
       - key: NODE_ENV
-        value: "production"
+        value: 'production'
       - key: GROQ_API_KEY
         sync: false
       - key: ALLOWED_ORIGINS
@@ -25,7 +25,7 @@ services:
         sync: false
       - key: AI_ENGINE_URL
         # We will point this to the AI engine service created below
-        value: "https://reposage-ai-engine.onrender.com"
+        value: 'https://reposage-ai-engine.onrender.com'
       - key: MONGODB_URI
         sync: false
 
@@ -36,11 +36,11 @@ services:
     name: reposage-ai-engine
     env: python
     plan: free
-    buildCommand: "cd ai-engine && pip install -r requirements.txt"
-    startCommand: "cd ai-engine && uvicorn app:app --host 0.0.0.0 --port $PORT"
+    buildCommand: 'cd ai-engine && pip install -r requirements.txt'
+    startCommand: 'cd ai-engine && uvicorn app:app --host 0.0.0.0 --port $PORT'
     envVars:
       - key: PYTHON_VERSION
-        value: "3.11.0"
+        value: '3.11.0'
       - key: GROQ_API_KEY
         sync: false
       - key: REPOSAGE_API_KEY

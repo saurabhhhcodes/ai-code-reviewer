@@ -42,20 +42,32 @@ function categorizeFinding(finding) {
   const message = (finding.description || finding.message || '').toLowerCase();
   const ruleId = (finding.rule || finding.rule_id || '').toLowerCase();
 
-  if (message.includes('security') || ruleId.includes('security') ||
-      message.includes('injection') || message.includes('credential') ||
-      message.includes('vulnerability')) {
+  if (
+    message.includes('security') ||
+    ruleId.includes('security') ||
+    message.includes('injection') ||
+    message.includes('credential') ||
+    message.includes('vulnerability')
+  ) {
     return 'security';
   }
 
-  if (message.includes('performance') || ruleId.includes('performance') ||
-      message.includes('n+1') || message.includes('cache') ||
-      message.includes('optimization')) {
+  if (
+    message.includes('performance') ||
+    ruleId.includes('performance') ||
+    message.includes('n+1') ||
+    message.includes('cache') ||
+    message.includes('optimization')
+  ) {
     return 'performance';
   }
 
-  if (message.includes('style') || ruleId.includes('style') ||
-      message.includes('formatting') || message.includes('comma')) {
+  if (
+    message.includes('style') ||
+    ruleId.includes('style') ||
+    message.includes('formatting') ||
+    message.includes('comma')
+  ) {
     return 'style';
   }
 
@@ -67,11 +79,11 @@ function applySeverityConfig(findings, config) {
   const severityMap = config.severity || DEFAULT_CONFIG.severity;
 
   return findings
-    .filter(finding => {
+    .filter((finding) => {
       const ruleId = finding.rule_id || finding.rule;
       return !suppressedRules.has(ruleId);
     })
-    .map(finding => {
+    .map((finding) => {
       const category = categorizeFinding(finding);
       const mappedSeverity = severityMap[category] || finding.severity;
 
@@ -92,7 +104,7 @@ function filterByMinimumSeverity(findings, minimumSeverity = 'error') {
 
   const minRank = severityRank[minimumSeverity] ?? 0;
 
-  return findings.filter(f => {
+  return findings.filter((f) => {
     // Default unknown severities (e.g. 'critical', 'high') to 0 (highest severity)
     // so they are not filtered out when filtering for errors.
     const rank = severityRank[f.severity] ?? 0;
@@ -107,7 +119,9 @@ function validateConfig(config) {
     const validSeverities = ['error', 'warning', 'info'];
     for (const [category, severity] of Object.entries(config.severity)) {
       if (!validSeverities.includes(severity)) {
-        errors.push(`Invalid severity "${severity}" for category "${category}". Must be one of: ${validSeverities.join(', ')}`);
+        errors.push(
+          `Invalid severity "${severity}" for category "${category}". Must be one of: ${validSeverities.join(', ')}`,
+        );
       }
     }
   }
